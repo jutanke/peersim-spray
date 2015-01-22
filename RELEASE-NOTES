@@ -1,0 +1,154 @@
+Release notes for Peersim 1.0.5
+
+This minor release fixes a number of small bugs, see CHANGELOG.
+
+New features added:
+- It is now possible to specify multiple configuration files in
+  the command line; this enables the users to write their
+  configuration files in a modular way.
+
+Release notes for Peersim 1.0.4
+
+This minor release fixes several small bugs, see CHANGELOG. 
+
+New features added:
+- Refactoring of EDSimulator to support the application of any event queue
+  implementation. The even queue can now be configured to be any external 
+  class implementing peersim.edsim.PriorityQ.
+- Added some popular file formats to GraphPrinter (as well as GraphIO)
+- Added a "background" parameter to PeakDistribution
+
+Release notes for Peersim 1.0.3
+
+This minor release fixes several small bugs, see CHANGELOG. 
+No new features added.
+
+Release notes for Peersim 1.0.2
+
+This minor release fixes several small bugs:
+- fixed a bug in RangeSimulator that was causing strange 
+  "too many open files" errors when executing large simulations
+- fixed minor bugs related to the Cleanable interface
+  (credit goes to Samuel Bernard)
+- fixed a bug in peersim.config.Operators was preventing the correct
+  comparison of two values
+- fixed a bug in examples.loadbalance.LBObserver 
+- moved the ID creation before the creation of the Protocol objects
+  belonging to a node; this solve problems for Protocols that
+  assume that the ID field was filled.
+
+New features added:
+- the possibility of customizing the Random generator through
+  a new configuration parameter (random). The specified generator
+  must extend ExtendedRandom.
+- a new transport class for trace initialization. Unlike
+  KingParser, this class reads a more compact, binary format
+  (described in the file).
+- the possibility to shuffle iteration order without actually
+  shuffling the nodes in the network. 
+- a new example on using the event based engine, and also added
+  a simple tutorial to the web page about it.
+- a MemoryObserver reports to provide information about memory usage.
+- modified peersim.vector.Getter and peersim.vector.GetterSetterFinder
+  to handle boolean values as numbers (0/1). This enables to use class 
+  from the vector package to perform statistics on boolean fields.
+- added the VectorComparator class to be used to sort node
+  arrays based on a specified getter.
+  
+  
+==========================================================================
+
+Release notes for Peersim 1.0.1
+
+This minor release contains bug fixes only.
+
+==========================================================================
+
+Release notes for Peersim 1.0
+
+The release of version 1.0 is a major milestone in the development of 
+Peersim. Many useful features have been added, listed below in the 
+"notable new features" section. But most importantly, we decided to take 
+the  opportunity to fix some small design issues in both the API and the
+configuration mechanism. This means that your code written for Peersim 
+0.4 is not compatible with Peersim 1.0; furthermore, also some of the 
+configuration parameters have been changed. Lucky enough, the changes
+to be applied to your code and your config files are limited, and we 
+believe that you will appreciate the increased clarity and ease of 
+configuration of the new version.
+
+Changes breaking backward compatibility:
+------------------------------------------------------------------------------
+- !Peersim now contains Java 1.5 features!, so you MUST use the JDK 1.5
+  to run it. 
+- The observer and dynamic distinction is gone. It was pretty artificial:
+  both of them had access to the entire network, and nothing prevented
+  an observer to modify the network or a dynamics to observe it. So,
+  now all observer/dynamics classes have to implement the 
+  peersim.core.Control interface, which contains only an execute()
+  method. In the configuration file, the "dynamics." and "observer."
+  prefixes have been substituted by the unique "control." prefix. 
+- The following parameters names have been changed:
+  overlay.node -> network.node
+  overlay.size -> network.size
+  overlay.maxSize -> network.maxSize
+- Renamed a very popular class: now WireRegularRandom is WireKOut, which
+  is the correct name for it. In the past it caused lots of confusion, we
+  finally got rid of the bogus name.
+- Renamed very popular parameters: instead of "degree", now every Wire* 
+  class uses "k".
+- GrowingNetwork is gone. Its functionality is provided by 
+  DynamicNetwork. A small change though: config par "percentage" is no longer 
+  supported, but you can set -1<add<1 which is taken as proportion.
+- Removed the "simulation.shuffle" parameter, shuffling can now be
+  added by the control cdsim.Shuffle. This way the time within the cycle and
+  the schedule of the shuffling is as flexible as for any other control.
+- CommonRandom is gone, look for field "r" in CommonState
+- Classes to be created through the Configuration.getInstance(String) 
+  mechanism MUST have a constructor accepting a single String parameter; constructors
+  with a String,Object pair of parameters are not accepted any more.
+  On the same subject, note that now in method getInstance(String,Object),
+  the second argument is the default object which is returned if the
+  configuration parameter defined by the string is not present.
+- The vector package has been refactored to make it generic; now it is able
+  to initialize/modify/observe any vector of protocols that have getter and
+  setter methods; these protocols are not required to implement the 
+  SingleValue interface, although the latter is still there for backward 
+  compatibility and methods double getValue()/setValue(double) are the 
+  default getter/setter.
+- We got rid of CloneNotSupportedException in all clonings, so you'll have 
+  to slightly modify your implementations to catch any exceptions thrown by 
+  the superclass inside the method. This exception was annoying because 
+  there is no way it can be thrown anyway.
+  
+Some of most notable new features:
+------------------------------------------------------------------------------
+- We modified the standard doclet in order to show an additional 
+  "Parameters" section in the API documentation, which lists all the
+  configuration parameters of the class, simplifying the reading of
+  the documentation. Note, however, that due to the Sun License, 
+  the new doclet cannot be redistributed; so if you try to compile
+  your own documentation of Peersim, you may have several warnings
+  from javadoc related to parameters.
+- Refactored the cycle-based simulation engine so that it now only loads and 
+  executes controls; calling the protocols is done by a control too. By default
+  the old config files work. However, this modification makes it possible
+  to totally freely order the controls and the execution of a cycle, and
+  (with the help of NextCycle) it is possible to run only a subset of the
+  protocols, some controls in between and then some other subset. These
+  features however will be used only for hacking...
+- Refactored and thoroughly tested the event-based simulator. The API
+  description is ok, but still there is no tutorial for it. We plan
+  to release something for it later (note the genericity of the
+  term "later" ;-)
+- Nodes are associated with unique numeric identifiers that can be obtained
+  through Node.getID()
+- Random seed is now explicitly set and printed to stderr before all
+  experiments when using Simulator, also for simulation.experiments>1.
+- Expression parsing has been cleaned up. Now, expression composed by
+  all integer values are evaluated using integer arithmetics (e.g.,
+  5/2 is equal to 2); while expressions containing at least one floating
+  point value are evaluated using floating point arithmetics (e.g.,
+  5/2.0 is equal to 2.5).
+- Several new functionalities have been added to the peersim.dynamics
+  and peersim.reports packages; please refer to the API documentation.

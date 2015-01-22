@@ -1,0 +1,36 @@
+<project name="Peersim" default="compile" basedir=".">
+
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="classes" />
+	<property name="doc" location="doc" />
+
+	<!-- Packages to be included in the Javadoc generation -->
+	<property name="packages" value="peersim.*,example.*"/>
+		
+	<!-- Path for compilation -->
+	<path id="compile.path">
+		<pathelement location="jep-2.3.0.jar" />
+		<pathelement location="djep-1.0.0.jar" />
+	</path>
+
+	<target name="compile">
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}" classpathref="compile.path" />
+	</target>
+
+	<target name="doc">
+		<!-- Create the doc directory structure used by javadoc -->
+		<mkdir dir="${doc}" />
+		<!-- Compile the javadoc from ${src} into ${doc} -->
+	    <javadoc sourcepath="${src}" destdir="${doc}" packagenames="${packages}" use="true" />
+	</target>
+			
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} directory tree -->
+		<delete dir="${build}" />
+	</target>
+
+</project>

@@ -1,0 +1,60 @@
+<html>
+<body>
+The PeerSim simulator.
+Here we list some miscellaneous assumptions and contracts that hold for the
+entire system. Browsing the class documentation can best be started at
+{@link peersim.Simulator}, which is the main class and contains pointers
+to browse further.
+
+<h2>Conventions over Logging</h2>
+There is no strict logging system that enforces a certain way of producing
+the output of the simulation.
+Instead we have a few rules that are respected by the components of the system.
+By default, output is printed to the standard output, and error, warning and
+debug messages go to the standard error.
+The output also follows some conventions.
+
+<p>
+In particular, {@link peersim.core.Control}s used to observe the simulation
+print information each time they are called using the following format.
+They first print their own name in the configuration, immediately followed
+by a colon, immediately followed by at least one whitespace character.
+For example, <code>control.0:&nbsp;</code>.
+The name does not contain any whitespace.
+After this arbitrary information is printed.
+The last character printed is always a newline.
+In practice, most components output a single line only.
+Also, the components use only the <code>print</code> and <code>println</code>
+methods.
+Some controls write to a file if configured to do so. 
+
+<p>
+It is possible to capture the output by redirecting it to a custom written
+PrintStream class.
+Relying on the above rules, it is possible to meaningfully parse and process
+the output if necessary.
+Class {@link peersim.Simulator} offers a configuration property where one
+can set the PrintStrem class and its optional configuration options.
+
+
+<h2>Conventions over Exceptions</h2>
+
+We do not always document three kinds of exceptions:
+<code>RuntimeException</code>, {@link peersim.config.IllegalParameterException}
+and {@link peersim.config.MissingParameterException}.
+The last two are thrown when there is a problem while reading the configuration.
+The <code>RuntimeException</code> is thrown in case of any other
+problem during the running of the simulator such as file i/o, etc.
+We always document those exceptions that are different from these three
+or that are explicitly declared in the API.
+<p>
+Note that the component that actually handles these exceptions is
+the main class {@link peersim.Simulator}.
+It always exits as a result of any exceptions, after attempting to
+dump some information about the details of the failure on the standard
+error.
+This is the main reason why we are intentionally sloppy about documenting all
+the exceptions.
+</body>
+</html>
+
