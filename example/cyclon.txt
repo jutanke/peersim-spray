@@ -1,0 +1,49 @@
+############ General settings #############
+
+random.seed 1234567890
+
+############ P2P settings ############
+
+PEERS 10
+network.size PEERS
+network.node GeneralNode
+DEGREE 20
+
+##### CDSimulator parameters
+
+simulation.cycles 5
+
+##### Linkable protocol ######
+
+protocol.lnk example.webrtc.CyclonProtocol
+protocol.lnk.cache DEGREE
+protocol.lnk.l 5
+
+############ Initialization #############
+
+# Init each peer in lnk with K neighbours
+
+init.rndlink WireKOut
+{
+	k DEGREE
+	protocol lnk
+}
+
+############ Observers ############
+
+control.co example.webrtc.CyclonObserver
+{
+
+}
+
+##### Controls #####
+# Adds one node each cycle in the simulation up to 1000 nodes in total.
+
+control.dynadd DynamicNetwork
+control.dynadd.add 1
+control.dynadd.maxsize 1000
+control.dynadd.init.rand RandNI
+control.dynadd.init.rand.protocol lnk
+control.dynadd.init.rand.k 1
+
+control.shf Shuffle # Shuffles the order in which the nodes are iterated over during a cycle
