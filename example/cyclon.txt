@@ -4,7 +4,7 @@ random.seed 1234567890
 
 ############ P2P settings ############
 
-PEERS 10
+PEERS 1000
 network.size PEERS
 network.node GeneralNode
 DEGREE 20
@@ -41,7 +41,7 @@ control.co example.webrtc.cyclon.CyclonObserver
 
 control.dynadd DynamicNetwork
 control.dynadd.add 1
-control.dynadd.maxsize 10
+control.dynadd.maxsize 1000
 control.dynadd.init.rand RandNI
 control.dynadd.init.rand.protocol lnk
 control.dynadd.init.rand.k 1

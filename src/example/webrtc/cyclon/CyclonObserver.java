@@ -74,6 +74,13 @@ public class CyclonObserver implements Control {
             }
         }
 
+        //System.out.println(observer.avgClusteringCoefficient());
+        //System.out.println(observer.avgPathLength(0));
+
+        Graph.AvgReachablePaths p = observer.avgReachablePaths(0);
+        System.out.println(p.avg);
+        System.err.println(p);
+
         System.err.println("CyclonObserver: Lonely: " + lonely.toString());
         System.err.println("CyclonObserver: No peers in nodes: " + peersWithEmptyCache.toString());
         System.err.println("CyclonObserver: Degree avg: " + avgDegree/Network.size() + " min: " + minDegree + " max: " + maxDegree);
