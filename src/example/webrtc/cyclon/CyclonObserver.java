@@ -1,10 +1,14 @@
-package example.webrtc;
+package example.webrtc.cyclon;
 
+import example.webrtc.data.Graph;
 import peersim.config.Configuration;
 import peersim.core.Control;
 import peersim.core.GeneralNode;
 import peersim.core.Network;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by julian on 24/01/15.
@@ -15,6 +19,7 @@ public class CyclonObserver implements Control {
     private static final String PAR_DEGREE = "DEGREE";
 
     private LinkedList<Long> peersWithEmptyCache;
+    private List<Integer> lonely;
     private int degree;
     private int minDegree;
     private long minDegreeNodeID;
@@ -23,6 +28,7 @@ public class CyclonObserver implements Control {
 
     public CyclonObserver(String prefix) {
         peersWithEmptyCache = new LinkedList<Long>();
+        lonely = new ArrayList<Integer>();
         degree = Configuration.getInt(PAR_DEGREE);
     }
 
@@ -31,15 +37,24 @@ public class CyclonObserver implements Control {
 
         int pid = Configuration.lookupPid(CYCLON_PROT);
         peersWithEmptyCache.clear();
+        lonely.clear();
         avgDegree = 0;
         minDegree = degree;
         maxDegree = 0;
+
+        Graph observer = Graph.getSingleton(Network.size());
 
         for (int i = 0; i < Network.size(); i++) {
             GeneralNode n = (GeneralNode) Network.get(i);
             CyclonProtocol cyclonNode = (CyclonProtocol) n.getProtocol(pid);
             int degree = cyclonNode.degree();
             avgDegree += degree;
+
+            observer.nodes[i].reset();
+            // add all the neighbors!
+            for(int id : cyclonNode.activeCache) {
+                observer.nodes[i].neighbors.add(id);
+            }
 
             if(degree > maxDegree) {
                 maxDegree = degree;
@@ -53,8 +68,13 @@ public class CyclonObserver implements Control {
             if(degree == 0) {
                 peersWithEmptyCache.add(n.getID());
             }
+
+            if (cyclonNode.lonely()) {
+                lonely.add(n.getIndex());
+            }
         }
 
+        System.err.println("CyclonObserver: Lonely: " + lonely.toString());
         System.err.println("CyclonObserver: No peers in nodes: " + peersWithEmptyCache.toString());
         System.err.println("CyclonObserver: Degree avg: " + avgDegree/Network.size() + " min: " + minDegree + " max: " + maxDegree);
         System.err.println("CyclonObserver: Min degree at node: " + minDegreeNodeID);

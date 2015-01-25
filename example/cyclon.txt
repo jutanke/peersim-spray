@@ -11,11 +11,11 @@ DEGREE 20
 
 ##### CDSimulator parameters
 
-simulation.cycles 5
+simulation.cycles 1000
 
 ##### Linkable protocol ######
 
-protocol.lnk example.webrtc.CyclonProtocol
+protocol.lnk example.webrtc.cyclon.CyclonProtocol
 protocol.lnk.cache DEGREE
 protocol.lnk.l 5
 
@@ -31,7 +31,7 @@ init.rndlink WireKOut
 
 ############ Observers ############
 
-control.co example.webrtc.CyclonObserver
+control.co example.webrtc.cyclon.CyclonObserver
 {
 
 }
@@ -41,9 +41,9 @@ control.co example.webrtc.CyclonObserver
 
 control.dynadd DynamicNetwork
 control.dynadd.add 1
-control.dynadd.maxsize 1000
+control.dynadd.maxsize 10
 control.dynadd.init.rand RandNI
 control.dynadd.init.rand.protocol lnk
 control.dynadd.init.rand.k 1
 
-control.shf Shuffle # Shuffles the order in which the nodes are iterated over during a cycle
+# control.shf Shuffle # Shuffles the order in which the nodes are iterated over during a cycle

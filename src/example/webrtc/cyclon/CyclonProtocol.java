@@ -1,5 +1,6 @@
-package example.webrtc;
+package example.webrtc.cyclon;
 
+import example.webrtc.PeerSamplingService;
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * Created by julian on 22/01/15.
  */
-public class CyclonProtocol implements CDProtocol, Linkable {
+public class CyclonProtocol implements CDProtocol, Linkable, PeerSamplingService {
 
     // =============== static fields =======================================
     // =====================================================================
@@ -47,6 +48,8 @@ public class CyclonProtocol implements CDProtocol, Linkable {
      */
     private LinkedList<Neighbor> waitingForHandshake;
 
+    public List<Integer> activeCache;
+
     private String prefix;
 
     public CyclonProtocol(String prefix) {
@@ -55,6 +58,7 @@ public class CyclonProtocol implements CDProtocol, Linkable {
         l = Configuration.getInt(prefix + "." + PAR_L);
         this.cache = new LinkedList<Neighbor>();
         this.waitingForHandshake = new LinkedList<Neighbor>();
+        this.activeCache = new ArrayList<Integer>();
     }
 
     @Override
@@ -64,6 +68,8 @@ public class CyclonProtocol implements CDProtocol, Linkable {
             c = (CyclonProtocol) super.clone();
         } catch (CloneNotSupportedException e) {}
         c.cache = new LinkedList<Neighbor>();
+        c.waitingForHandshake = new LinkedList<Neighbor>();
+        c.activeCache = new ArrayList<Integer>();
         return c;
     }
 
@@ -71,9 +77,16 @@ public class CyclonProtocol implements CDProtocol, Linkable {
     // =====================================================================
 
 
+
+
     @Override
     public void nextCycle(Node node, int protocolID) {
         this.simulateHandshake();
+
+        this.activeCache.clear();
+        for (Neighbor n : this.cache) {
+            this.activeCache.add(n.node.getIndex());
+        }
 
         Neighbor oldestPeer = this.increasePeerAgeAndRemoveOldest();
         if (oldestPeer == null) return;
@@ -100,12 +113,18 @@ public class CyclonProtocol implements CDProtocol, Linkable {
 
     @Override
     public int degree() {
-        return cache.size() + waitingForHandshake.size();
+        return this.activeCache.size();
     }
 
     @Override
     public Node getNeighbor(int i) {
         return cache.get(i).node;
+    }
+
+    public boolean lonely() {
+        return this.activeCache.size() == 0 &&
+                this.cache.size() == 0 &&
+                this.waitingForHandshake.size() == 0;
     }
 
     @Override
@@ -139,6 +158,32 @@ public class CyclonProtocol implements CDProtocol, Linkable {
         this.waitingForHandshake = null;
     }
 
+    @Override
+    public long id() {
+        return 0;
+    }
+
+    @Override
+    public List<PeerSamplingService> getPeers() {
+        List<PeerSamplingService> result = new ArrayList<PeerSamplingService>();
+
+
+        return result;
+    }
+
+    public String printCache(int id) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        sb.append(id);
+        sb.append(")");
+        for(Neighbor n : this.cache) {
+            sb.append(n);
+            sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     // =============== private interface ===================================
     // =====================================================================
 
@@ -170,7 +215,7 @@ public class CyclonProtocol implements CDProtocol, Linkable {
         while(degree() < maxCacheSize && splicedPeers.size() > 0) {
             Neighbor n = splicedPeers.pop();
             if (!this.contains(n.node)) {
-                waitingForHandshake.add(n);
+                cache.add(n);
             }
         }
     }
@@ -183,11 +228,35 @@ public class CyclonProtocol implements CDProtocol, Linkable {
             } else {
                 n.waiting += 1;
             }
+            //System.out.println(n + " vs " + handshakeDuration);
         }
+        //System.out.println()
         for (Neighbor n : result) {
             this.waitingForHandshake.remove(n);
+            if (this.cache.size() >= maxCacheSize) {
+                int diff = this.cache.size() - maxCacheSize + 1;
+                Neighbor oldest = null;
+                int oldestAge = -1;
+                for (int i = 0; i < diff; i++) {
+                    for(Neighbor n2 : this.cache) {
+                        if (n2.age > oldestAge) {
+                            oldest = n2;
+                            oldestAge = n2.age;
+                        }
+                    }
+                    this.cache.remove(oldest);
+                }
+            }
             this.cache.add(n);
         }
+
+        /*
+        System.out.println("+++++++++++++++");
+        for (Neighbor n : this.cache) {
+            System.out.println("n:" + n);
+        }
+        System.out.println("===============");
+        */
 
     }
 
@@ -240,6 +309,19 @@ public class CyclonProtocol implements CDProtocol, Linkable {
         public int address;
         public Node node;
         public int waiting = 0;
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("(");
+            sb.append(node.getIndex());
+            sb.append(",");
+            sb.append(age);
+            sb.append(",");
+            sb.append(waiting);
+            sb.append(")");
+            return sb.toString();
+        }
 
     }
 }
