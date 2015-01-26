@@ -7,38 +7,124 @@ import peersim.core.Node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class DictGraphTest {
 
+    private static double DELTA_FLOAT = 0.01;
+
     @Test
     public void testAdd() throws Exception {
 
         DictGraph g = DictGraph.getSingleton(10);
-
-        Peer a = new Peer(0, new long[]{1,2});
-        Peer b = new Peer(1, new long[]{0,2});
-        Peer c = new Peer(2, new long[]{1,0});
-
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
         g.add(a.node, a.rps);
         g.add(b.node, b.rps);
         g.add(c.node, c.rps);
-
         DictGraph.AvgReachablePaths avg = g.avgReachablePaths(0);
-
-        System.out.println(avg);
-
+        assertEquals(1.0, avg.avg, DELTA_FLOAT);
+        assertEquals(1.0, avg.reachQuota, DELTA_FLOAT);
+        assertEquals(3, avg.count);
     }
 
     @Test
     public void testAvgReachablePaths() throws Exception {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+        Peer d = new Peer(3, new long[0]);
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        DictGraph.AvgReachablePaths avg = g.avgReachablePaths(0);
+        assertEquals(3, avg.count);
+        assertEquals(0.75, avg.reachQuota, DELTA_FLOAT);
+        assertEquals(1.0, avg.avg, DELTA_FLOAT);
+        assertEquals(4, avg.total);
+    }
 
+    @Test
+    public void testAvgReachablePaths2() throws Exception {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+        Peer d = new Peer(3, new long[0]);
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        DictGraph.AvgReachablePaths avg = g.avgReachablePaths(3);
+        assertEquals(1, avg.count);
+        assertEquals(0.25, avg.reachQuota, DELTA_FLOAT);
+        assertEquals(0.0, avg.avg, DELTA_FLOAT);
+        assertEquals(4, avg.total);
+    }
+
+    @Test
+    public void testAvgReachablePaths3() throws Exception {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0,3});
+        Peer d = new Peer(3, new long[]{2,4});
+        Peer e = new Peer(4, new long[]{3,5});
+        Peer f = new Peer(5, new long[]{4,6});
+        Peer gq = new Peer(6, new long[]{5,7});
+        Peer h = new Peer(7, new long[]{6});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        g.add(e.node, e.rps);
+        g.add(f.node, f.rps);
+        g.add(h.node, h.rps);
+        g.add(gq.node, gq.rps);
+        DictGraph.AvgReachablePaths avg = g.avgReachablePaths(3);
+        System.out.println(avg);
+        assertEquals(8, avg.count);
+        assertEquals(1, avg.reachQuota, DELTA_FLOAT);
+        assertEquals(2.142857142857143, avg.avg, DELTA_FLOAT);
+        assertEquals(8, avg.total);
     }
 
     @Test
     public void testLocalClusterCoefficient() throws Exception {
 
+    }
+
+    @Test
+    public void testMeanPathLength() throws Exception {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        DictGraph.MeanPathLength mean = g.meanPathLength();
+        assertEquals(1.0, mean.avg, DELTA_FLOAT);
+        assertEquals(1.0, mean.maxReachQuota, DELTA_FLOAT);
+        assertEquals(1.0, mean.minReachQuota, DELTA_FLOAT);
+        assertEquals(1.0, mean.reachQuota, DELTA_FLOAT);
+        Peer d = new Peer(3, new long[0]);
+        g.add(d.node, d.rps);
+        mean = g.meanPathLength();
+        assertEquals(0.75, mean.avg, DELTA_FLOAT);
+        assertEquals(0.625, mean.reachQuota, DELTA_FLOAT);
+        assertEquals(0.25, mean.minReachQuota, DELTA_FLOAT);
+        assertEquals(0.75, mean.maxReachQuota, DELTA_FLOAT);
     }
 
     @Test
@@ -49,14 +135,73 @@ public class DictGraphTest {
     @Test
     public void testDijkstra() throws Exception {
 
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+
+        Map<Long, Integer> dist = g.dijkstra(0);
+        assertEquals("{0=0, 1=1, 2=1}", dist.toString());
+
+        Peer d = new Peer(3, new long[0]);
+        g.add(d.node, d.rps);
+
+        dist = g.dijkstra(0);
+        assertEquals("{0=0, 1=1, 2=1, 3=-1}", dist.toString());
     }
+
+    @Test
+    public void testDijkstra2() throws Exception {
+
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0, 3});
+        Peer d = new Peer(3, new long[]{2, 4});
+        Peer e = new Peer(4, new long[]{3});
+
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        g.add(e.node, e.rps);
+
+        Map<Long, Integer> dist = g.dijkstra(0);
+        assertEquals("{0=0, 1=1, 2=1, 3=2, 4=3}", dist.toString());
+    }
+
+    @Test
+    public void testDijkstra3() {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+        Peer d = new Peer(3, new long[0]);
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+
+        Map<Long, Integer> dist = g.dijkstra(3);
+        assertEquals("{0=-1, 1=-1, 2=-1, 3=0}", dist.toString());
+    }
+
 
     /* ====================================================
      * H E L P E R S
      * ====================================================*/
 
 
-//    private PeerSamplingService
+    //    private PeerSamplingService
 //
     private class Peer {
 
@@ -70,4 +215,4 @@ public class DictGraphTest {
     }
 
 
- }
+}
