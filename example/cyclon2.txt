@@ -23,7 +23,7 @@ network.node GeneralNode
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.lnk example.webrtc.cyclon2.Cyclon
+protocol.lnk example.cyclon.CyclonSimple
 protocol.lnk.cache DEGREE
 protocol.lnk.l 5
 protocol.lnk.step CYCLE
@@ -55,6 +55,6 @@ init.sch CDScheduler
 init.sch.protocol lnk
 init.sch.randstart
 
-control.0 example.webrtc.cyclon2.CyclonObserver
+control.0 example.PeerSamplingServiceObserver
 control.0.protocol lnk
 control.0.step CYCLE

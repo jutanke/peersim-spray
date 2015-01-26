@@ -9,14 +9,12 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by julian on 26/01/15.
  */
-public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
+public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSamplingService {
 
     private static final String PAR_CACHE = "cache";
     private static final String PAR_L = "l";
@@ -31,6 +29,13 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
     private final int tid;
 
     private List<CyclonEntry> cache = null;
+
+    public CyclonSimple(int size, int l){
+        this.size = size;
+        this.l = l;
+        this.tid = -1;
+
+    }
 
     public CyclonSimple(String n) {
         this.size = Configuration.getInt(n + "." + PAR_CACHE);
@@ -80,16 +85,30 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
 
         CyclonMessage message = (CyclonMessage) event;
 
+        List<CyclonEntry> received = null;
+        List<CyclonEntry> nodesToSend = null;
+
         switch (message.type) {
             case Shuffle:
 
-                List<CyclonEntry> nodesToSend = selectNeighbors(l);
+                Node p = message.sender;
+                ;
+                received = message.list;
+                nodesToSend = selectNeighbors(l);
+                this.cache = merge(node, this.cache, clone(received), clone(nodesToSend));
+                CyclonMessage out = new CyclonMessage(node, CyclonMessage.Type.ShuffleResponse, nodesToSend, received);
+                Transport tr = (Transport) node.getProtocol(tid);
+                tr.send(node, p, message, pid);
 
                 break;
             case ShuffleResponse:
+
+                received = message.list;
+                nodesToSend = message.temp;
+                this.cache = merge(node, this.cache, clone(received), clone(nodesToSend));
+
                 break;
         }
-
     }
 
     @Override
@@ -135,20 +154,63 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
     // P R I V A T E  I N T E R F A C E
     // ======================================================================
 
-    private void merge(Node self, List<CyclonEntry> received, List<CyclonEntry> send) {
-        received = delete(received, self);
-        send = delete(send, self); // this should never happen but anyway..
-        this.cache = discard(this.cache, send);
-        received = discard(received, this.cache);
-
-        // TODO GO ON
-
+    private List<CyclonEntry> clone(List<CyclonEntry> list) {
+        return new ArrayList<CyclonEntry>(list);
     }
 
-    private List<CyclonEntry> discard(List<CyclonEntry> target, List<CyclonEntry> rem) {
+    public List<CyclonEntry> merge(Node self, List<CyclonEntry> cache, List<CyclonEntry> received, List<CyclonEntry> sent) {
+
+        System.err.println("ME:" + self +
+                " rec:" + printList(received) +
+                " sen:" + printList(sent
+        ));
+
+        System.err.println("CACHE:" + cache);
+
+        received = delete(received, self);
+        sent = delete(sent, self);
+        received = discard(received, cache);
+        cache = discard(cache, sent);
+
+        int include = size - cache.size();
+        if (include < received.size()) throw new Error("why?");
+
+        this.cache.addAll(received);
+
+        Collections.sort(sent, new CyclonEntry());
+
+        while (cache.size() < size && sent.size() > 0) {
+            cache.add(popSmallest(sent));
+        }
+        return cache;
+    }
+
+    private String printList(Collection<CyclonEntry> list) {
+        StringBuilder sb = new StringBuilder();
+        for (CyclonEntry e : list) {
+            sb.append(e);
+        }
+        return sb.toString();
+    }
+
+    public CyclonEntry popSmallest(List<CyclonEntry> list) {
+        CyclonEntry smallest = new CyclonEntry(Integer.MAX_VALUE, null);
+        for (CyclonEntry e : list) {
+            if (smallest.age > e.age) {
+                smallest = e;
+            }
+        }
+        list.remove(smallest);
+        return smallest;
+    }
+
+    public List<CyclonEntry> discard(List<CyclonEntry> target, List<CyclonEntry> rem) {
         HashSet<Long> locals = new HashSet<Long>(rem.size());
-        for (CyclonEntry r : rem)  {
-            if (locals.contains(r.n.getID())) throw new RuntimeException("NOOOOPEE");
+        for (CyclonEntry r : rem) {
+            if (locals.contains(r.n.getID())) {
+                System.err.println("SAD: " + locals);
+                throw new RuntimeException("NOOOOPEE " + r.n.getID());
+            }
             locals.add(r.n.getID());
         }
         List<CyclonEntry> result = new ArrayList<CyclonEntry>();
@@ -160,7 +222,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
         return result;
     }
 
-    private List<CyclonEntry> delete(List<CyclonEntry> list, Node n) {
+    public List<CyclonEntry> delete(List<CyclonEntry> list, Node n) {
         if (list.size() == 0) return list;
         List<CyclonEntry> newlist = new ArrayList<CyclonEntry>(list.size());
         for (CyclonEntry e : list) {
@@ -171,13 +233,13 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
         return newlist;
     }
 
-    private void increaseAge() {
+    public void increaseAge() {
         for (CyclonEntry e : this.cache) {
             e.age += 1;
         }
     }
 
-    private Node selectOldest() {
+    public Node selectOldest() {
         CyclonEntry oldest = new CyclonEntry(Integer.MIN_VALUE, null);
         for (CyclonEntry e : this.cache) {
             if (oldest.age <= e.age) {
@@ -187,11 +249,11 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
         return oldest.n;
     }
 
-    private List<CyclonEntry> selectNeighbors(int l) {
+    public List<CyclonEntry> selectNeighbors(int l) {
         return selectNeighbors(l, -1);
     }
 
-    private List<CyclonEntry> selectNeighbors(int l, long oldestNode) {
+    public List<CyclonEntry> selectNeighbors(int l, long oldestNode) {
         List<CyclonEntry> result = new ArrayList<CyclonEntry>();
         int dim = Math.min(l, cache.size() - 1);
         List<CyclonEntry> shallowCopy = new ArrayList<CyclonEntry>(this.cache);
@@ -206,4 +268,12 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol {
         return result;
     }
 
+    @Override
+    public List<Node> getPeers() {
+        List<Node> result = new ArrayList<Node>();
+        for (CyclonEntry e : this.cache) {
+            result.add(e.n);
+        }
+        return result;
+    }
 }
