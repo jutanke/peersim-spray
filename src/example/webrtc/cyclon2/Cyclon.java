@@ -119,12 +119,13 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol {
             nodesToSend = message.receivedList;
 
         // 5. Discard entries pointing to P, and entries that are already in P’s cache.
-        //XXX List<CyclonEntry> list = discardEntries(node, message.list);
+        List<CyclonEntry> list = discardEntries(node, message.list);
 
         // 6. Update P’s cache to include all remaining entries, by firstly using empty
         //    cache slots (if any), and secondly replacing entries among the ones originally
         //    sent to Q.
-        insertReceivedItems(message.list, nodesToSend);
+        //insertReceivedItems(message.list, nodesToSend);
+        insertReceivedItems(list, nodesToSend);
     }
 
     /**
@@ -151,7 +152,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol {
 
     private static final List<Node> neighbors = new ArrayList<Node>();
 
-    public List<Node> getNeighbors(){
+    public List<Node> getNeighbors() {
         neighbors.clear();
         for (CyclonEntry e : this.cache) {
             neighbors.add(e.n);
@@ -227,6 +228,15 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol {
     // ======================================================================
     // P R I V A T E  I N T E R F A C E
     // ======================================================================
+
+    private List<CyclonEntry> discardEntries(Node n, List<CyclonEntry> list) {
+        List<CyclonEntry> newList = new ArrayList<CyclonEntry>();
+        for (CyclonEntry ce : list)
+            if (!ce.n.equals(n) && contains(ce.n))
+                newList.add(ce);
+
+        return newList;
+    }
 
     private void increaseAgeAndSort() {
         for (CyclonEntry ce : cache)
