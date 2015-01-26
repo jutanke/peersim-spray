@@ -73,9 +73,14 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
             List<CyclonEntry> nodesToSend = selectNeighbors(l - 1, q.getID());
             nodesToSend.add(new CyclonEntry(0, node));
 
+            send(node, q, CyclonMessage.Type.Shuffle, nodesToSend, null, protocolID);
+
+
+            /*
             CyclonMessage message = new CyclonMessage(node, CyclonMessage.Type.Shuffle, nodesToSend, null);
             Transport tr = (Transport) node.getProtocol(tid);
             tr.send(node, q, message, protocolID);
+            */
         }
 
     }
@@ -97,16 +102,20 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
                 nodesToSend = selectNeighbors(l);
                 //System.err.println("++++++ A ++++++");
                 this.cache = merge(node,p, this.cache, clone(received), clone(nodesToSend));
+
+                send(node, p, CyclonMessage.Type.ShuffleResponse, nodesToSend, received, pid);
+
+                /*
                 CyclonMessage out = new CyclonMessage(node, CyclonMessage.Type.ShuffleResponse, nodesToSend, received);
                 Transport tr = (Transport) node.getProtocol(tid);
                 tr.send(node, p, message, pid);
-
+                */
                 break;
             case ShuffleResponse:
 
                 received = message.list;
                 nodesToSend = message.temp;
-                System.err.println("++++++ B ++++++");
+                //System.err.println("++++++ B ++++++");
                 this.cache = merge(node,message.sender, this.cache, clone(received), clone(nodesToSend));
 
                 break;
@@ -156,6 +165,30 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
     // P R I V A T E  I N T E R F A C E
     // ======================================================================
 
+    /**
+     *
+     * @param sender
+     * @param receiver
+     * @param type
+     * @param list
+     * @param temp
+     */
+    private boolean send(Node sender,
+                         Node receiver,
+                         CyclonMessage.Type type,
+                         List<CyclonEntry> list,
+                         List<CyclonEntry> temp,
+                         int protocolID) {
+        if (sender.getID() != receiver.getID()) {
+            CyclonMessage message = new CyclonMessage(sender, type, list, temp);
+            Transport tr = (Transport) sender.getProtocol(tid);
+            tr.send(sender, receiver, message, protocolID);
+            return true;
+        }
+        System.err.println("Dublicate: " + sender.getID() + " - " + receiver.getID());
+        return false;
+    }
+
     private List<CyclonEntry> clone(List<CyclonEntry> list) {
         return new ArrayList<CyclonEntry>(list);
     }
@@ -193,10 +226,16 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         cache = discard(cache, sent);
         */
 
-        int include = size - cache.size();
-        if (include < received.size()) throw new Error("why?");
+        //int include = size - cache.size();
+        //if (include < received.size()) throw new Error("why?" + size + " > " + cache.size() + " > " + include);
+        //cache.addAll(received);
 
-        cache.addAll(received);
+        Collections.sort(received, new CyclonEntry());
+
+        int include = Math.min(size - cache.size(), received.size());
+        for (int i = 0; i < include; i++){
+            cache.add(received.get(i));
+        }
 
         Collections.sort(sent, new CyclonEntry());
 

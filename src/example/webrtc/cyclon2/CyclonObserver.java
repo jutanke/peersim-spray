@@ -52,7 +52,7 @@ public class CyclonObserver implements Control {
 
             avgDegree += cyclonNode.degree();
 
-            observer.add(n, cyclonNode);
+            //observer.add(n, cyclonNode);
 
             if (cyclonNode.degree() == 0) {
                 peersWithEmptyCache.add(n.getID());
