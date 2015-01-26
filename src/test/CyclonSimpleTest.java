@@ -1,5 +1,7 @@
-package example.cyclon;
+package test;
 
+import example.cyclon.CyclonEntry;
+import example.cyclon.CyclonSimple;
 import example.webrtc.cyclon2.Cyclon;
 import peersim.core.Node;
 import peersim.core.Protocol;
@@ -33,15 +35,35 @@ public class CyclonSimpleTest {
     public void testDiscard() throws Exception {
         CyclonSimple cyclon = new CyclonSimple(SIZE,L);
 
-        Node me = createNode(5);
+        Node me = createNode(555);
         List<CyclonEntry> cache = randomList2_10();
         List<CyclonEntry> sent = randomList2_5();
         List<CyclonEntry> received = randomList3_5();
 
-        List<CyclonEntry> result = cyclon.merge(me, cache, received, sent);
+        List<CyclonEntry> result = cyclon.merge(me,createNode(939), cache, received, sent);
 
-        assertEquals("[1,6,12,91,13,86,87,88,9,8]", print(result));
+        assertEquals("[1,5,6,12,91,13,86,87,88,9]", print(result));
 
+    }
+
+    @org.junit.Test
+    public void testDiscard2() throws Exception {
+        // BUG CONTEXT:
+        //MyId:939
+        // rec:{475|age:1}{718|age:1}{657|age:1}{37|age:1}{939|age:0}
+        // sen:{232|age:1}{657|age:1}{483|age:1}{539|age:1}{895|age:1}
+        //CACHE:[{264|age:1}, {718|age:1}, {840|age:1}, {37|age:1}, {475|age:1}, {659|age:1},
+        //       {793|age:1}, {864|age:1}, {215|age:1}, {561|age:1}, {524|age:1}, {532|age:1},
+        //       {292|age:1}, {967|age:1}]
+        CyclonSimple cyclon = new CyclonSimple(20,5);
+        List<CyclonEntry> cache = cache_20();
+        List<CyclonEntry> rec = rec_5();
+        List<CyclonEntry> sen = sen_5();
+        Node self = createNode(939);
+
+        List<CyclonEntry> result = cyclon.merge(self, createNode(939), cache, rec, sen);
+
+        assertEquals("[264,718,840,37,475,659,793,864,215,561,524,532,292,967,657,232,483,539,895]", print(result));
     }
 
     @org.junit.Test
@@ -62,6 +84,45 @@ public class CyclonSimpleTest {
     // ==================================================
     // H E L P E R S
     // ==================================================
+
+    private static List<CyclonEntry> rec_5(){
+        List<CyclonEntry> list = new ArrayList<CyclonEntry>();
+        list.add(new CyclonEntry(1, createNode(475)));
+        list.add(new CyclonEntry(1, createNode(718)));
+        list.add(new CyclonEntry(1, createNode(657)));
+        list.add(new CyclonEntry(1, createNode(37)));
+        list.add(new CyclonEntry(0, createNode(939)));
+        return list;
+    }
+
+    private static List<CyclonEntry> sen_5(){
+        List<CyclonEntry> list = new ArrayList<CyclonEntry>();
+        list.add(new CyclonEntry(1, createNode(232)));
+        list.add(new CyclonEntry(1, createNode(657)));
+        list.add(new CyclonEntry(1, createNode(483)));
+        list.add(new CyclonEntry(1, createNode(539)));
+        list.add(new CyclonEntry(1, createNode(895)));
+        return list;
+    }
+
+    private static List<CyclonEntry> cache_20(){
+        List<CyclonEntry> list = new ArrayList<CyclonEntry>();
+        list.add(new CyclonEntry(1, createNode(264)));
+        list.add(new CyclonEntry(1, createNode(718)));
+        list.add(new CyclonEntry(1, createNode(840)));
+        list.add(new CyclonEntry(1, createNode(37)));
+        list.add(new CyclonEntry(1, createNode(475)));
+        list.add(new CyclonEntry(1, createNode(659)));
+        list.add(new CyclonEntry(1, createNode(793)));
+        list.add(new CyclonEntry(1, createNode(864)));
+        list.add(new CyclonEntry(1, createNode(215)));
+        list.add(new CyclonEntry(1, createNode(561)));
+        list.add(new CyclonEntry(1, createNode(524)));
+        list.add(new CyclonEntry(1, createNode(532)));
+        list.add(new CyclonEntry(1, createNode(292)));
+        list.add(new CyclonEntry(1, createNode(967)));
+        return list;
+    }
 
     private static List<CyclonEntry> randomList1(){
         List<CyclonEntry> list = new ArrayList<CyclonEntry>();
@@ -94,7 +155,7 @@ public class CyclonSimpleTest {
         List<CyclonEntry> list = new ArrayList<CyclonEntry>();
         list.add(new CyclonEntry(3, createNode(3)));
         list.add(new CyclonEntry(5, createNode(4)));
-        list.add(new CyclonEntry(0, createNode(5)));
+        list.add(new CyclonEntry(0, createNode(555)));
         list.add(new CyclonEntry(2, createNode(8)));
         list.add(new CyclonEntry(1, createNode(9)));
         return list;

@@ -68,7 +68,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
             increaseAge();
 
-            Node q = selectOldest();
+            Node q = selectOldest(node);
 
             List<CyclonEntry> nodesToSend = selectNeighbors(l - 1, q.getID());
             nodesToSend.add(new CyclonEntry(0, node));
@@ -92,10 +92,11 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
             case Shuffle:
 
                 Node p = message.sender;
-                ;
+
                 received = message.list;
                 nodesToSend = selectNeighbors(l);
-                this.cache = merge(node, this.cache, clone(received), clone(nodesToSend));
+                //System.err.println("++++++ A ++++++");
+                this.cache = merge(node,p, this.cache, clone(received), clone(nodesToSend));
                 CyclonMessage out = new CyclonMessage(node, CyclonMessage.Type.ShuffleResponse, nodesToSend, received);
                 Transport tr = (Transport) node.getProtocol(tid);
                 tr.send(node, p, message, pid);
@@ -105,7 +106,8 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
                 received = message.list;
                 nodesToSend = message.temp;
-                this.cache = merge(node, this.cache, clone(received), clone(nodesToSend));
+                System.err.println("++++++ B ++++++");
+                this.cache = merge(node,message.sender, this.cache, clone(received), clone(nodesToSend));
 
                 break;
         }
@@ -158,24 +160,43 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         return new ArrayList<CyclonEntry>(list);
     }
 
-    public List<CyclonEntry> merge(Node self, List<CyclonEntry> cache, List<CyclonEntry> received, List<CyclonEntry> sent) {
+    public List<CyclonEntry> merge(Node self, Node sender, List<CyclonEntry> cache, List<CyclonEntry> received, List<CyclonEntry> sent) {
 
-        System.err.println("ME:" + self +
+        /*
+        System.err.println("me:" + self.getID() +
+                " sender:" + sender.getID() +
                 " rec:" + printList(received) +
                 " sen:" + printList(sent
         ));
 
         System.err.println("CACHE:" + cache);
+        */
 
+        // Discard entries pointing at P and entries already contained in P`s cache
+        received = delete(received, self);
+        received = discard(received, cache);
+
+        // Update P`s cache, to include all remaining entries, by firstly using empty cache slots (if any),
+        // and secondly replacing entries among the ones sent to Q
+        cache = discard(cache, sent);
+        sent = delete(sent, self); // clean
+
+        // because auf async we might have different entries in {sent} and {cache}...
+        sent = discard(sent, received);
+
+        /*
+        cache = delete(cache, self); // this should not be neccessary...
         received = delete(received, self);
         sent = delete(sent, self);
         received = discard(received, cache);
+        sent = discard(sent, received);
         cache = discard(cache, sent);
+        */
 
         int include = size - cache.size();
         if (include < received.size()) throw new Error("why?");
 
-        this.cache.addAll(received);
+        cache.addAll(received);
 
         Collections.sort(sent, new CyclonEntry());
 
@@ -239,12 +260,18 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         }
     }
 
-    public Node selectOldest() {
+    public Node selectOldest(Node self) {
         CyclonEntry oldest = new CyclonEntry(Integer.MIN_VALUE, null);
+        List<CyclonEntry> foundMyself = new ArrayList<CyclonEntry>();
         for (CyclonEntry e : this.cache) {
-            if (oldest.age <= e.age) {
+            if (e.n.getID() == self.getID()) {
+                foundMyself.add(e);
+            } else if (oldest.age <= e.age) {
                 oldest = e;
             }
+        }
+        for (CyclonEntry e : foundMyself) {
+            this.cache.remove(e);
         }
         return oldest.n;
     }
