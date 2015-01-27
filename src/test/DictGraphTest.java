@@ -33,6 +33,22 @@ public class DictGraphTest {
     }
 
     @Test
+    public void averagePathLength() {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+
+        double avg = g.averagePathLength();
+
+        System.out.println("AVG: " + avg);
+    }
+
+    @Test
     public void testAvgReachablePaths() throws Exception {
         DictGraph g = DictGraph.getSingleton(10);
         g.reset();
@@ -76,11 +92,11 @@ public class DictGraphTest {
         g.reset();
         Peer a = new Peer(0, new long[]{1, 2});
         Peer b = new Peer(1, new long[]{0, 2});
-        Peer c = new Peer(2, new long[]{1, 0,3});
-        Peer d = new Peer(3, new long[]{2,4});
-        Peer e = new Peer(4, new long[]{3,5});
-        Peer f = new Peer(5, new long[]{4,6});
-        Peer gq = new Peer(6, new long[]{5,7});
+        Peer c = new Peer(2, new long[]{1, 0, 3});
+        Peer d = new Peer(3, new long[]{2, 4});
+        Peer e = new Peer(4, new long[]{3, 5});
+        Peer f = new Peer(5, new long[]{4, 6});
+        Peer gq = new Peer(6, new long[]{5, 7});
         Peer h = new Peer(7, new long[]{6});
         g.add(a.node, a.rps);
         g.add(b.node, b.rps);
@@ -130,6 +146,46 @@ public class DictGraphTest {
     @Test
     public void testNeighbourhood() throws Exception {
 
+    }
+
+    @Test
+    public void dijkstraUndirected() throws Exception {
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+
+        Peer a = new Peer(0, new long[]{1});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0});
+
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+
+        Map<Long, Integer> dist = g.dijkstraUndirected(0);
+
+        System.out.println(dist);
+        assertEquals("{0=0, 1=1, 2=1}", dist.toString());
+    }
+
+    @Test
+    public void dijkstraUndirected2() throws Exception {
+
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+
+        Peer a = new Peer(0, new long[]{1});
+        Peer b = new Peer(1, new long[]{0});
+        Peer c = new Peer(2, new long[]{1, 0});
+
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+
+        Peer d = new Peer(3, new long[0]);
+        g.add(d.node, d.rps);
+
+        Map<Long, Integer> dist = g.dijkstraUndirected(0);
+        assertEquals("{0=0, 1=1, 2=1, 3=-1}", dist.toString());
     }
 
     @Test

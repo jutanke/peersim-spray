@@ -1,5 +1,6 @@
 package example.webrtc.data;
 
+import example.cyclon.CyclonEntry;
 import example.webrtc.PeerSamplingService;
 import example.webrtc.cyclon2.Cyclon;
 import peersim.core.Node;
@@ -62,7 +63,8 @@ public class DictGraph {
     }
 
     public AvgReachablePaths avgReachablePaths(long v) {
-        Map<Long, Integer> dist = dijkstra(nodes.get(v));
+        //Map<Long, Integer> dist = dijkstra(nodes.get(v));
+        Map<Long, Integer> dist = dijkstraUndirected(nodes.get(v).id);
 
         AvgReachablePaths result = new AvgReachablePaths();
 
@@ -83,7 +85,7 @@ public class DictGraph {
 
         result.count = reachable;
         result.total = this.nodes.size();
-        result.reachQuota = reachable / (double)result.total;
+        result.reachQuota = reachable / (double) result.total;
 
 
         return result;
@@ -131,9 +133,59 @@ public class DictGraph {
         public double maxReachQuota;
 
         @Override
-        public String toString(){
+        public String toString() {
             return "avg:" + avg + "| %:" + reachQuota + "| min%:" + minReachQuota + "| max%:" + maxReachQuota;
         }
+    }
+
+    public double averagePathLength() {
+
+        // id1_id2 : Distance between 1 and 2
+        Map<String, Integer> d = new HashMap<String, Integer>();
+
+        Map<Long, Map<Long, Integer>> lookup = new HashMap<Long, Map<Long, Integer>>();
+
+        for (DictNode e : this.nodes.values()) {
+            lookup.put(e.id, dijkstra(e));
+        }
+
+        for (DictNode a : this.nodes.values()) {
+            for (DictNode b : this.nodes.values()) {
+                String key = key(a.id, b.id);
+                if (a.id != b.id) {
+                    int d1 = lookup.get(a.id).get(b.id);
+                    int d2 = lookup.get(b.id).get(a.id);
+                    if (d1 == -1 && d2 == -1) d.put(key, 0);
+                    else if (d1 == -1) d.put(key, d2);
+                    else if (d2 == -1) d.put(key, d1);
+                    else d.put(key, Math.min(d1, d2));
+                } else {
+                    d.put(key, 0);
+                }
+            }
+        }
+
+        // =======================================
+
+        int n = this.nodes.size();
+
+        if (n > 1) {
+            int sum = 0;
+            for (int distance : d.values()) {
+                sum += distance;
+            }
+            return (2.0 / n * (n * 1.0)) * (double)sum;
+        }
+        return 0;
+    }
+
+    private String key(long id1, long id2) {
+        return Math.min(id1, id2) + "_" + Math.max(id1, id2);
+    }
+
+    @Override
+    public String toString() {
+        return this.nodes.toString();
     }
 
     /* =================================================================== *
@@ -229,6 +281,51 @@ public class DictGraph {
             }
         }
         return dist;
+    }
+
+
+    public Map<Long, Integer> dijkstraUndirected(final long source) {
+        dist.clear();
+        Q.clear();
+
+        final int INFINITY = -1;
+
+        dist.put(source, 0);
+
+        for (DictNode v : nodes.values()) {
+            if (v.id != source) {
+                dist.put(v.id, INFINITY);
+            }
+            Q.add(v);
+        }
+
+        while (Q.size() > 0) {
+            DictNode u = min(Q, dist);
+            if (u == null) break; // disconnected graph
+            Q.remove(u);
+            for (long v : neighbors(u.id)) {
+                int alt = dist.get(u.id) + 1;
+                if (dist.get(v) == INFINITY || alt < dist.get(v)) {
+                    dist.put(v, alt);
+                }
+            }
+        }
+
+        return dist;
+    }
+
+    private HashSet<Long> neighbors(final long id) {
+        final HashSet<Long> result = new HashSet<Long>(this.nodes.get(id).neighbors);
+        for (DictNode e : this.nodes.values()) {
+            if (e.id != id && !result.contains(e.id)) {
+                for (long n : e.neighbors) {
+                    if (n == id) {
+                        result.add(e.id);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private DictNode min(LinkedList<DictNode> Q, Map<Long, Integer> dist) {

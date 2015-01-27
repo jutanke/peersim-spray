@@ -1,5 +1,5 @@
 # network size
-SIZE 1000
+SIZE 450
 DEGREE 20
 
 # parameters of periodic execution
@@ -54,6 +54,18 @@ init.rndlink.protocol lnk
 init.sch CDScheduler
 init.sch.protocol lnk
 init.sch.randstart
+
+##### Controls #####
+# Adds one node each cycle in the simulation up to 1000 nodes in total.
+
+control.dynadd DynamicNetwork
+control.dynadd.add 20
+control.dynadd.maxsize 500
+#control.dynadd.init.rand RandNI
+control.dynadd.init.rand.protocol lnk
+#control.dynadd.init.rand.k 1
+control.dynadd.step CYCLE
+control.dynadd.init.loci example.cyclon.CyclonInitializer
 
 control.0 example.PeerSamplingServiceObserver
 control.0.protocol lnk

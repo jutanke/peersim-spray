@@ -42,7 +42,7 @@ public class CyclonSimpleTest {
 
         List<CyclonEntry> result = cyclon.merge(me,HelperForTest.createNode(939), cache, received, sent);
 
-        assertEquals("[1,5,6,12,91,13,86,87,88,9]", print(result));
+        assertEquals("[1,5,6,12,91,13,88,86,87,9]", print(result));
 
     }
 

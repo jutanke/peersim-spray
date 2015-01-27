@@ -68,7 +68,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
             increaseAge();
 
-            Node q = selectOldest(node);
+            Node q = selectOldest();
 
             List<CyclonEntry> nodesToSend = selectNeighbors(l - 1, q.getID());
             nodesToSend.add(new CyclonEntry(0, node));
@@ -135,7 +135,11 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
     @Override
     public boolean addNeighbor(Node neighbour) {
         if (contains(neighbour)) return false;
-        if (cache.size() >= size) return false;
+        if (cache.size() >= size) {
+            Node oldest = selectOldest();
+            System.err.println("kick out " + oldest.getID() + " to make space for " + neighbour.getID());
+            this.cache.remove(oldest);
+        }
         CyclonEntry e = new CyclonEntry(0, neighbour);
         cache.add(e);
         return true;
@@ -195,15 +199,6 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
     public List<CyclonEntry> merge(Node self, Node sender, List<CyclonEntry> cache, List<CyclonEntry> received, List<CyclonEntry> sent) {
 
-        /*
-        System.err.println("me:" + self.getID() +
-                " sender:" + sender.getID() +
-                " rec:" + printList(received) +
-                " sen:" + printList(sent
-        ));
-
-        System.err.println("CACHE:" + cache);
-        */
 
         // Discard entries pointing at P and entries already contained in P`s cache
         received = delete(received, self);
@@ -216,19 +211,6 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
         // because auf async we might have different entries in {sent} and {cache}...
         sent = discard(sent, received);
-
-        /*
-        cache = delete(cache, self); // this should not be neccessary...
-        received = delete(received, self);
-        sent = delete(sent, self);
-        received = discard(received, cache);
-        sent = discard(sent, received);
-        cache = discard(cache, sent);
-        */
-
-        //int include = size - cache.size();
-        //if (include < received.size()) throw new Error("why?" + size + " > " + cache.size() + " > " + include);
-        //cache.addAll(received);
 
         Collections.sort(received, new CyclonEntry());
 
@@ -299,19 +281,19 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         }
     }
 
-    public Node selectOldest(Node self) {
+    public Node selectOldest(/*Node self*/) {
         CyclonEntry oldest = new CyclonEntry(Integer.MIN_VALUE, null);
-        List<CyclonEntry> foundMyself = new ArrayList<CyclonEntry>();
+        //List<CyclonEntry> foundMyself = new ArrayList<CyclonEntry>();
         for (CyclonEntry e : this.cache) {
-            if (e.n.getID() == self.getID()) {
-                foundMyself.add(e);
-            } else if (oldest.age <= e.age) {
+            //if (e.n.getID() == self.getID()) {
+            //    foundMyself.add(e);
+            /*} else*/ if (oldest.age <= e.age) {
                 oldest = e;
             }
         }
-        for (CyclonEntry e : foundMyself) {
-            this.cache.remove(e);
-        }
+        //for (CyclonEntry e : foundMyself) {
+        //    this.cache.remove(e);
+        //}
         return oldest.n;
     }
 
