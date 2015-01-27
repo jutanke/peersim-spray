@@ -117,6 +117,54 @@ public class DictGraphTest {
     @Test
     public void testLocalClusterCoefficient() throws Exception {
 
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0, 3});
+        Peer d = new Peer(3, new long[]{2, 4});
+        Peer e = new Peer(4, new long[]{3, 5});
+        Peer f = new Peer(5, new long[]{4, 6, 0});
+        Peer gq = new Peer(6, new long[]{5, 7});
+        Peer h = new Peer(7, new long[]{6});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        g.add(e.node, e.rps);
+        g.add(f.node, f.rps);
+        g.add(h.node, h.rps);
+        g.add(gq.node, gq.rps);
+        double cl = g.localClusterCoefficient(0);
+        assertEquals(1.0/3, cl, DELTA_FLOAT);
+    }
+
+    @Test
+    public void testLocalClusterCoefficient2() throws Exception {
+
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer b = new Peer(1, new long[]{2, 5});
+        Peer c = new Peer(2, new long[]{5, 3});
+        Peer d = new Peer(3, new long[]{4});
+        Peer e = new Peer(4, new long[]{5,6,3});
+        Peer f = new Peer(5, new long[]{4,1});
+        Peer h = new Peer(6, new long[]{});
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        g.add(e.node, e.rps);
+        g.add(f.node, f.rps);
+        g.add(h.node, h.rps);
+        assertEquals(1.0, g.localClusterCoefficient(1), DELTA_FLOAT);
+        assertEquals(1.0/3, g.localClusterCoefficient(2), DELTA_FLOAT);
+        assertEquals(0, g.localClusterCoefficient(3), DELTA_FLOAT);
+        assertEquals(0, g.localClusterCoefficient(4), DELTA_FLOAT);
+        assertEquals(1.0/3, g.localClusterCoefficient(5), DELTA_FLOAT);
+        assertEquals(0, g.localClusterCoefficient(6), DELTA_FLOAT);
+
+        //System.out.println("1/3: " + g.meanClusterCoefficient());
+
     }
 
     @Test

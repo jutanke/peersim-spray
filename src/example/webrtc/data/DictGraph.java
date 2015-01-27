@@ -188,27 +188,46 @@ public class DictGraph {
         return this.nodes.toString();
     }
 
+    public double meanClusterCoefficient() {
+        double sum = 0;
+        for (DictNode e : this.nodes.values()) {
+            sum += localClusterCoefficient(e);
+        }
+        return sum / this.nodes.size();
+    }
+
     /* =================================================================== *
      * PRIVATE
      * =================================================================== */
 
 
+    public double localClusterCoefficient(long id){
+        return localClusterCoefficient(nodes.get(id));
+    }
+
     public double localClusterCoefficient(DictNode v) {
-        List<DictNode> N = neighbourhood(v);
+        //List<DictNode> N = neighbourhood(v);
+        HashSet<Long> N = neighbors(v.id);
         if (N.size() == 0) return 0;
         double possible = N.size() * (N.size() - 1);
         if (possible == 0) return 0;
         double actual = 0;
-        for (DictNode a : N) {
-            for (DictNode b : N) {
-                if (a.id != b.id) {
-                    if (areInterconnected(a.id, b.id)) {
+        for (long a : N) {
+            for (long b : N) {
+                if (a != b) {
+                    if (areUndirectlyConnected(a, b)) {
                         actual += 1;
                     }
                 }
             }
         }
         return actual / possible;
+    }
+
+    private boolean areUndirectlyConnected(long a, long b) {
+        DictNode aNode = nodes.get(a);
+        DictNode bNode = nodes.get(b);
+        return in(a, bNode.neighbors) || in(b, aNode.neighbors);
     }
 
     private boolean areInterconnected(long a, long b) {
@@ -225,7 +244,8 @@ public class DictGraph {
      */
     public List<DictNode> neighbourhood(DictNode v) {
         this.neighbourhood.clear();
-        for (long n : v.neighbors) {
+        //for (long n : v.neighbors) {
+        for (long n : neighbors(v.id)) {
             if (hasDirectedConnection(n, v.id)) {
                 this.neighbourhood.add(this.nodes.get(n));
             }
