@@ -11,7 +11,9 @@ public class CyclonMessage {
 
     public enum Type {
         Shuffle,
-        ShuffleResponse
+        ShuffleResponse,
+        Offer,
+        Answer
     }
 
     public Type type;

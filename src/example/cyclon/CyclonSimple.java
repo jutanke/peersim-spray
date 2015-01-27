@@ -16,17 +16,17 @@ import java.util.*;
  */
 public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSamplingService {
 
-    private static final String PAR_CACHE = "cache";
-    private static final String PAR_L = "l";
-    private static final String PAR_TRANSPORT = "transport";
+    protected static final String PAR_CACHE = "cache";
+    protected static final String PAR_L = "l";
+    protected static final String PAR_TRANSPORT = "transport";
 
     // ======================================================================
     // P R O P E R T I E S
     // ======================================================================
 
-    private final int size;
-    private final int l;
-    private final int tid;
+    protected final int size;
+    protected final int l;
+    protected final int tid;
 
     private List<CyclonEntry> cache = null;
 
@@ -177,7 +177,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
      * @param list
      * @param temp
      */
-    private boolean send(Node sender,
+    protected boolean send(Node sender,
                          Node receiver,
                          CyclonMessage.Type type,
                          List<CyclonEntry> list,
@@ -193,7 +193,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         return false;
     }
 
-    private List<CyclonEntry> clone(List<CyclonEntry> list) {
+    protected List<CyclonEntry> clone(List<CyclonEntry> list) {
         return new ArrayList<CyclonEntry>(list);
     }
 
@@ -227,7 +227,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         return cache;
     }
 
-    private String printList(Collection<CyclonEntry> list) {
+    protected String printList(Collection<CyclonEntry> list) {
         StringBuilder sb = new StringBuilder();
         for (CyclonEntry e : list) {
             sb.append(e);
