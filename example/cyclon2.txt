@@ -1,5 +1,5 @@
 # network size
-SIZE 10
+SIZE 1000
 DEGREE 40
 
 # parameters of periodic execution
@@ -43,7 +43,7 @@ protocol.tr.drop DROP
 # Init each peer in lnk with K neighbours
 
 init.rndlink WireKOut
-init.rndlink.k 20
+init.rndlink.k 2
 init.rndlink.protocol lnk
 
 #init.vals LinearDistribution
@@ -59,7 +59,7 @@ init.sch.randstart
 # Adds one node each cycle in the simulation up to 1000 nodes in total.
 
 control.dynadd DynamicNetwork
-control.dynadd.add 20
+control.dynadd.add 1000
 control.dynadd.maxsize 1000
 #control.dynadd.init.rand RandNI
 control.dynadd.init.rand.protocol lnk

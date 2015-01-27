@@ -73,14 +73,10 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
             List<CyclonEntry> nodesToSend = selectNeighbors(l - 1, q.getID());
             nodesToSend.add(new CyclonEntry(0, node));
 
+            //System.err.println("SHUFFLE " + node.getID() + " TO " + q.getID() + " with " + nodesToSend);
+
             send(node, q, CyclonMessage.Type.Shuffle, nodesToSend, null, protocolID);
 
-
-            /*
-            CyclonMessage message = new CyclonMessage(node, CyclonMessage.Type.Shuffle, nodesToSend, null);
-            Transport tr = (Transport) node.getProtocol(tid);
-            tr.send(node, q, message, protocolID);
-            */
         }
 
     }
@@ -105,11 +101,6 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
                 send(node, p, CyclonMessage.Type.ShuffleResponse, nodesToSend, received, pid);
 
-                /*
-                CyclonMessage out = new CyclonMessage(node, CyclonMessage.Type.ShuffleResponse, nodesToSend, received);
-                Transport tr = (Transport) node.getProtocol(tid);
-                tr.send(node, p, message, pid);
-                */
                 break;
             case ShuffleResponse:
 
@@ -200,6 +191,8 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
     public List<CyclonEntry> merge(Node self, Node sender, List<CyclonEntry> cache, List<CyclonEntry> received, List<CyclonEntry> sent) {
 
+        System.err.println("MERGE BEF @" + self.getID() +  " from " + sender.getID() +
+            "c:" + cache + " - r:" + received + " - s:" + sent) ;
 
         // Discard entries pointing at P and entries already contained in P`s cache
         received = delete(received, self);
@@ -215,10 +208,13 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
         Collections.sort(received, new CyclonEntry());
 
+        System.err.println("MERGE AFT @" + self.getID() +  " from " + sender.getID() +
+                "c:" + cache + " - r:" + received + " - s:" + sent) ;
+
         int include = Math.min(size - cache.size(), received.size());
         for (int i = 0; i < include; i++){
-            //cache.add(received.get(i));
-            attemptToInsert(received.get(i), self, sender);
+            cache.add(received.get(i));
+            //attemptToInsert(received.get(i), self, sender);
         }
 
         Collections.sort(sent, new CyclonEntry());
@@ -226,12 +222,10 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         while (cache.size() < size && sent.size() > 0) {
             cache.add(popSmallest(sent));
         }
+
+        System.err.println("MERGE RES @" + self.getID() + " result:" + cache);
+
         return cache;
-    }
-
-
-    protected void attemptToInsert(CyclonEntry e, Node me, Node sender) {
-        cache.add(e);
     }
 
     protected String printList(Collection<CyclonEntry> list) {
@@ -310,14 +304,16 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
     public List<CyclonEntry> selectNeighbors(int l, long oldestNode) {
         List<CyclonEntry> result = new ArrayList<CyclonEntry>();
-        int dim = Math.min(l, cache.size() - 1);
-        List<CyclonEntry> shallowCopy = new ArrayList<CyclonEntry>(this.cache);
-        int i = 0;
-        while (i < dim && shallowCopy.size() > 0) {
-            CyclonEntry ce = cache.remove(CommonState.r.nextInt(cache.size() - 1));
-            if (ce.n.getID() != oldestNode) {
-                result.add(ce);
-                i += 1;
+        if (this.cache.size() > 0) {
+            int dim = Math.min(l, cache.size() - 1);
+            List<CyclonEntry> shallowCopy = new ArrayList<CyclonEntry>(this.cache);
+            int i = 0;
+            while (i < dim && shallowCopy.size() > 0) {
+                CyclonEntry ce = cache.remove(CommonState.r.nextInt(this.cache.size() - 1));
+                if (ce.n.getID() != oldestNode) {
+                    result.add(ce);
+                    i += 1;
+                }
             }
         }
         return result;

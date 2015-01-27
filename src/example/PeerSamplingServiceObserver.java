@@ -60,15 +60,17 @@ public class PeerSamplingServiceObserver implements Control {
 
         //System.err.println(observer);
 
-        DictGraph.MeanPathLength mean = observer.meanPathLength();
-        System.out.println(mean.avg);
+        //DictGraph.MeanPathLength mean = observer.meanPathLength();
+        //System.out.println(mean.avg);
+
         System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
         //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
 
-        //System.err.println("avg: " + observer.avgReachablePaths(0));
+        System.err.println("avg: " + observer.avgReachablePaths(0));
+        //System.err.println(observer);
 
-        System.out.println(observer.meanClusterCoefficient());
+        //System.out.println(observer.meanClusterCoefficient());
 
         //System.err.println("observer " + mean);
         //System.err.println("observer avg-path-len:" + observer.averagePathLength());
