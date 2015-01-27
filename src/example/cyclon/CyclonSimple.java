@@ -28,7 +28,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
     protected final int l;
     protected final int tid;
 
-    private List<CyclonEntry> cache = null;
+    protected List<CyclonEntry> cache = null;
 
     public CyclonSimple(int size, int l){
         this.size = size;
@@ -138,7 +138,8 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
         if (cache.size() >= size) {
             Node oldest = selectOldest();
             System.err.println("kick out " + oldest.getID() + " to make space for " + neighbour.getID());
-            this.cache.remove(oldest);
+            //this.cache.remove(oldest);
+            this.cache = delete(this.cache, oldest);
         }
         CyclonEntry e = new CyclonEntry(0, neighbour);
         cache.add(e);
@@ -216,7 +217,8 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
         int include = Math.min(size - cache.size(), received.size());
         for (int i = 0; i < include; i++){
-            cache.add(received.get(i));
+            //cache.add(received.get(i));
+            attemptToInsert(received.get(i), self, sender);
         }
 
         Collections.sort(sent, new CyclonEntry());
@@ -225,6 +227,11 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
             cache.add(popSmallest(sent));
         }
         return cache;
+    }
+
+
+    protected void attemptToInsert(CyclonEntry e, Node me, Node sender) {
+        cache.add(e);
     }
 
     protected String printList(Collection<CyclonEntry> list) {

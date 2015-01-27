@@ -12,12 +12,18 @@ public class CyclonMessage {
     public enum Type {
         Shuffle,
         ShuffleResponse,
-        Offer,
-        Answer
+        RequestOffer,
+        RequestAnswer,
+        GiveAnswer,
+        DeliverAnswer,
+        Connected,
+        CouldNotLink
     }
 
     public Type type;
     public Node sender;
+    public CyclonEntry offerNode;
+    public CyclonEntry answerNode;
     public List<CyclonEntry> list;
     public List<CyclonEntry> temp;
 
@@ -26,6 +32,13 @@ public class CyclonMessage {
         this.sender = n;
         this.list = list;
         this.temp = temp;
+    }
+
+    public CyclonMessage(Node n, Type t, CyclonEntry offer, CyclonEntry answer) {
+        this.type = t;
+        this.sender = n;
+        this.offerNode = offer;
+        this.answerNode = answer;
     }
 
 }
