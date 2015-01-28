@@ -22,7 +22,7 @@ public class CyclonMessage {
 
     public Type type;
     public Node sender;
-    public CyclonEntry offerNode;
+    public Node offerNode;
     public CyclonEntry answerNode;
     public List<CyclonEntry> list;
     public List<CyclonEntry> temp;
@@ -34,7 +34,7 @@ public class CyclonMessage {
         this.temp = temp;
     }
 
-    public CyclonMessage(Node n, Type t, CyclonEntry offer, CyclonEntry answer) {
+    public CyclonMessage(Node n, Type t, Node offer, CyclonEntry answer) {
         this.type = t;
         this.sender = n;
         this.offerNode = offer;

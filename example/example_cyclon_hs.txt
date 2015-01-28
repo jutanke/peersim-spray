@@ -23,7 +23,7 @@ network.node GeneralNode
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.lnk example.cyclon.CyclonSimple
+protocol.lnk example.cyclon.CyclonHandshake
 protocol.lnk.cache DEGREE
 protocol.lnk.l 5
 protocol.lnk.step CYCLE

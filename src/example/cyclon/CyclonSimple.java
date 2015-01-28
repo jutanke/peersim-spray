@@ -107,7 +107,12 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
                 received = message.list;
                 nodesToSend = message.temp;
                 //System.err.println("++++++ B ++++++");
-                this.cache = merge(node,message.sender, this.cache, clone(received), clone(nodesToSend));
+                this.cache = merge(
+                        node,
+                        message.sender,
+                        this.cache,
+                        clone(received),
+                        clone(nodesToSend));
 
                 break;
         }
@@ -191,9 +196,6 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
     public List<CyclonEntry> merge(Node self, Node sender, List<CyclonEntry> cache, List<CyclonEntry> received, List<CyclonEntry> sent) {
 
-        System.err.println("MERGE BEF @" + self.getID() +  " from " + sender.getID() +
-            "c:" + cache + " - r:" + received + " - s:" + sent) ;
-
         // Discard entries pointing at P and entries already contained in P`s cache
         received = delete(received, self);
         received = discard(received, cache);
@@ -208,9 +210,6 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
 
         Collections.sort(received, new CyclonEntry());
 
-        System.err.println("MERGE AFT @" + self.getID() +  " from " + sender.getID() +
-                "c:" + cache + " - r:" + received + " - s:" + sent) ;
-
         int include = Math.min(size - cache.size(), received.size());
         for (int i = 0; i < include; i++){
             cache.add(received.get(i));
@@ -223,7 +222,6 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
             cache.add(popSmallest(sent));
         }
 
-        System.err.println("MERGE RES @" + self.getID() + " result:" + cache);
 
         return cache;
     }
@@ -303,13 +301,19 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSampl
     }
 
     public List<CyclonEntry> selectNeighbors(int l, long oldestNode) {
+
         List<CyclonEntry> result = new ArrayList<CyclonEntry>();
         if (this.cache.size() > 0) {
             int dim = Math.min(l, cache.size() - 1);
             List<CyclonEntry> shallowCopy = new ArrayList<CyclonEntry>(this.cache);
             int i = 0;
             while (i < dim && shallowCopy.size() > 0) {
-                CyclonEntry ce = cache.remove(CommonState.r.nextInt(this.cache.size() - 1));
+                CyclonEntry ce;
+                if (shallowCopy.size() == 1) {
+                    ce = shallowCopy.remove(0);
+                } else {
+                    ce = shallowCopy.remove(CommonState.r.nextInt(shallowCopy.size() - 1));
+                }
                 if (ce.n.getID() != oldestNode) {
                     result.add(ce);
                     i += 1;

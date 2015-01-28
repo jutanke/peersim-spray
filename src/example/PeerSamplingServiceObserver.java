@@ -67,7 +67,15 @@ public class PeerSamplingServiceObserver implements Control {
 
         //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
 
-        System.err.println("avg: " + observer.avgReachablePaths(0));
+        double cluster = observer.meanClusterCoefficient();
+        System.err.println("mean cluster:" + cluster);
+
+        System.out.println(cluster);
+
+        //System.err.println("avg: " + avg);
+
+        //System.out.println(avg.avg);
+
         //System.err.println(observer);
 
         //System.out.println(observer.meanClusterCoefficient());
