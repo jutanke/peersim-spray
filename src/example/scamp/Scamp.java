@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2003-2005 The BISON Project
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
 package example.scamp;
 
 import peersim.cdsim.CDProtocol;
@@ -8,6 +25,7 @@ import peersim.core.Network;
 import peersim.core.Node;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,47 +36,40 @@ import java.util.List;
 public class Scamp implements CDProtocol, Linkable {
 
     // =================== static fields ==================================
-    // ====================================================================
+// ====================================================================
 
 
     /**
      * Parameter "c" of Scamp . Defaults to 0.
-     *
      * @config
      */
     private static final String PAR_C = "c";
 
     /**
      * Time-to-live for indirection. Defaults to -1.
-     *
      * @config
      */
     private static final String PAR_INDIRTTL = "indirectionTTL";
 
     /**
      * Lease timeout. If negative, there is no lease mechanism. Defaults to -1.
-     *
      * @config
      */
     private static final String PAR_LEASE = "leaseTimeout";
 
-    /**
-     * c
-     */
+    /** c */
     private static int c;
 
-    /**
-     * indirection TTL
-     */
+    /** indirection TTL */
     private static int indirTTL;
 
-    /**
-     * lease timeout
-     */
+    /** lease timeout */
     private static int leaseTimeout;
 
-    // =================== fields =========================================
-    // ====================================================================
+
+// =================== fields =========================================
+// ====================================================================
+
 
     /** contains Nodes */
     private ArrayList<Node> outView = null;
@@ -86,13 +97,14 @@ public class Scamp implements CDProtocol, Linkable {
      */
     private int birthDate;
 
-    // ===================== initialization ================================
-    // =====================================================================
+
+// ===================== initialization ================================
+// =====================================================================
 
 
     public Scamp(String n) {
 
-        Scamp.c = Configuration.getInt(n + "." + PAR_C, 0);
+        Scamp.c = Configuration.getInt(n+"."+PAR_C,0);
         Scamp.indirTTL = Configuration.getInt(n+"."+PAR_INDIRTTL,-1);
         Scamp.leaseTimeout = Configuration.getInt(n+"."+PAR_LEASE,-1);
         outView = new ArrayList<Node>();
@@ -126,52 +138,376 @@ public class Scamp implements CDProtocol, Linkable {
         return scamp;
     }
 
-    // ====================== The core Scamp protocols =======================
-    // =======================================================================
+
+// ====================== The core Scamp protocols =======================
+// =======================================================================
 
 
-    // ====================== Linkable implementation =====================
-    // ====================================================================
+    /**
+     * Performs the forwarding cycle. Applies a little simplification compared
+     * to the original SCAMP protocol. To avoid infinite cycles, instead of
+     * counters in each node, we allow only a limited number of steps, ie
+     * we introduce a TTL instead. It consumes less memory and easier to implement.
+     * @param n the node which receives the given subscription
+     * @param s the subscribing node
+     */
+    private static void doSubscribe( Node n, Node s, int protocolID ) {
 
-    @Override
-    public int degree() {
-        return 0;
+        boolean added = false;
+        int i=0;
+
+        for(; n.isUp() && !added && i<2*Network.size(); ++i)
+        {
+            Scamp scamp = (Scamp)n.getProtocol(protocolID);
+
+            if( CDState.r.nextDouble() < 1.0/(1.0+scamp.degree()) &&
+                    !scamp.contains(s) )
+            {
+                scamp.addNeighbor(s);
+                ((Scamp)s.getProtocol(protocolID)).addInNeighbor(n);
+                added = true;
+            }
+            else
+            {
+                if( scamp.degree() > 0 )
+                    n=scamp.getNeighbor(
+                            CDState.r.nextInt(scamp.degree()));
+                else break;
+            }
+        }
+
+        if( !added )
+            System.err.println("SCAMP: subscription not succesful! ("+
+                    Network.size()+","+i+","+n.isUp()+")");
     }
 
-    @Override
+// ----------------------------------------------------------------------
+
+    /**
+     * Performs the indirection (a random walk) to get a random element from the
+     * network. If the random walk gets stuck because of a node which is down,
+     * the node which is down is returned. This models the fact that in the real
+     * protocol in fact nothing is returned.
+     */
+    private static Node getRandomNode( Node n, int protocolID ) {
+
+        double ttl=indirTTL;
+        Scamp l = (Scamp)n.getProtocol(protocolID);
+        ttl -= 1.0/l.degree();
+
+        while( n.isUp() && ttl > 0.0 )
+        {
+            if( l.degree() + l.inView.size() > 0 )
+            {
+                int id = CDState.r.nextInt(
+                        l.degree()+l.inView.size() );
+                if( id<l.degree() ) n = l.getNeighbor(id);
+                else n = l.inView.get(id-l.degree());
+            }
+            else break;
+
+            l = (Scamp)n.getProtocol(protocolID);
+            ttl -= 1.0/l.degree();
+        }
+
+        if( ttl > 0.0 ) System.err.println(
+                "Scamp: getRandomNode returned with ttl="+ttl);
+        return n;
+    }
+
+// ----------------------------------------------------------------------
+
+    /**
+     * This node will act as a contact node forwarding the subscription to nodes
+     * from its view and c other random nodes.
+     * @param n the contact node
+     * @param s the subscribing node
+     */
+    public static void subscribe( Node n, Node s, int protocolID ) {
+
+        if( indirTTL > 0.0 ) n = getRandomNode(n, protocolID);
+
+        if( !n.isUp() ) return; // quietly returning, no feedback
+
+        Scamp contact = (Scamp)n.getProtocol(protocolID);
+        ((Linkable)s.getProtocol(protocolID)).addNeighbor(n);
+
+        //I guess this is needed
+        contact.addInNeighbor(s);
+
+        if( contact.degree() == 0 )
+        {
+            System.err.println("SCAMP: zero degree contact node!");
+            // I guess this is a good idea
+            Scamp.doSubscribe( n, s, protocolID );
+            return;
+        }
+
+        for(int i=0; i<contact.outView.size(); ++i)
+        {
+            Scamp.doSubscribe( contact.outView.get(i),s,protocolID );
+        }
+
+        for(int i=0; i<Scamp.c; ++i)
+        {
+            Scamp.doSubscribe( contact.outView.get(
+                            CDState.r.nextInt(contact.degree())),
+                    s, protocolID);
+        }
+    }
+
+// ----------------------------------------------------------------------
+
+    /**
+     * Replace n1 with n2 in the partial view. Helper method to unsubscribe.
+     * This is done taking care of
+     * the consistency of the data structure and dates. If n1 is not known,
+     * prints a warning and exits doing nothing.
+     * @param n1 the node to replace
+     * @param n2 the new node. If null, n1 is simply removed.
+     * @param date the insertion date of n2, or null if lease is not in effect
+     */
+// XXX could be optimized if turned out to be a performance problem
+    private void replace(Node n1, Node n2, Integer date) {
+
+        int id = outView.indexOf(n1);
+
+        if( id < 0 )
+        {
+            System.err.println("Scamp.replace: node is not known");
+            return;
+        }
+
+        // removing n1
+        outView.remove(id);
+        if( outViewDates != null ) outViewDates.remove(id);
+
+        // inserting n2
+        if( n2 != null )
+        {
+            if( (date != null && outViewDates == null) ||
+                    (date == null && outViewDates != null) )
+                throw new IllegalStateException(
+                        "is lease active or not?");
+
+            int ins = outView.size();
+            if( outViewDates != null )
+            {
+                ins = Collections.binarySearch(outViewDates, date);
+                if( ins < 0 ) ins = -(ins+1);
+                outViewDates.add(ins,date);
+            }
+            outView.add(ins,n2);
+        }
+    }
+
+
+// ----------------------------------------------------------------------
+
+    /**
+     * Run the unsubscribe protocol for the given node.
+     * @param n not to unsubscribe
+     */
+    public static void unsubscribe( Node n, int protocolID ) {
+
+        Scamp sn = (Scamp)n.getProtocol(protocolID);
+        final int l = sn.degree();
+        final int ll = sn.inView.size();
+        int i=0;
+
+        // replace ll-(c+1) links to sn
+        if( l > 0 )
+            for(; i<ll-c-1; ++i)
+            {
+                Node from = sn.inView.get(i);
+                if( from.isUp() )
+                    ((Scamp)from.getProtocol(protocolID)).replace(
+                            n,
+                            sn.getNeighbor(i%l),
+                            (sn.outViewDates == null ? null
+                                    : (Integer)sn.outViewDates.get(i%l)));
+            }
+
+        // remove the remaining c+1 links to sn
+        for(; i<ll; ++i)
+        {
+            Node from = sn.inView.get(i);
+            if( from.isUp() )
+                ((Scamp)from.getProtocol(protocolID)).replace(
+                        n, null, null );
+        }
+    }
+
+// ----------------------------------------------------------------------
+
+    /**
+     * Convenience function for adding an element to the inView, taking care of
+     * the dates too.
+     */
+    private boolean addInNeighbor(Node node) {
+
+        if( !inView.contains(node) )
+        {
+            inView.add( node );
+            if( inViewDates != null )
+                inViewDates.add(CDState.getCycleObj());
+            return true;
+        }
+        else
+        {
+            if( inViewDates != null )
+            {
+                // we have to change the date of node
+                int id = inView.indexOf(node);
+                inView.remove(id);
+                inViewDates.remove(id);
+                inViewDates.add(CDState.getCycleObj());
+                inView.add( node );
+            }
+            return false; // false's ok though dates might've been changed
+        }
+    }
+
+// ====================== Linkable implementation =====================
+// ====================================================================
+
+
     public Node getNeighbor(int i) {
-        return null;
+
+        return outView.get(i);
     }
 
-    @Override
-    public boolean addNeighbor(Node neighbour) {
-        return false;
+// --------------------------------------------------------------------
+
+    public int degree() {
+
+        return outView.size();
     }
 
-    @Override
-    public boolean contains(Node neighbor) {
-        return false;
+// --------------------------------------------------------------------
+
+    public boolean addNeighbor(Node node) {
+
+        if( !contains(node) )
+        {
+            outView.add( node );
+            if( outViewDates != null )
+                outViewDates.add(CDState.getCycleObj());
+            return true;
+        }
+        else
+        {
+            if( outViewDates != null )
+            {
+                // we have to change the date of node
+                int id = outView.indexOf(node);
+                outView.remove(id);
+                outViewDates.remove(id);
+                outViewDates.add(CDState.getCycleObj());
+                outView.add( node );
+            }
+            return false; // false's ok though dates might've been changed
+        }
     }
 
-    @Override
-    public void pack() {
+// --------------------------------------------------------------------
 
+    public void pack() {}
+
+// --------------------------------------------------------------------
+
+    public boolean contains(Node node) {
+
+        return outView.contains(node);
     }
 
-    @Override
+// --------------------------------------------------------------------
+
     public void onKill() {
 
+        inView=null;
+        inViewDates=null;
+        outView=null;
+        outViewDates=null;
     }
 
-    // ===================== CDProtocol implementations ===================
-    // ====================================================================
 
-    @Override
-    public void nextCycle(Node node, int protocolID) {
+// ===================== CDProtocol implementations ===================
+// ====================================================================
 
+    public void nextCycle( Node thisNode, int protocolID ){
+
+        // heartbeat
+        // for now not implemented, does not seem to be important
+
+        // lease (re-subscription)
+        if( outViewDates != null )
+        {
+            if((CDState.getCycle()-birthDate)%Scamp.leaseTimeout == 0 &&
+                    degree() > 0 && CDState.getCycle() > birthDate )
+            {
+                Scamp.subscribe(
+                        getNeighbor(CDState.r.nextInt(degree())),
+                        thisNode,
+                        protocolID );
+            }
+
+            // remove expired items from _our own_ views.
+            // entries are always ordered in increasing time. We remove
+            // the first i elements which are expired from both views
+            int i=0;
+            while( i<degree() && CDState.getCycle() -
+                    outViewDates.get(i) >= Scamp.leaseTimeout ) ++i;
+            if( i > 0 )
+            {
+                outView.subList(0,i).clear();
+                outViewDates.subList(0,i).clear();
+            }
+            i = 0;
+            while( i<inView.size() && CDState.getCycle() -
+                    inViewDates.get(i) >=	Scamp.leaseTimeout ) ++i;
+            if( i > 0 )
+            {
+                inView.subList(0,i).clear();
+                inViewDates.subList(0,i).clear();
+            }
+        }
+/*
+	// XXX this implementation does not use dates at all, so we don't
+	// update them properly for inViews. If this implementation becomes
+	// the winner, it has to be fixed.
+	if( outViewDates != null )
+	{
+		if((CDState.getCycle()-birthDate)%Scamp.leaseTimeout == 0 &&
+			degree() > 0 && CDState.getCycle() > birthDate )
+		{
+			Scamp.subscribe(
+				getNeighbor(CDState.r.nextInt(degree())),
+				thisNode,
+				protocolID );
+
+			// remove our items from _others_ views
+			for( int i=0; i<degree(); ++i )
+			{
+				Scamp outsc = (Scamp)
+				  getNeighbor(i).getProtocol(protocolID);
+				int id = outsc.inView.indexOf(thisNode);
+				if( id >= 0 ) // should always be
+				{
+					outsc.inView.remove(id);
+				}
+			}
+			for( int i=0; i<inView.size(); ++i )
+			{
+				Scamp insc = (Scamp)
+				  ((Node)inView.get(i)).getProtocol(protocolID);
+				insc.replace(thisNode,null,null);
+			}
+		}
+	}*/
     }
 
-    // ===================== Other ========================================
+// ===================== Other ========================================
 // ====================================================================
 
     /** Method to check the consistency of the state of the network */
@@ -186,7 +522,7 @@ public class Scamp implements CDProtocol, Linkable {
 
         if( Scamp.leaseTimeout >= 0 ) corruptInDates=corruptDates = 0 ;
 
-        for(int i=0; i< Network.size(); ++i)
+        for(int i=0; i<Network.size(); ++i)
         {
             Node curr = Network.get(i);
             Scamp currsc = (Scamp)(curr.getProtocol(protocolID));
@@ -266,4 +602,5 @@ public class Scamp implements CDProtocol, Linkable {
                 " corruptDates="+corruptDates+
                 " corruptInDates="+corruptInDates);
     }
+
 }
