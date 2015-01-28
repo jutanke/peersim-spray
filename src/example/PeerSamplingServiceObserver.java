@@ -65,6 +65,11 @@ public class PeerSamplingServiceObserver implements Control {
 
         System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
+        if (step == 999) {
+            System.out.println("============== Super END ==============");
+            printHistogram(observer);
+        }
+
         if (step == 499) {
             System.out.println("============== END ==============");
             printHistogram(observer);

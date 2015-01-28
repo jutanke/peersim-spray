@@ -3,4 +3,4 @@ set output 'histo.png'
 
 set style fill solid border -1
 set pointintervalbox 1
-plot[0:100] "indegree_5cycles_cyclon.txt" using ($0):1 with boxes
+plot[0:200] "histo.txt" using ($0):1 with boxes

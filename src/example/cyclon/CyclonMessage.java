@@ -5,6 +5,8 @@ import peersim.core.Node;
 import java.util.List;
 
 /**
+ * Heavily inspired by https://code.google.com/p/peersim-sn/source/browse/trunk/src/example/cyclon/
+ *
  * Created by julian on 26/01/15.
  */
 public class CyclonMessage {

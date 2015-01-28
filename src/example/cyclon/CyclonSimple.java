@@ -12,6 +12,8 @@ import peersim.transport.Transport;
 import java.util.*;
 
 /**
+ *  Heavily inspired by https://code.google.com/p/peersim-sn/source/browse/trunk/src/example/cyclon/
+ *
  * Created by julian on 26/01/15.
  */
 public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSamplingService {
