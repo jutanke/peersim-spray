@@ -14,6 +14,18 @@ public final class HelperForTest {
     private HelperForTest() {
     }
 
+    public static final String print(int[] l) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int e : l) {
+            if (sb.length() > 1) {
+                sb.append(",");
+            }
+            sb.append(e);
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 
     /**
      * Dummy method!

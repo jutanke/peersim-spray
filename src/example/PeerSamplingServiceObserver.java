@@ -65,12 +65,29 @@ public class PeerSamplingServiceObserver implements Control {
 
         System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
+        if (step == 499) {
+            System.out.println("============== END ==============");
+            printHistogram(observer);
+        }
+
+        if (step == 5) {
+            System.out.println("============== START ==============");
+            printHistogram(observer);
+        }
+
+        if (step == 250) {
+            System.out.println("============== MIDDLE ==============");
+            printHistogram(observer);
+        }
+
         //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
 
-        double cluster = observer.meanClusterCoefficient();
-        System.err.println("mean cluster:" + cluster);
+        //double cluster = observer.meanClusterCoefficient();
+        //System.err.println("mean cluster:" + cluster);
 
-        System.out.println(cluster);
+        //System.out.println(cluster);
+
+        //if (step == )
 
         //System.err.println("avg: " + avg);
 
@@ -85,5 +102,15 @@ public class PeerSamplingServiceObserver implements Control {
 
         step += 1;
         return false;
+    }
+
+
+    private void printHistogram(DictGraph observer) {
+        int[] histo = observer.inDegreeAsHistogram();
+        System.err.println("HISTOGRAM");
+        for (int i = 0; i < histo.length; i++) {
+            System.err.println( i + ":" + histo[i]);
+            System.out.println(histo[i]);
+        }
     }
 }

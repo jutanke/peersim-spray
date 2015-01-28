@@ -174,7 +174,7 @@ public class DictGraph {
             for (int distance : d.values()) {
                 sum += distance;
             }
-            return (2.0 / n * (n * 1.0)) * (double)sum;
+            return (2.0 / n * (n * 1.0)) * (double) sum;
         }
         return 0;
     }
@@ -196,12 +196,108 @@ public class DictGraph {
         return sum / this.nodes.size();
     }
 
+    // =========
+
+
+    public int[] inDegrees () {
+        // ====== #1 Count the in-degree of all peers ======
+        Map<Long, Integer> lookup = new HashMap<Long, Integer>(this.nodes.size());
+        for (DictNode e : this.nodes.values()) {
+            lookup.put(e.id, 0);
+        }
+        for (DictNode e : this.nodes.values()) {
+            for (long n : e.neighbors) {
+                lookup.put(n, lookup.get(n) + 1);
+            }
+        }
+
+        // ====== #2 put the numers in a list ======
+        List<Integer> degs = new ArrayList<Integer>(lookup.size());
+        for (int deg : lookup.values()) {
+            degs.add(deg);
+        }
+        int[] result = new int[lookup.size()];
+        for (int i = 0; i < degs.size();i++) result[i] = degs.get(i);
+        return result;
+    }
+
+    /**
+     * @return index of array = number of in-degree
+     */
+    public int[] inDegreeAsHistogram() {
+
+        // ====== #1 Count the in-degree of all peers ======
+        Map<Long, Integer> lookup = new HashMap<Long, Integer>(this.nodes.size());
+        for (DictNode e : this.nodes.values()) {
+            lookup.put(e.id, 0);
+        }
+        for (DictNode e : this.nodes.values()) {
+            for (long n : e.neighbors) {
+                lookup.put(n, lookup.get(n) + 1);
+            }
+        }
+
+        // ====== #3 create histogram for the counts ======
+        Map<Integer, Integer> histogram = new HashMap<Integer, Integer>();
+        for (int inDegree : lookup.values()) {
+            if (histogram.containsKey(inDegree)) {
+                histogram.put(inDegree, histogram.get(inDegree) + 1);
+            } else {
+                histogram.put(inDegree, 1);
+            }
+        }
+
+        // ====== #3 turn the lookup into an array ======
+        int max = 0;
+        for (int deg : histogram.keySet()) {
+            if (deg > max) max = deg;
+        }
+        int[] result = new int[max + 1];
+        for (int deg : histogram.keySet()) {
+            result[deg] = histogram.get(deg);
+        }
+        return result;
+    }
+
+    /*
+    public class InDegree {
+        public double avg;
+        public int max;
+        public int min;
+
+        @Override
+        public String toString(){
+            return "{avg:" + avg + " max:" + max + " min:" + min + "}";
+        }
+    }
+
+    public InDegree inDegree() {
+        InDegree result = new InDegree();
+
+        Map<Long, Integer> count = new HashMap<Long, Integer>(this.nodes.size());
+
+        for (DictNode n : this.nodes.values()) {
+            count.put(n.id, 0);
+        }
+
+        for (DictNode e : this.nodes.values()) {
+            for (long n : e.neighbors) {
+                count.put(n, count.get(n) + 1);
+            }
+        }
+
+
+
+        return result;
+    }
+    */
+
     /* =================================================================== *
      * PRIVATE
      * =================================================================== */
 
 
-    public double localClusterCoefficient(long id){
+    public double localClusterCoefficient(long id) {
         return localClusterCoefficient(nodes.get(id));
     }
 

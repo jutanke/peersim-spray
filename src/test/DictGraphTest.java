@@ -299,6 +299,70 @@ public class DictGraphTest {
         assertEquals("{0=-1, 1=-1, 2=-1, 3=0}", dist.toString());
     }
 
+    @Test
+    public void testInDegree() {
+
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0, 3});
+        Peer d = new Peer(3, new long[]{2, 1});
+        Peer f = new Peer(4, new long[]{3, 1, 0});
+        Peer e = new Peer(5, new long[]{3, 1, 4});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        g.add(f.node, f.rps);
+        g.add(e.node, e.rps);
+
+        assertEquals("[1,1,0,3,0,1]", HelperForTest.print(g.inDegreeAsHistogram()));
+
+        g.reset();
+        a = new Peer(0, new long[]{1, 2});
+        b = new Peer(1, new long[]{0, 2});
+        c = new Peer(2, new long[]{1, 0});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+
+        assertEquals("[0,0,3]", HelperForTest.print(g.inDegreeAsHistogram()));
+
+        g.reset();
+        a = new Peer(0, new long[]{1, 2});
+        b = new Peer(1, new long[]{0, 2});
+        c = new Peer(2, new long[]{1, 0});
+        d = new Peer(3, new long[]{1});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+
+        assertEquals("[1,0,2,1]", HelperForTest.print(g.inDegreeAsHistogram()));
+    }
+
+    @Test
+    public void testInDegrees() {
+
+        DictGraph g = DictGraph.getSingleton(10);
+        g.reset();
+        Peer a = new Peer(0, new long[]{1, 2});
+        Peer b = new Peer(1, new long[]{0, 2});
+        Peer c = new Peer(2, new long[]{1, 0, 3});
+        Peer d = new Peer(3, new long[]{2, 1});
+        Peer f = new Peer(4, new long[]{3, 1, 0});
+        Peer e = new Peer(5, new long[]{3, 1, 4});
+        g.add(a.node, a.rps);
+        g.add(b.node, b.rps);
+        g.add(c.node, c.rps);
+        g.add(d.node, d.rps);
+        g.add(f.node, f.rps);
+        g.add(e.node, e.rps);
+
+        assertEquals("[3,5,3,3,1,0]", HelperForTest.print(g.inDegrees()));
+    }
+
 
     /* ====================================================
      * H E L P E R S
