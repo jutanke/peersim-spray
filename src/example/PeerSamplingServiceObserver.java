@@ -113,7 +113,7 @@ public class PeerSamplingServiceObserver implements Control {
         }
         */
 
-        //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+        DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
 
         double cluster = observer.meanClusterCoefficient();
         System.err.println("mean cluster:" + cluster);
@@ -129,10 +129,6 @@ public class PeerSamplingServiceObserver implements Control {
 
         //System.err.println(observer);
 
-        //System.out.println(observer.meanClusterCoefficient());
-
-        //System.err.println("observer " + mean);
-        //System.err.println("observer avg-path-len:" + observer.averagePathLength());
 
         step += 1;
         return false;
