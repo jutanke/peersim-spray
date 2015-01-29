@@ -1,0 +1,1372 @@
+Buildfile: /home/julian/Dev/peersim-1.0.5/build.xml
+
+compile:
+    [javac] /home/julian/Dev/peersim-1.0.5/build.xml:21: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+added manifest
+adding: example/(in = 0) (out= 0)(stored 0%)
+adding: example/webrtc/(in = 0) (out= 0)(stored 0%)
+adding: example/webrtc/PeerSamplingService.class(in = 224) (out= 160)(deflated 28%)
+adding: example/webrtc/CyclonProtocol$Neighbor.class(in = 737) (out= 435)(deflated 40%)
+adding: example/webrtc/cyclon2/(in = 0) (out= 0)(stored 0%)
+adding: example/webrtc/cyclon2/CyclonEntry.class(in = 999) (out= 467)(deflated 53%)
+adding: example/webrtc/cyclon2/CyclonMessage.class(in = 615) (out= 327)(deflated 46%)
+adding: example/webrtc/cyclon2/CyclonObserver.class(in = 2611) (out= 1398)(deflated 46%)
+adding: example/webrtc/cyclon2/Cyclon.class(in = 5582) (out= 2694)(deflated 51%)
+adding: example/webrtc/cyclon/(in = 0) (out= 0)(stored 0%)
+adding: example/webrtc/cyclon/CyclonProtocol$Neighbor.class(in = 1128) (out= 597)(deflated 47%)
+adding: example/webrtc/cyclon/CyclonObserver.class(in = 3152) (out= 1684)(deflated 46%)
+adding: example/webrtc/cyclon/CyclonProtocol.class(in = 5382) (out= 2579)(deflated 52%)
+adding: example/webrtc/CyclonObserver.class(in = 1992) (out= 1116)(deflated 43%)
+adding: example/webrtc/data/(in = 0) (out= 0)(stored 0%)
+adding: example/webrtc/data/DictGraph.class(in = 8504) (out= 3657)(deflated 56%)
+adding: example/webrtc/data/DictNode.class(in = 684) (out= 428)(deflated 37%)
+adding: example/webrtc/data/DictGraph$MeanPathLength.class(in = 789) (out= 447)(deflated 43%)
+adding: example/webrtc/data/Graph$AvgReachablePaths.class(in = 681) (out= 401)(deflated 41%)
+adding: example/webrtc/data/Graph.class(in = 4172) (out= 2208)(deflated 47%)
+adding: example/webrtc/data/GraphNode.class(in = 415) (out= 301)(deflated 27%)
+adding: example/webrtc/data/DictGraph$AvgReachablePaths.class(in = 826) (out= 463)(deflated 43%)
+adding: example/webrtc/CyclonProtocol.class(in = 4240) (out= 2077)(deflated 51%)
+adding: example/PeerSamplingService.class(in = 181) (out= 148)(deflated 18%)
+adding: example/hot/(in = 0) (out= 0)(stored 0%)
+adding: example/hot/InetInitializer.class(in = 1121) (out= 673)(deflated 39%)
+adding: example/hot/InetCoordinates.class(in = 611) (out= 408)(deflated 33%)
+adding: example/hot/WireInetTopology.class(in = 1744) (out= 1073)(deflated 38%)
+adding: example/hot/InetObserver.class(in = 2540) (out= 1414)(deflated 44%)
+adding: example/cyclon/(in = 0) (out= 0)(stored 0%)
+adding: example/cyclon/CyclonSimple$1.class(in = 681) (out= 416)(deflated 38%)
+adding: example/cyclon/PeerSamplingService.class(in = 188) (out= 154)(deflated 18%)
+adding: example/cyclon/CyclonMessage$Type.class(in = 1233) (out= 645)(deflated 47%)
+adding: example/cyclon/CyclonInitializer.class(in = 1218) (out= 705)(deflated 42%)
+adding: example/cyclon/CyclonEntry.class(in = 1273) (out= 609)(deflated 52%)
+adding: example/cyclon/CyclonMessage.class(in = 1002) (out= 409)(deflated 59%)
+adding: example/cyclon/CyclonHandshake.class(in = 4519) (out= 2091)(deflated 53%)
+adding: example/cyclon/CyclonHandshake$1.class(in = 1005) (out= 567)(deflated 43%)
+adding: example/cyclon/CyclonSimple.class(in = 7590) (out= 3298)(deflated 56%)
+adding: example/edaggregation/(in = 0) (out= 0)(stored 0%)
+adding: example/edaggregation/AverageED.class(in = 1296) (out= 730)(deflated 43%)
+adding: example/edaggregation/AverageMessage.class(in = 266) (out= 217)(deflated 18%)
+adding: example/aggregation/(in = 0) (out= 0)(stored 0%)
+adding: example/aggregation/AverageFunction.class(in = 849) (out= 557)(deflated 34%)
+adding: example/aggregation/AverageObserver.class(in = 1540) (out= 909)(deflated 40%)
+adding: example/aggregation/PeakDistributionInitializer.class(in = 1085) (out= 651)(deflated 40%)
+adding: example/scamp/(in = 0) (out= 0)(stored 0%)
+adding: example/scamp/Unsubscribe.class(in = 1300) (out= 780)(deflated 40%)
+adding: example/scamp/Subscribe.class(in = 1603) (out= 924)(deflated 42%)
+adding: example/scamp/Scamp.class(in = 6108) (out= 3061)(deflated 49%)
+adding: example/loadbalance/(in = 0) (out= 0)(stored 0%)
+adding: example/loadbalance/ResetQuota.class(in = 906) (out= 556)(deflated 38%)
+adding: example/loadbalance/AvgBalance.class(in = 2261) (out= 1182)(deflated 47%)
+adding: example/loadbalance/QuotaObserver.class(in = 1342) (out= 788)(deflated 41%)
+adding: example/loadbalance/LBObserver.class(in = 1976) (out= 1091)(deflated 44%)
+adding: example/loadbalance/BasicBalance.class(in = 1538) (out= 951)(deflated 38%)
+adding: example/loadbalance/LinearDistributionInitializer.class(in = 1239) (out= 727)(deflated 41%)
+adding: example/newscast/(in = 0) (out= 0)(stored 0%)
+adding: example/newscast/SimpleNewscast.class(in = 3653) (out= 1914)(deflated 47%)
+adding: example/PeerSamplingServiceObserver.class(in = 2846) (out= 1538)(deflated 45%)
+adding: peersim/(in = 0) (out= 0)(stored 0%)
+adding: peersim/Simulator.class(in = 2743) (out= 1484)(deflated 45%)
+adding: peersim/reports/(in = 0) (out= 0)(stored 0%)
+adding: peersim/reports/RandRemoval.class(in = 2022) (out= 1187)(deflated 41%)
+adding: peersim/reports/GraphStats.class(in = 1672) (out= 948)(deflated 43%)
+adding: peersim/reports/DegreeStats.class(in = 3270) (out= 1773)(deflated 45%)
+adding: peersim/reports/GraphObserver.class(in = 1919) (out= 1078)(deflated 43%)
+adding: peersim/reports/MemoryObserver.class(in = 924) (out= 536)(deflated 41%)
+adding: peersim/reports/ConnectivityObserver.class(in = 1988) (out= 1097)(deflated 44%)
+adding: peersim/reports/BallExpansion.class(in = 2113) (out= 1185)(deflated 43%)
+adding: peersim/reports/Clustering.class(in = 1157) (out= 694)(deflated 40%)
+adding: peersim/reports/GraphPrinter.class(in = 2182) (out= 1196)(deflated 45%)
+adding: peersim/vector/(in = 0) (out= 0)(stored 0%)
+adding: peersim/vector/VectAngle.class(in = 1419) (out= 818)(deflated 42%)
+adding: peersim/vector/VectorObserver.class(in = 984) (out= 591)(deflated 39%)
+adding: peersim/vector/VectorComparator.class(in = 1658) (out= 877)(deflated 47%)
+adding: peersim/vector/InitVectFromFile.class(in = 1783) (out= 1039)(deflated 41%)
+adding: peersim/vector/VectCopy.class(in = 1160) (out= 649)(deflated 44%)
+adding: peersim/vector/SingleValueComparator.class(in = 483) (out= 316)(deflated 34%)
+adding: peersim/vector/SingleValueObserver.class(in = 1480) (out= 870)(deflated 41%)
+adding: peersim/vector/VectControl.class(in = 602) (out= 347)(deflated 42%)
+adding: peersim/vector/GetterSetterFinder.class(in = 2647) (out= 1193)(deflated 54%)
+adding: peersim/vector/Setter.class(in = 3031) (out= 1405)(deflated 53%)
+adding: peersim/vector/Getter.class(in = 3177) (out= 1454)(deflated 54%)
+adding: peersim/vector/PeakDistribution.class(in = 1685) (out= 922)(deflated 45%)
+adding: peersim/vector/ValueDumper.class(in = 1785) (out= 991)(deflated 44%)
+adding: peersim/vector/LinearDistribution.class(in = 1588) (out= 869)(deflated 45%)
+adding: peersim/vector/TestVectors.class(in = 998) (out= 484)(deflated 51%)
+adding: peersim/vector/Normalizer.class(in = 1605) (out= 922)(deflated 42%)
+adding: peersim/vector/UniformDistribution.class(in = 1925) (out= 1006)(deflated 47%)
+adding: peersim/vector/SingleValue.class(in = 129) (out= 110)(deflated 14%)
+adding: peersim/vector/SingleValueHolder.class(in = 783) (out= 463)(deflated 40%)
+adding: peersim/core/(in = 0) (out= 0)(stored 0%)
+adding: peersim/core/Node.class(in = 389) (out= 258)(deflated 33%)
+adding: peersim/core/OracleIdleProtocol.class(in = 1069) (out= 610)(deflated 42%)
+adding: peersim/core/CommonState.class(in = 1845) (out= 1014)(deflated 45%)
+adding: peersim/core/MaliciousProtocol.class(in = 111) (out= 90)(deflated 18%)
+adding: peersim/core/Linkable.class(in = 260) (out= 179)(deflated 31%)
+adding: peersim/core/Scheduler.class(in = 1851) (out= 980)(deflated 47%)
+adding: peersim/core/Fallible.class(in = 255) (out= 191)(deflated 25%)
+adding: peersim/core/Control.class(in = 96) (out= 91)(deflated 5%)
+adding: peersim/core/ModifiableNode.class(in = 295) (out= 205)(deflated 30%)
+adding: peersim/core/Network.class(in = 3498) (out= 1864)(deflated 46%)
+adding: peersim/core/Cleanable.class(in = 97) (out= 92)(deflated 5%)
+adding: peersim/core/IdleProtocol.class(in = 1924) (out= 1060)(deflated 44%)
+adding: peersim/core/OverlayGraph.class(in = 1943) (out= 1019)(deflated 47%)
+adding: peersim/core/Protocol.class(in = 139) (out= 114)(deflated 17%)
+adding: peersim/core/GeneralNode.class(in = 2609) (out= 1386)(deflated 46%)
+adding: peersim/cdsim/(in = 0) (out= 0)(stored 0%)
+adding: peersim/cdsim/Shuffle.class(in = 281) (out= 214)(deflated 23%)
+adding: peersim/cdsim/CDSimulator.class(in = 2827) (out= 1508)(deflated 46%)
+adding: peersim/cdsim/NextCycle.class(in = 1921) (out= 1091)(deflated 43%)
+adding: peersim/cdsim/DaemonProtocol.class(in = 1676) (out= 924)(deflated 44%)
+adding: peersim/cdsim/CDState.class(in = 913) (out= 539)(deflated 40%)
+adding: peersim/cdsim/FullNextCycle.class(in = 2003) (out= 1133)(deflated 43%)
+adding: peersim/cdsim/CDProtocol.class(in = 151) (out= 123)(deflated 18%)
+adding: peersim/config/(in = 0) (out= 0)(stored 0%)
+adding: peersim/config/Operators.class(in = 2372) (out= 1002)(deflated 57%)
+adding: peersim/config/Configuration.class(in = 2688) (out= 1059)(deflated 60%)
+adding: peersim/config/CheckConfig.class(in = 2310) (out= 1285)(deflated 44%)
+adding: peersim/config/NullPrintStream.class(in = 359) (out= 239)(deflated 33%)
+adding: peersim/config/ClassFinder.class(in = 4219) (out= 2123)(deflated 49%)
+adding: peersim/config/IllegalParameterException.class(in = 1093) (out= 617)(deflated 43%)
+adding: peersim/config/ConfigProperties.class(in = 2168) (out= 1052)(deflated 51%)
+adding: peersim/config/FastConfig.class(in = 1872) (out= 995)(deflated 46%)
+adding: peersim/config/ParsedProperties.class(in = 2501) (out= 1358)(deflated 45%)
+adding: peersim/config/ConfigContainer.class(in = 12087) (out= 5775)(deflated 52%)
+adding: peersim/config/MissingParameterException.class(in = 1175) (out= 640)(deflated 45%)
+adding: peersim/edsim/(in = 0) (out= 0)(stored 0%)
+adding: peersim/edsim/EDProtocol.class(in = 172) (out= 132)(deflated 23%)
+adding: peersim/edsim/EDSimulator.class(in = 5454) (out= 2840)(deflated 47%)
+adding: peersim/edsim/RegRandNextCycle.class(in = 667) (out= 458)(deflated 31%)
+adding: peersim/edsim/Heap.class(in = 3864) (out= 2062)(deflated 46%)
+adding: peersim/edsim/ControlEvent.class(in = 695) (out= 430)(deflated 38%)
+adding: peersim/edsim/CDScheduler.class(in = 2833) (out= 1552)(deflated 45%)
+adding: peersim/edsim/PriorityQ.class(in = 387) (out= 230)(deflated 40%)
+adding: peersim/edsim/NextCycleEvent.class(in = 1056) (out= 620)(deflated 41%)
+adding: peersim/edsim/PriorityQ$Event.class(in = 763) (out= 423)(deflated 44%)
+adding: peersim/edsim/RandNextCycle.class(in = 499) (out= 340)(deflated 31%)
+adding: peersim/dynamics/(in = 0) (out= 0)(stored 0%)
+adding: peersim/dynamics/WireStar.class(in = 335) (out= 206)(deflated 38%)
+adding: peersim/dynamics/DynamicNetwork.class(in = 2257) (out= 1238)(deflated 45%)
+adding: peersim/dynamics/WireWS.class(in = 940) (out= 531)(deflated 43%)
+adding: peersim/dynamics/WireKOut.class(in = 803) (out= 468)(deflated 41%)
+adding: peersim/dynamics/WireFromFile.class(in = 1881) (out= 1122)(deflated 40%)
+adding: peersim/dynamics/WireScaleFreeBA.class(in = 817) (out= 475)(deflated 41%)
+adding: peersim/dynamics/WireGraph.class(in = 1682) (out= 970)(deflated 42%)
+adding: peersim/dynamics/MethodInvoker.class(in = 3484) (out= 1877)(deflated 46%)
+adding: peersim/dynamics/WireRingLattice.class(in = 715) (out= 409)(deflated 42%)
+adding: peersim/dynamics/OscillatingNetwork.class(in = 1983) (out= 1116)(deflated 43%)
+adding: peersim/dynamics/WireByMethod.class(in = 3740) (out= 1879)(deflated 49%)
+adding: peersim/dynamics/RandNI.class(in = 1372) (out= 777)(deflated 43%)
+adding: peersim/dynamics/WireScaleFreeDM.class(in = 1155) (out= 707)(deflated 38%)
+adding: peersim/dynamics/NodeInitializer.class(in = 130) (out= 110)(deflated 15%)
+adding: peersim/dynamics/WireRegRootedTree.class(in = 724) (out= 423)(deflated 41%)
+adding: peersim/dynamics/StarNI.class(in = 1228) (out= 697)(deflated 43%)
+adding: peersim/graph/(in = 0) (out= 0)(stored 0%)
+adding: peersim/graph/GraphIO.class(in = 4218) (out= 2126)(deflated 49%)
+adding: peersim/graph/SubGraphEdges.class(in = 1964) (out= 1022)(deflated 47%)
+adding: peersim/graph/GraphAlgorithms.class(in = 4437) (out= 2331)(deflated 47%)
+adding: peersim/graph/FastUndirGraph.class(in = 1202) (out= 749)(deflated 37%)
+adding: peersim/graph/Graph.class(in = 410) (out= 257)(deflated 37%)
+adding: peersim/graph/ConstUndirGraph.class(in = 2022) (out= 1065)(deflated 47%)
+adding: peersim/graph/BitMatrixGraph.class(in = 1829) (out= 983)(deflated 46%)
+adding: peersim/graph/GraphFactory.class(in = 1824) (out= 1078)(deflated 40%)
+adding: peersim/graph/UndirectedGraph.class(in = 1480) (out= 782)(deflated 47%)
+adding: peersim/graph/PrefixSubGraph.class(in = 1802) (out= 954)(deflated 47%)
+adding: peersim/graph/NeighbourListGraph.class(in = 2205) (out= 1031)(deflated 53%)
+adding: peersim/transport/(in = 0) (out= 0)(stored 0%)
+adding: peersim/transport/KingParser.class(in = 2922) (out= 1545)(deflated 47%)
+adding: peersim/transport/TriangularMatrixParser.class(in = 1973) (out= 1092)(deflated 44%)
+adding: peersim/transport/UniformRandomTransport.class(in = 1571) (out= 811)(deflated 48%)
+adding: peersim/transport/E2ENetwork.class(in = 586) (out= 421)(deflated 28%)
+adding: peersim/transport/UniformRouterAssignment.class(in = 1131) (out= 680)(deflated 39%)
+adding: peersim/transport/UnreliableTransport.class(in = 1521) (out= 844)(deflated 44%)
+adding: peersim/transport/Transport.class(in = 251) (out= 156)(deflated 37%)
+adding: peersim/transport/E2ETransport.class(in = 1514) (out= 817)(deflated 46%)
+adding: peersim/transport/RouterInfo.class(in = 133) (out= 115)(deflated 13%)
+adding: peersim/util/(in = 0) (out= 0)(stored 0%)
+adding: peersim/util/FileNameGenerator.class(in = 835) (out= 503)(deflated 39%)
+adding: peersim/util/IncrementalStats.class(in = 1614) (out= 827)(deflated 48%)
+adding: peersim/util/ExtendedRandom.class(in = 732) (out= 538)(deflated 26%)
+adding: peersim/util/MomentStats.class(in = 1011) (out= 619)(deflated 38%)
+adding: peersim/util/IncrementalFreq.class(in = 2549) (out= 1400)(deflated 45%)
+adding: peersim/util/RandPermutation.class(in = 1112) (out= 664)(deflated 40%)
+adding: peersim/util/StringListParser.class(in = 2639) (out= 1292)(deflated 51%)
+adding: peersim/util/WeightedRandPerm.class(in = 1684) (out= 1007)(deflated 40%)
+adding: peersim/util/MedianStats.class(in = 1652) (out= 958)(deflated 42%)
+adding: peersim/util/LinearIterator.class(in = 692) (out= 447)(deflated 35%)
+adding: peersim/util/IndexIterator.class(in = 146) (out= 129)(deflated 11%)
+adding: peersim/rangesim/(in = 0) (out= 0)(stored 0%)
+adding: peersim/rangesim/ProcessHandler.class(in = 180) (out= 148)(deflated 17%)
+adding: peersim/rangesim/ProcessManager.class(in = 1118) (out= 651)(deflated 41%)
+adding: peersim/rangesim/RangeSimulator.class(in = 6260) (out= 3285)(deflated 47%)
+adding: peersim/rangesim/TaggedOutputStream.class(in = 2163) (out= 1199)(deflated 44%)
+
+
+
+============== BABY ==============
+0
+11
+38
+69
+69
+83
+102
+86
+106
+90
+73
+76
+60
+50
+32
+13
+10
+9
+12
+2
+5
+1
+3
+============== START ==============
+0
+11
+38
+69
+69
+83
+102
+86
+106
+90
+73
+76
+60
+50
+32
+13
+10
+9
+12
+2
+5
+1
+3
+============== MIDDLE ==============
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+1
+0
+0
+2
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+1
+0
+0
+0
+0
+1
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+1
+1
+1
+1
+0
+1
+0
+1
+2
+1
+1
+0
+0
+1
+0
+1
+0
+0
+2
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+1
+1
+1
+1
+1
+3
+0
+2
+0
+1
+1
+1
+1
+0
+1
+0
+1
+1
+4
+1
+0
+1
+3
+5
+0
+1
+2
+1
+1
+0
+2
+2
+1
+3
+7
+1
+3
+2
+6
+0
+5
+5
+4
+4
+2
+1
+5
+8
+11
+4
+5
+3
+3
+6
+6
+3
+4
+7
+7
+3
+4
+3
+11
+6
+7
+0
+2
+6
+6
+9
+7
+3
+9
+5
+5
+3
+3
+10
+2
+4
+4
+4
+3
+9
+7
+3
+3
+4
+5
+4
+10
+4
+3
+6
+10
+6
+5
+7
+3
+7
+1
+9
+3
+10
+3
+2
+5
+7
+9
+6
+7
+5
+3
+6
+7
+2
+9
+3
+8
+3
+8
+7
+7
+6
+6
+6
+5
+8
+14
+6
+5
+9
+5
+5
+3
+2
+10
+10
+4
+2
+6
+5
+8
+3
+7
+3
+7
+11
+6
+9
+7
+3
+2
+7
+5
+7
+8
+3
+3
+4
+5
+5
+6
+3
+1
+4
+4
+3
+6
+3
+8
+3
+4
+2
+2
+2
+3
+0
+2
+1
+1
+1
+0
+1
+3
+3
+2
+0
+2
+1
+0
+4
+3
+0
+3
+2
+0
+2
+1
+1
+0
+3
+3
+0
+1
+0
+0
+2
+1
+5
+1
+1
+1
+2
+1
+0
+1
+1
+0
+2
+1
+3
+3
+0
+3
+0
+1
+1
+0
+0
+0
+1
+1
+0
+1
+2
+0
+0
+2
+4
+0
+2
+0
+0
+0
+1
+1
+5
+0
+1
+0
+3
+0
+1
+0
+1
+0
+2
+1
+0
+1
+1
+1
+4
+1
+5
+1
+1
+2
+0
+2
+0
+0
+0
+1
+0
+0
+3
+1
+3
+0
+2
+1
+0
+0
+0
+0
+3
+0
+1
+1
+0
+0
+2
+0
+0
+1
+1
+1
+0
+0
+0
+2
+1
+1
+0
+0
+0
+0
+0
+1
+0
+1
+3
+1
+1
+1
+0
+0
+1
+2
+0
+2
+1
+2
+0
+0
+0
+0
+0
+0
+0
+1
+1
+0
+0
+1
+1
+0
+1
+0
+1
+0
+0
+0
+2
+0
+0
+1
+0
+1
+0
+0
+0
+0
+0
+0
+2
+0
+0
+1
+1
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+2
+0
+1
+0
+1
+0
+0
+1
+1
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+1
+============== END ==============
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+1
+0
+0
+0
+0
+0
+1
+0
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+1
+0
+0
+0
+0
+0
+1
+0
+0
+2
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+1
+1
+0
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+1
+1
+0
+0
+0
+0
+0
+0
+0
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+0
+1
+0
+0
+1
+2
+0
+0
+0
+1
+0
+0
+2
+0
+1
+0
+0
+0
+2
+1
+2
+2
+0
+0
+0
+4
+3
+2
+4
+3
+1
+4
+2
+0
+1
+2
+6
+3
+3
+3
+5
+2
+1
+2
+4
+3
+3
+5
+3
+2
+3
+6
+6
+0
+3
+6
+6
+7
+8
+10
+8
+11
+2
+7
+6
+4
+4
+7
+4
+4
+6
+10
+2
+8
+5
+6
+2
+6
+7
+8
+7
+7
+7
+7
+3
+6
+6
+6
+7
+1
+6
+7
+4
+3
+10
+7
+7
+2
+5
+3
+9
+8
+5
+2
+3
+5
+7
+10
+2
+7
+8
+7
+5
+6
+8
+5
+3
+7
+8
+8
+9
+7
+5
+5
+9
+4
+5
+8
+4
+2
+8
+4
+6
+5
+5
+6
+6
+10
+5
+7
+7
+4
+5
+3
+4
+3
+6
+4
+4
+10
+7
+5
+10
+5
+3
+3
+6
+8
+1
+5
+2
+2
+3
+0
+4
+4
+6
+3
+3
+3
+4
+2
+0
+2
+1
+4
+3
+3
+3
+3
+2
+2
+1
+3
+1
+0
+0
+3
+1
+5
+5
+1
+1
+3
+2
+1
+2
+2
+2
+0
+4
+1
+2
+0
+3
+1
+0
+3
+2
+0
+2
+2
+1
+1
+1
+1
+1
+0
+2
+1
+2
+0
+2
+1
+1
+1
+1
+3
+1
+1
+0
+1
+1
+3
+2
+4
+1
+3
+0
+0
+0
+2
+1
+0
+2
+1
+0
+1
+0
+1
+0
+0
+1
+0
+1
+2
+1
+1
+2
+0
+0
+1
+1
+0
+0
+1
+1
+2
+0
+1
+2
+1
+1
+1
+0
+1
+0
+2
+2
+2
+1
+1
+1
+1
+0
+2
+1
+0
+2
+1
+0
+1
+1
+0
+1
+2
+1
+1
+0
+1
+1
+0
+1
+0
+2
+0
+2
+3
+0
+0
+2
+2
+4
+1
+0
+1
+0
+1
+0
+1
+1
+0
+2
+1
+0
+1
+0
+2
+1
+1
+3
+2
+0
+2
+2
+0
+0
+0
+0
+0
+0
+1
+1
+0
+1
+1
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+2
+1
+1
+0
+0
+0
+1
+1
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1

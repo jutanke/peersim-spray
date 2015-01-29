@@ -1,6 +1,5 @@
 package example.cyclon;
 
-import example.webrtc.cyclon2.Cyclon;
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -16,7 +15,7 @@ import java.util.*;
  *
  * Created by julian on 26/01/15.
  */
-public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, PeerSamplingService {
+public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
 
     protected static final String PAR_CACHE = "cache";
     protected static final String PAR_L = "l";

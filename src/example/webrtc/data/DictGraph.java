@@ -1,8 +1,5 @@
 package example.webrtc.data;
 
-import example.cyclon.CyclonEntry;
-import example.webrtc.PeerSamplingService;
-import example.webrtc.cyclon2.Cyclon;
 import peersim.core.Node;
 
 import java.util.*;
@@ -53,7 +50,7 @@ public class DictGraph {
         this.nodes.clear();
     }
 
-    public void add(Node n, example.cyclon.PeerSamplingService c) {
+    public void add(Node n, example.PeerSamplingService c) {
         DictNode node = new DictNode(n.getID());
         for (Node neighbor : c.getPeers()) {
             node.neighbors.add(neighbor.getID());
@@ -258,39 +255,6 @@ public class DictGraph {
         }
         return result;
     }
-
-    /*
-    public class InDegree {
-        public double avg;
-        public int max;
-        public int min;
-
-        @Override
-        public String toString(){
-            return "{avg:" + avg + " max:" + max + " min:" + min + "}";
-        }
-    }
-
-    public InDegree inDegree() {
-        InDegree result = new InDegree();
-
-        Map<Long, Integer> count = new HashMap<Long, Integer>(this.nodes.size());
-
-        for (DictNode n : this.nodes.values()) {
-            count.put(n.id, 0);
-        }
-
-        for (DictNode e : this.nodes.values()) {
-            for (long n : e.neighbors) {
-                count.put(n, count.get(n) + 1);
-            }
-        }
-
-
-
-        return result;
-    }
-    */
 
     /* =================================================================== *
      * PRIVATE

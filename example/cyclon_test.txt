@@ -16,19 +16,17 @@ DROP 0
 
 random.seed 1234567890
 network.size SIZE
-#simulation.endtime CYCLE*CYCLES
-simulation.endtime CYCLES
+simulation.endtime CYCLE*CYCLES
 simulation.logtime CYCLE
 network.node GeneralNode
 
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.lnk example.cyclon.CyclonSimple
+protocol.lnk example.cyclon.CyclonHandshake
 protocol.lnk.cache DEGREE
 protocol.lnk.l 5
-#protocol.lnk.step CYCLE
-protocol.lnk.step 1
+protocol.lnk.step CYCLE
 protocol.lnk.transport tr
 protocol.lnk.linkable link
 
@@ -66,11 +64,16 @@ control.dynadd.maxsize 1000
 #control.dynadd.init.rand RandNI
 control.dynadd.init.rand.protocol lnk
 #control.dynadd.init.rand.k 1
-#control.dynadd.step CYCLE * 20
-control.dynadd.step 20
+control.dynadd.step CYCLE * 20
 control.dynadd.init.loci example.cyclon.CyclonInitializer
 
-control.0 example.PeerSamplingServiceObserver
-control.0.protocol lnk
+#control.0 example.PeerSamplingServiceObserver
+#control.0.protocol lnk
 #control.0.step CYCLE
-control.0.step 1
+
+# this will print statistics about the degree of the nodes (size of out-view)
+# the numbers printed are min, max, number of nodes, avg, std.
+control.o0 peersim.reports.BallExpansion
+control.o0.protocol lnk
+control.o0.step CYCLE
+control.o0.FINAL

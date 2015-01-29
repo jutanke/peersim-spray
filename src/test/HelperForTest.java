@@ -1,6 +1,6 @@
 package test;
 
-import example.cyclon.PeerSamplingService;
+import example.PeerSamplingService;
 import peersim.core.Node;
 import peersim.core.Protocol;
 

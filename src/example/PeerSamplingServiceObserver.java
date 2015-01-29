@@ -1,8 +1,8 @@
 package example;
 
-import example.webrtc.cyclon2.Cyclon;
 import example.webrtc.data.DictGraph;
 import peersim.config.Configuration;
+import peersim.config.MissingParameterException;
 import peersim.core.Control;
 import peersim.core.GeneralNode;
 import peersim.core.Network;
@@ -16,24 +16,35 @@ import java.util.List;
 public class PeerSamplingServiceObserver implements Control {
 
     private static final String CYCLON_PROT = "lnk";
+    private static final String SCAMP_PROT = "0";
     private static final String PAR_DEGREE = "DEGREE";
 
     /**
      * The protocol to operate on.
+     *
      * @config
      */
     private static final String PAR_PROT = "protocol";
 
     private int step = 0;
 
-    /** Protocol identifier */
+    /**
+     * Protocol identifier
+     */
     private final int pid;
     private final int degree;
     private final List<Long> peersWithEmptyCache;
 
     public PeerSamplingServiceObserver(String name) {
-        this.pid = Configuration.lookupPid(CYCLON_PROT);
-        this.degree = Configuration.getInt(PAR_DEGREE);
+        int pid, degree = 0;
+        try {
+            pid = Configuration.lookupPid(CYCLON_PROT);
+            degree = Configuration.getInt(PAR_DEGREE);
+        } catch (MissingParameterException e) {
+            pid = Configuration.lookupPid(SCAMP_PROT);
+        }
+        this.pid = pid;
+        this.degree = degree;
         this.peersWithEmptyCache = new ArrayList<Long>();
     }
 
@@ -47,7 +58,7 @@ public class PeerSamplingServiceObserver implements Control {
         for (int i = 0; i < Network.size(); i++) {
 
             GeneralNode n = (GeneralNode) Network.get(i);
-            example.cyclon.PeerSamplingService pss = (example.cyclon.PeerSamplingService)
+            PeerSamplingService pss = (PeerSamplingService)
                     Network.get(i).getProtocol(pid);
 
             observer.add(n, pss);
@@ -61,9 +72,15 @@ public class PeerSamplingServiceObserver implements Control {
         //System.err.println(observer);
 
         //DictGraph.MeanPathLength mean = observer.meanPathLength();
-        //System.out.println(mean.avg);
 
-        System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
+
+        /*
+
+
+        if (step == 1) {
+            System.out.println("============== BABY ==============");
+            printHistogram(observer);
+        }
 
         if (step == 999) {
             System.out.println("============== Super END ==============");
@@ -85,14 +102,26 @@ public class PeerSamplingServiceObserver implements Control {
             printHistogram(observer);
         }
 
+        if (step == 1500) {
+            System.out.println("============== SUPPPER END ==============");
+            printHistogram(observer);
+        }
+
+        if (step == 1999) {
+            System.out.println("============== SUPPPER++ END ==============");
+            printHistogram(observer);
+        }
+        */
+
         //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
 
-        //double cluster = observer.meanClusterCoefficient();
-        //System.err.println("mean cluster:" + cluster);
-
-        //System.out.println(cluster);
+        double cluster = observer.meanClusterCoefficient();
+        System.err.println("mean cluster:" + cluster);
+        System.out.println(cluster);
 
         //if (step == )
+
+        System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
         //System.err.println("avg: " + avg);
 
@@ -114,7 +143,7 @@ public class PeerSamplingServiceObserver implements Control {
         int[] histo = observer.inDegreeAsHistogram();
         System.err.println("HISTOGRAM");
         for (int i = 0; i < histo.length; i++) {
-            System.err.println( i + ":" + histo[i]);
+            System.err.println(i + ":" + histo[i]);
             System.out.println(histo[i]);
         }
     }

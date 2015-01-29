@@ -1,4 +1,4 @@
-package example.cyclon;
+package example;
 
 import peersim.core.Node;
 
