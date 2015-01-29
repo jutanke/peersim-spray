@@ -156,11 +156,13 @@ public class CyclonHandshake extends CyclonSimple {
     }
 
     private void Insert(CyclonEntry n) {
-        if (cache.size() >= size) {
-            Node oldest = selectOldest();
-            this.cache = delete(this.cache, oldest);
+        if (!this.contains(n.n)) {
+            if (cache.size() >= size) {
+                Node oldest = selectOldest();
+                this.cache = delete(this.cache, oldest);
+            }
+            cache.add(n);
         }
-        cache.add(n);
     }
 
     private CyclonEntry get(long id) {
