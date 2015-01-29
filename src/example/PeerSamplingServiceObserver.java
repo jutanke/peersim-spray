@@ -123,9 +123,9 @@ public class PeerSamplingServiceObserver implements Control {
 
         System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
-        //System.err.println("avg: " + avg);
+        System.err.println("avg: " + avg);
 
-        //System.out.println(avg.avg);
+        System.out.println(avg.avg);
 
         //System.err.println(observer);
 
