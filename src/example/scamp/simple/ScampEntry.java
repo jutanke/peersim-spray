@@ -9,35 +9,35 @@ import java.util.Comparator;
  */
 public class ScampEntry implements Comparable<ScampEntry>, Comparator<ScampEntry> {
 
-    public int age;
+    public int birthdate;
     public final Node node;
 
     /**
      *
      * @param n
-     * @param age
+     * @param birthdate
      */
-    public ScampEntry(Node n, int age) {
+    public ScampEntry(Node n, int birthdate) {
         this.node = n;
-        this.age = age;
+        this.birthdate = birthdate;
     }
 
     @Override
     public int compareTo(ScampEntry scampEntry) {
-        if (scampEntry.age > age) return 1;  // a lower value means
-        else if (scampEntry.age == age) return 0;
+        if (scampEntry.birthdate > birthdate) return 1;  // a lower value means
+        else if (scampEntry.birthdate == birthdate) return 0;
         return -1;
     }
 
     @Override
     public int compare(ScampEntry s1, ScampEntry s2) {
-        if (s1.age > s2.age) return 1;
-        else if (s1.age == s2.age) return 0;
+        if (s1.birthdate > s2.birthdate) return 1;
+        else if (s1.birthdate == s2.birthdate) return 0;
         return -1;
     }
 
     @Override
     public String toString() {
-        return "{" + node.getID() + ", age:" + age +"}";
+        return "{" + node.getID() + ", bd:" + birthdate +"}";
     }
 }

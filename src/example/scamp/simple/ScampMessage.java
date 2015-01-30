@@ -10,7 +10,8 @@ public class ScampMessage {
     public enum Type {
         Subscribe,
         Unsubscribe,
-        ForwardSubscription
+        ForwardSubscription,
+        AcceptedSubscription
     }
 
     public final Type type;
@@ -25,8 +26,8 @@ public class ScampMessage {
         this.subscriber = s;
     }
 
-    public boolean shouldBeDiscarded() {
-        return this.ttl <= 0;
+    public boolean isValid() {
+        return this.ttl > 0;
     }
 
     public void reduceTTL() {

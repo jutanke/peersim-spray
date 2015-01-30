@@ -27,6 +27,8 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
      */
     private static final String PAR_C = "c";
 
+    private static final String SCAMP_PROT = "0";
+
     /**
      * Time-to-live for indirection. Defaults to -1.
      *
@@ -63,10 +65,12 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     // =================== fields =========================================
     // ====================================================================
 
+    private final int pid;
 
-    private Map<Long, ScampEntry> inView;
 
-    private Map<Long, ScampEntry> outView;
+    protected Map<Long, Node> inView;
+
+    protected Map<Long, Node> outView;
 
     /**
      *
@@ -81,8 +85,9 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
         ScampSimple.indirTTL = Configuration.getInt(n + "." + PAR_INDIRTTL, -1);
         ScampSimple.leaseTimeout = Configuration.getInt(n + "." + PAR_LEASE, -1);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
-        inView = new HashMap<Long, ScampEntry>();
-        outView = new HashMap<Long, ScampEntry>();
+        this.pid = Configuration.lookupPid(SCAMP_PROT);
+        inView = new HashMap<Long, Node>();
+        outView = new HashMap<Long, Node>();
         birthDate = CDState.getCycle();
     }
 
@@ -92,8 +97,8 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
         try {
             scamp = (ScampSimple) super.clone();
         } catch (CloneNotSupportedException e) { }
-        scamp.outView = new HashMap<Long, ScampEntry>();
-        scamp.inView = new HashMap<Long, ScampEntry>();
+        scamp.outView = new HashMap<Long, Node>();
+        scamp.inView = new HashMap<Long, Node>();
 
         return scamp;
     }
@@ -141,15 +146,22 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
 
         ScampMessage message = (ScampMessage) event;
 
-        switch (message.type) {
-            case Subscribe:
-                this.subscriptionManagement(node, message.subscriber, pid);
-                break;
-            case Unsubscribe:
-                break;
-            case ForwardSubscription:
-                handleForwardedSubscription(node, message.subscriber, pid);
-                break;
+        message.reduceTTL();  // handle ttl
+        if (message.isValid()) {  // else the message just gets discarded
+            switch (message.type) {
+                case Subscribe:
+                    this.subscriptionManagement(node, message.subscriber);
+                    break;
+                case Unsubscribe:
+                    break;
+                case ForwardSubscription:
+                    handleForwardedSubscription(node, message.subscriber);
+                    break;
+                case AcceptedSubscription:
+                    if (this.inView.containsKey(message.sender.getID())) throw new RuntimeException("QNOPE");
+                    this.inView.put(message.sender.getID(), message.sender);
+                    break;
+            }
         }
 
     }
@@ -157,8 +169,8 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     @Override
     public List<Node> getPeers() {
         List<Node> result = new ArrayList<Node>();
-        for (ScampEntry n : this.outView.values()) {
-            result.add(n.node);
+        for (Node n : this.outView.values()) {
+            result.add(n);
         }
         return result;
     }
@@ -167,17 +179,31 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     // ====================================================================
 
     /**
+     * this is the first step to enter a network
+     * @param contact
+     */
+    public void join(Node me, Node contact) {
+        this.birthDate = CDState.getCycle();
+        this.inView.clear();
+        this.outView.clear();
+        this.outView.put(contact.getID(), contact);
+        ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
+        Transport tr = (Transport) me.getProtocol(tid);
+        tr.send(me, contact, message, pid);
+    }
+
+    /**
      *
      * @param me
      * @param subscriber
      */
-    private void subscriptionManagement(Node me, Node subscriber, final int pid) {
-        for (ScampEntry e : this.outView.values()) {
-            forwardSubscription(me, e.node, subscriber, pid);
+    private void subscriptionManagement(Node me, Node subscriber) {
+        for (Node e : this.outView.values()) {
+            forwardSubscription(me, e, subscriber);
         }
         for (int j = 0; j < c; j++) {
             Node n = randomNode();
-            forwardSubscription(me, n, subscriber, pid);
+            forwardSubscription(me, n, subscriber);
         }
     }
 
@@ -185,17 +211,14 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
      *
      * @param me
      * @param subscriber
-     * @param pid
      */
-    private void handleForwardedSubscription(Node me, Node subscriber, final int pid) {
+    private void handleForwardedSubscription(Node me, Node subscriber) {
         if (p() && !this.outView.containsKey(subscriber.getID())) {
-
-            // add s into the local outview
-            // add myself into s`s inview
-
+            this.outView.put(subscriber.getID(), subscriber);
+            this.acceptSubscription(me, subscriber);
         } else {
             Node n = randomNode();
-            forwardSubscription(me, n, subscriber, pid);
+            forwardSubscription(me, n, subscriber);
         }
     }
 
@@ -212,9 +235,8 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
      * @param sender
      * @param receiver
      * @param subscriber
-     * @param pid
      */
-    private void forwardSubscription(Node sender, Node receiver, Node subscriber, final int pid) {
+    private void forwardSubscription(Node sender, Node receiver, Node subscriber) {
         if (receiver.getID() != subscriber.getID()) {
             ScampMessage message = new ScampMessage(sender, ScampMessage.Type.ForwardSubscription, subscriber);
             Transport tr = (Transport) sender.getProtocol(tid);
@@ -225,6 +247,20 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     }
 
     /**
+     *
+     * @param sender
+     * @param subscriber
+     */
+    private void acceptSubscription(Node sender, Node subscriber) {
+        if (sender.getID() == subscriber.getID()) {
+            throw new RuntimeException("MUST NOT SUBSCRIBE TO MYSELF!");
+        }
+        ScampMessage message = new ScampMessage(sender, ScampMessage.Type.AcceptedSubscription, null);
+        Transport tr = (Transport) sender.getProtocol(tid);
+        tr.send(sender, subscriber, message, pid);
+    }
+
+    /**
      * wow, that`s ugly...
      * @return
      */
@@ -232,9 +268,9 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
         if (this.outView.size() > 0) {
             int pos = CDState.r.nextInt(this.degree());
             int i = 0;
-            for (ScampEntry e : this.outView.values()) {
+            for (Node e : this.outView.values()) {
                 if (i == pos) {
-                    return e.node;
+                    return e;
                 }
                 i++;
             }
