@@ -143,12 +143,16 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
             scamp = (Scamp) super.clone();
         } catch (CloneNotSupportedException e) {
         } // never happens
-        scamp.outView = (ArrayList) outView.clone();
-        scamp.inView = (ArrayList) inView.clone();
+        //scamp.outView = (ArrayList) outView.clone();
+        scamp.outView = new ArrayList<Node>();
+        scamp.inView = new ArrayList<Node>();
+        //scamp.inView = (ArrayList) inView.clone();
         if (outViewDates != null)
-            scamp.outViewDates = (ArrayList) outViewDates.clone();
+            scamp.outViewDates = new ArrayList<Integer>();
+            //scamp.outViewDates = (ArrayList) outViewDates.clone();
         if (inViewDates != null)
-            scamp.inViewDates = (ArrayList) inViewDates.clone();
+            scamp.inViewDates = new ArrayList<Integer>();
+            //scamp.inViewDates = (ArrayList) inViewDates.clone();
         scamp.birthDate = CDState.getCycle();
         return scamp;
     }
@@ -242,8 +246,11 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
         Scamp contact = (Scamp) n.getProtocol(protocolID);
         ((Linkable) s.getProtocol(protocolID)).addNeighbor(n);
 
+        Scamp subscriber = (Scamp) s.getProtocol(protocolID);
+
         //I guess this is needed
         contact.addInNeighbor(s);
+        subscriber.addNeighbor(n);
 
         if (contact.degree() == 0) {
             System.err.println("SCAMP: zero degree contact node!");
@@ -256,11 +263,16 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
             Scamp.doSubscribe(contact.outView.get(i), s, protocolID);
         }
 
-        for (int i = 0; i < Scamp.c; ++i) {
-            Scamp.doSubscribe(contact.outView.get(
-                            CDState.r.nextInt(contact.degree())),
-                    s, protocolID);
+        //if(indirTTL > 0.0){
+        if ((CDState.getCycle() - subscriber.birthDate) % Scamp.leaseTimeout != 0 &&
+                CDState.getCycle() != subscriber.birthDate) {
+            for (int i = 0; i < Scamp.c; ++i) {
+                Scamp.doSubscribe(contact.outView.get(
+                                CDState.r.nextInt(contact.degree())),
+                        s, protocolID);
+            }
         }
+
     }
 
 // ----------------------------------------------------------------------
@@ -437,6 +449,14 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
         // heartbeat
         // for now not implemented, does not seem to be important
 
+        if (thisNode.getID() == 0) {
+            System.err.println("|outview|:" + outView.size());
+        }
+
+        if (thisNode.getID() == 0) {
+            System.err.println("|inView|:" + inView.size());
+        }
+
         // lease (re-subscription)
         if (outViewDates != null) {
             if ((CDState.getCycle() - birthDate) % Scamp.leaseTimeout == 0 &&
@@ -447,6 +467,9 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
                         protocolID);
             }
 
+
+
+
             // remove expired items from _our own_ views.
             // entries are always ordered in increasing time. We remove
             // the first i elements which are expired from both views
@@ -454,15 +477,27 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
             while (i < degree() && CDState.getCycle() -
                     outViewDates.get(i) >= Scamp.leaseTimeout) ++i;
             if (i > 0) {
-                outView.subList(0, i).clear();
+                if (thisNode.getID() == 0) {
+                    System.err.println("|outview| before:" + outView.size());
+                }
+                outView.subList(0, i).clear();  //TODO does this work?
                 outViewDates.subList(0, i).clear();
+                if (thisNode.getID() == 0) {
+                    System.err.println("|outview| after:" + outView.size());
+                }
             }
             i = 0;
             while (i < inView.size() && CDState.getCycle() -
                     inViewDates.get(i) >= Scamp.leaseTimeout) ++i;
             if (i > 0) {
+                if (thisNode.getID() == 0) {
+                    System.err.println("|inView| before:" + inView.size());
+                }
                 inView.subList(0, i).clear();
                 inViewDates.subList(0, i).clear();
+                if (thisNode.getID() == 0) {
+                    System.err.println("|inView| before:" + inView.size());
+                }
             }
         }
 /*

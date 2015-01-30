@@ -4,7 +4,7 @@
 SIZE 10
 
 # parameters of periodic execution
-CYCLES 2000
+CYCLES 2500
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -19,7 +19,7 @@ network.node GeneralNode
 MINDELAY 0
 MAXDELAY 0
 # drop is a probability, 0<=DROP<=1
-DROP 0.3
+DROP 0
 
 random.seed 1234569890
 
