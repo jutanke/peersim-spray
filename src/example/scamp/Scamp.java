@@ -622,4 +622,9 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
     public List<Node> getPeers() {
         return this.outView;
     }
+
+    @Override
+    public String debug() {
+        return null;
+    }
 }

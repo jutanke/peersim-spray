@@ -75,13 +75,16 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      */
     protected int age;
 
-    protected Map<Long, Node> inView;
-    protected Map<Long, Node> outView;
+    //protected Map<Long, Node> inView;
+    //protected Map<Long, Node> outView;
+
+    protected View inView;
+    protected View partialView;
 
     private int randomLeaseTimeout;
 
-    private List<Node> outViewList;
-    private List<Node> inViewList;
+    //private List<Node> outViewList;
+    //private List<Node> inViewList;
 
 
     public ScampProtocol(String n) {
@@ -91,13 +94,9 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         ScampProtocol.leaseTimeoutMin = Configuration.getInt(n + "." + PAR_LEASE_MIN, -1);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         this.pid = Configuration.lookupPid(SCAMP_PROT);
-        inView = new HashMap<Long, Node>();
-        outView = new HashMap<Long, Node>();
+        inView = new View();
+        partialView = new View();
         age = 0;
-        this.inViewList = new ArrayList<Node>();
-        this.outViewList = new ArrayList<Node>();
-        inView = new HashMap<Long, Node>();
-        outView = new HashMap<Long, Node>();
         this.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax-leaseTimeoutMin) + leaseTimeoutMin;
         System.out.println("Lease:" + this.randomLeaseTimeout);
     }
@@ -109,10 +108,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         } catch (CloneNotSupportedException e) {
 
         }
-        p.outView = new HashMap<Long, Node>();
-        p.inView = new HashMap<Long, Node>();
-        p.inViewList = new ArrayList<Node>();
-        p.outViewList = new ArrayList<Node>();
+        p.partialView = new View();
+        p.inView = new View();
         p.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax-leaseTimeoutMin) + leaseTimeoutMin;
         System.out.println("Lease:" + p.randomLeaseTimeout);
         return p;
@@ -124,12 +121,12 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     @Override
     public int degree() {
-        return this.outView.size();
+        return this.partialView.length();
     }
 
     @Override
     public boolean contains(Node neighbor) {
-        return this.outView.containsKey(neighbor.getID());
+        return this.partialView.contains(neighbor);
     }
 
     @Override
@@ -154,24 +151,24 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     @Override
     public Node getNeighbor(int i) {
-        return this.getOutViewList().get(i);
+        return this.partialView.list().get(i);
     }
 
     @Override
     public List<Node> getPeers(){
-        return this.getOutViewList();
+        return this.partialView.list();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Out: [");
-        for (Node n : this.outView.values()) {
+        sb.append("In: [");
+        for (Node n : this.inView.list()) {
             sb.append(" ");
             sb.append(n.getID());
         }
-        sb.append("], In: [");
-        for (Node n : this.inView.values()) {
+        sb.append("], Out: [");
+        for (Node n : this.partialView.list()) {
             sb.append(" ");
             sb.append(n.getID());
         }
@@ -196,19 +193,19 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     }
 
     protected boolean addToOutView (Node n) {
-        if (this.outView.containsKey(n.getID())) {
+        if (this.partialView.contains(n)) {
             return false;
         } else {
-            this.outView.put(n.getID(), n);
+            this.partialView.add(n);
             return true;
         }
     }
 
     protected boolean addToInView(Node n) {
-        if (this.inView.containsKey(n.getID())) {
+        if (this.inView.contains(n)) {
             return false;
         } else {
-            this.inView.put(n.getID(), n);
+            this.inView.add(n);
             return true;
         }
     }
@@ -219,7 +216,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     protected Node randomOutNode() {
         if (degree() > 0) {
-            List<Node> out = this.getOutViewList();
+            List<Node> out = this.partialView.list();
             return out.get(CDState.r.nextInt(out.size()));
         }
         return null;
@@ -227,32 +224,18 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     protected Node randomInNode() {
         if (degree() > 0) {
-            List<Node> in = this.getInViewList();
+            List<Node> in = this.inView.list();
             return in.get(CDState.r.nextInt(in.size()));
         }
         return null;
     }
 
-    /**
-     * @return INVIEW
-     */
-    protected List<Node> getInViewList() {
-        this.inViewList.clear();
-        for (Node e : this.inView.values()) {
-            this.inViewList.add(e);
-        }
-        return this.inViewList;
+    public List<Node> pred() {
+        return this.inView.list();
     }
 
-    /**
-     * @return OUTVIEW
-     */
-    protected List<Node> getOutViewList() {
-        this.outViewList.clear();
-        for (Node e : this.outView.values()) {
-            this.outViewList.add(e);
-        }
-        return this.outViewList;
+    public List<Node> succ() {
+        return this.partialView.list();
     }
 
 
@@ -264,6 +247,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         //this.birthDate = CDState.getCycle();
         this.age = 0;
         if (contact != null) {
+
             System.err.println("JOIN " + me.getID() + " to contact " + contact.getID());
             //this.inView.clear();
             //this.outView.clear();
@@ -277,5 +261,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
             System.err.println("JOIN-ERROR:COULD NOT FIND A CONTACT FOR NODE " + me.getID());
         }
     }
+
+
 
 }

@@ -11,19 +11,33 @@ public class ScampMessage {
         Subscribe,
         Unsubscribe,
         ForwardSubscription,
-        AcceptedSubscription
+        AcceptedSubscription,
+        WeightUpdate
     }
 
     public final Type type;
     public final Node sender;
     public final Node subscriber;
     public int ttl;
+    public final double weight;
 
     public ScampMessage(Node n, Type t, Node s) {
         this.ttl = 250;
         this.type = t;
+        this.weight = -1.0;
         this.sender = n;
         this.subscriber = s;
+    }
+
+    private ScampMessage(Node n, double weight) {
+        this.weight = weight;
+        this.sender = n;
+        this.subscriber = null;
+        this.type = Type.WeightUpdate;
+    }
+
+    public static ScampMessage updateWeightMessage(Node sender, double weight) {
+        return new ScampMessage(sender, weight);
     }
 
     public boolean isValid() {
@@ -35,8 +49,11 @@ public class ScampMessage {
     }
 
     @Override
-    public String toString(){
-        return "Msg: {" + sender.getID() + "-> s:" + subscriber.getID() + " t:" + type + "}";
+    public String toString() {
+        return "Msg: {" +
+                sender.getID() + "-> s:" +
+                (subscriber == null ? "<null>" : subscriber.getID()) + " t:" +
+                type + "}";
     }
 
 }

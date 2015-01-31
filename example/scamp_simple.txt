@@ -1,4 +1,4 @@
-SIZE 5
+SIZE 100
 
 # parameters of periodic execution
 CYCLES 5

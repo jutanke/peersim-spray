@@ -13,21 +13,21 @@ import java.util.*;
 public class ScampSimple extends ScampProtocol {
 
 
-    List<Long> deleteList;
+    List<Node> deleteList;
 
     // ===================== initialization ================================
     // =====================================================================
 
     public ScampSimple(String n) {
         super(n);
-        this.deleteList = new ArrayList<Long>();
+        this.deleteList = new ArrayList<Node>();
     }
 
     @Override
     public Object clone(){
         ScampSimple scamp = null;
         scamp = (ScampSimple) super.clone();
-        this.deleteList = new ArrayList<Long>();
+        this.deleteList = new ArrayList<Node>();
         return scamp;
     }
 
@@ -46,14 +46,14 @@ public class ScampSimple extends ScampProtocol {
 
         // remove all expired nodes from our partial view
         this.deleteList.clear();
-        for (Node n : this.outView.values()) {
+        for (Node n : this.partialView.list()) {
             ScampSimple scamp = (ScampSimple) n.getProtocol(pid);
             if (scamp.isExpired()) {
-                this.deleteList.add(n.getID());
+                this.deleteList.add(n);
             }
         }
-        for (long id : this.deleteList) {
-            this.outView.remove(id);
+        for (Node n : this.deleteList) {
+            this.partialView.del(n);
         }
         this.deleteList.clear();
 
@@ -65,7 +65,7 @@ public class ScampSimple extends ScampProtocol {
 
         ScampMessage message = (ScampMessage) event;
 
-        System.err.println(message);
+        System.err.println(node.getID() + "=>:" + message);
 
         message.reduceTTL();  // handle ttl
         if (message.isValid()) {  // else the message just gets discarded
@@ -79,8 +79,8 @@ public class ScampSimple extends ScampProtocol {
                     handleForwardedSubscription(node, message.subscriber);
                     break;
                 case AcceptedSubscription:
-                    if (this.inView.containsKey(message.sender.getID())) throw new RuntimeException("QNOPE");
-                    this.inView.put(message.sender.getID(), message.sender);
+                    if (this.inView.contains(message.sender)) throw new RuntimeException("QNOPE");
+                    this.inView.add(message.sender);
                     break;
             }
         }
@@ -124,7 +124,11 @@ public class ScampSimple extends ScampProtocol {
      * @param subscriber
      */
     private void subscriptionManagement(Node me, Node subscriber) {
-        for (Node e : this.outView.values()) {
+
+        // we must put the subscriber into our inview
+        this.addToInView(subscriber);
+
+        for (Node e : this.partialView.list()) {
             forwardSubscription(me, e, subscriber);
         }
         for (int j = 0; j < c; j++) {
@@ -139,8 +143,8 @@ public class ScampSimple extends ScampProtocol {
      * @param subscriber
      */
     private void handleForwardedSubscription(Node me, Node subscriber) {
-        if (p() && !this.outView.containsKey(subscriber.getID())) {
-            this.outView.put(subscriber.getID(), subscriber);
+        if (p() && !this.partialView.contains(subscriber)) {
+            this.partialView.add(subscriber);
             this.acceptSubscription(me, subscriber);
         } else {
             Node n = randomOutNode();
