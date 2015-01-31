@@ -44,7 +44,9 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      *
      * @config
      */
-    private static final String PAR_LEASE = "leaseTimeout";
+    private static final String PAR_LEASE_MAX = "leaseTimeoutMax";
+
+    private static final String PAR_LEASE_MIN = "leaseTimeoutMin";
 
     private static final String PAR_TRANSPORT = "transport";
 
@@ -61,7 +63,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     /**
      * lease timeout
      */
-    protected static int leaseTimeout;
+    protected static int leaseTimeoutMin;
+    protected static int leaseTimeoutMax;
 
     protected final int tid;
 
@@ -75,6 +78,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     protected Map<Long, Node> inView;
     protected Map<Long, Node> outView;
 
+    private int randomLeaseTimeout;
+
     private List<Node> outViewList;
     private List<Node> inViewList;
 
@@ -82,7 +87,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     public ScampProtocol(String n) {
         ScampProtocol.c = Configuration.getInt(n + "." + PAR_C, 0);
         ScampProtocol.indirTTL = Configuration.getInt(n + "." + PAR_INDIRTTL, -1);
-        ScampProtocol.leaseTimeout = Configuration.getInt(n + "." + PAR_LEASE, -1);
+        ScampProtocol.leaseTimeoutMax = Configuration.getInt(n + "." + PAR_LEASE_MAX, -1);
+        ScampProtocol.leaseTimeoutMin = Configuration.getInt(n + "." + PAR_LEASE_MIN, -1);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         this.pid = Configuration.lookupPid(SCAMP_PROT);
         inView = new HashMap<Long, Node>();
@@ -92,6 +98,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         this.outViewList = new ArrayList<Node>();
         inView = new HashMap<Long, Node>();
         outView = new HashMap<Long, Node>();
+        this.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax-leaseTimeoutMin) + leaseTimeoutMin;
+        System.out.println("Lease:" + this.randomLeaseTimeout);
     }
 
     public Object clone() {
@@ -105,6 +113,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         p.inView = new HashMap<Long, Node>();
         p.inViewList = new ArrayList<Node>();
         p.outViewList = new ArrayList<Node>();
+        p.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax-leaseTimeoutMin) + leaseTimeoutMin;
+        System.out.println("Lease:" + p.randomLeaseTimeout);
         return p;
     }
 
@@ -182,7 +192,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      */
 
     protected boolean isExpired() {
-        return (this.age >= leaseTimeout);
+        return (this.age >= randomLeaseTimeout);
     }
 
     protected boolean addToOutView (Node n) {

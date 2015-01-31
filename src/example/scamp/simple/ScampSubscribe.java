@@ -1,5 +1,6 @@
 package example.scamp.simple;
 
+import example.scamp.ScampProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -31,6 +32,8 @@ public class ScampSubscribe implements NodeInitializer, Control {
     @Override
     public void initialize(Node n) {
 
+        if (true) throw new RuntimeException("IS NOT IN USE!");
+
         if (Network.size() == 0) return;
 
         Node contact = Network.get(CommonState.r.nextInt(Network.size()));
@@ -45,8 +48,25 @@ public class ScampSubscribe implements NodeInitializer, Control {
     @Override
     public boolean execute() {
 
-        System.err.println("EXEC");
+        star();
 
         return false;
+    }
+
+
+    private void star() {
+        System.err.println("++++++++++++++ interconnect nodes as STAR! ++++++++++++++");
+
+        Node contact = Network.get(0);
+        for (int i = 1; i < Network.size(); i++) {
+
+            Node me = Network.get(i);
+            ScampProtocol current = get(i);
+            current.join(me, contact);
+        }
+    }
+
+    private ScampProtocol get(final int i) {
+        return (ScampProtocol) Network.get(i).getProtocol(protocolID);
     }
 }

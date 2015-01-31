@@ -37,6 +37,8 @@ public class ScampSimple extends ScampProtocol {
     @Override
     public void subNextCycle(Node node, int protocolID) {
 
+        System.err.println("+++++++++++ CYCLE ++++++++++++ (" + node.getID());
+
         // lease (re-subscription)
         if (this.isExpired()) {
             this.unsubscribe(node);

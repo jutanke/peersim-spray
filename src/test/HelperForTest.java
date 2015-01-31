@@ -93,6 +93,11 @@ public final class HelperForTest {
             public List<Node> getPeers() {
                 return peers;
             }
+
+            @Override
+            public String debug() {
+                return "//";
+            }
         };
     }
 
