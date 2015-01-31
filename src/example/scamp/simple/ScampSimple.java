@@ -1,6 +1,7 @@
 package example.scamp.simple;
 
 import example.scamp.Scamp;
+import example.scamp.ScampProtocol;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -14,98 +15,24 @@ import java.util.*;
 /**
  * Created by julian on 29/01/15.
  */
-public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
-
-    // =================== static fields ==================================
-    // ====================================================================
+public class ScampSimple extends ScampProtocol {
 
 
-    /**
-     * Parameter "c" of Scamp . Defaults to 0.
-     *
-     * @config
-     */
-    private static final String PAR_C = "c";
-
-    private static final String SCAMP_PROT = "0";
-
-    /**
-     * Time-to-live for indirection. Defaults to -1.
-     *
-     * @config
-     */
-    private static final String PAR_INDIRTTL = "indirectionTTL";
-
-    /**
-     * Lease timeout. If negative, there is no lease mechanism. Defaults to -1.
-     *
-     * @config
-     */
-    private static final String PAR_LEASE = "leaseTimeout";
-
-    protected static final String PAR_TRANSPORT = "transport";
-
-    /**
-     * c
-     */
-    private static int c;
-
-    /**
-     * indirection TTL
-     */
-    private static int indirTTL;
-
-    /**
-     * lease timeout
-     */
-    private static int leaseTimeout;
-
-    protected final int tid;
-
-    // =================== fields =========================================
-    // ====================================================================
-
-    private final int pid;
-
-
-    protected Map<Long, Node> inView;
-
-    protected Map<Long, Node> outView;
-
-    /**
-     *
-     */
-    private int birthDate;
-
-    private List<Node> inViewList, outViewList;
-    private List<Long> deleteList;
+    List<Long> deleteList;
 
     // ===================== initialization ================================
     // =====================================================================
 
     public ScampSimple(String n) {
-        ScampSimple.c = Configuration.getInt(n + "." + PAR_C, 0);
-        ScampSimple.indirTTL = Configuration.getInt(n + "." + PAR_INDIRTTL, -1);
-        ScampSimple.leaseTimeout = Configuration.getInt(n + "." + PAR_LEASE, -1);
-        this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
-        this.pid = Configuration.lookupPid(SCAMP_PROT);
-        inView = new HashMap<Long, Node>();
-        outView = new HashMap<Long, Node>();
-        birthDate = CDState.getCycle();
-        this.inViewList = new ArrayList<Node>();
-        this.outViewList = new ArrayList<Node>();
-        this.deleteList = new ArrayList<Long>(); // we can actually share this object...
+        super(n);
+        this.deleteList = new ArrayList<Long>();
     }
 
     @Override
     public Object clone(){
         ScampSimple scamp = null;
-        try {
-            scamp = (ScampSimple) super.clone();
-        } catch (CloneNotSupportedException e) { }
-        scamp.outView = new HashMap<Long, Node>();
-        scamp.inView = new HashMap<Long, Node>();
-        scamp.inViewList = new ArrayList<Node>();
+        scamp = (ScampSimple) super.clone();
+        this.deleteList = new ArrayList<Long>();
         return scamp;
     }
 
@@ -137,43 +64,6 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     }
 
     @Override
-    public int degree() {
-        return this.outView.size();
-    }
-
-    @Override
-    public Node getNeighbor(int i) {
-        return getPeers().get(i);
-    }
-
-    @Override
-    public boolean addNeighbor(Node neighbour) {
-        if (neighbour == null) System.err.println("NUUUULLL");
-        if (this.outView.containsKey(neighbour.getID())) {
-            this.outView.put(neighbour.getID(), neighbour);
-            return false;
-        } else {
-            this.outView.put(neighbour.getID(), neighbour);
-            return true;
-        }
-    }
-
-    @Override
-    public boolean contains(Node neighbor) {
-        return this.outView.containsKey(neighbor.getID());
-    }
-
-    @Override
-    public void pack() {
-
-    }
-
-    @Override
-    public void onKill() {
-
-    }
-
-    @Override
     public void processEvent(Node node, int pid, Object event) {
 
         ScampMessage message = (ScampMessage) event;
@@ -196,15 +86,6 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
             }
         }
 
-    }
-
-    @Override
-    public List<Node> getPeers() {
-        this.outViewList.clear();
-        for (Node n : this.outView.values()) {
-            this.outViewList.add(n);
-        }
-        return this.outViewList;
     }
 
     // =================== PUBLIC SCAMP ===================================
@@ -237,7 +118,7 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     public void unsubscribe(Node me) {
 
         // select random entry point
-        Node n = randomNode();
+        Node n = randomOutNode();
 
         join(me, n);
 
@@ -251,27 +132,6 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     // =================== helper =========================================
     // ====================================================================
 
-
-    /**
-     * @return OutView
-     */
-    private List<Node> succ() {
-        return this.getPeers();
-    }
-
-    /**
-     * @return InView
-     */
-    private List<Node> prod() {
-        this.inViewList.clear();
-        for (Node e : this.inView.values()) this.inViewList.add(e);
-        return this.inViewList;
-    }
-
-
-    protected boolean isExpired() {
-        return ((CDState.getCycle() - this.birthDate) > leaseTimeout);
-    }
 
 
     // =================== event handler ==================================
@@ -288,7 +148,7 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
             forwardSubscription(me, e, subscriber);
         }
         for (int j = 0; j < c; j++) {
-            Node n = randomNode();
+            Node n = randomOutNode();
             forwardSubscription(me, n, subscriber);
         }
     }
@@ -303,17 +163,9 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
             this.outView.put(subscriber.getID(), subscriber);
             this.acceptSubscription(me, subscriber);
         } else {
-            Node n = randomNode();
+            Node n = randomOutNode();
             forwardSubscription(me, n, subscriber);
         }
-    }
-
-    /**
-     * probability of acceptance
-     * @return
-     */
-    private boolean p() {
-        return CDState.r.nextDouble() < 1.0 / 1.0 + this.degree();
     }
 
     /**
@@ -345,24 +197,4 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, subscriber, message, pid);
     }
-
-    /**
-     * wow, that`s ugly...
-     * @return
-     */
-    private Node randomNode() {
-        if (this.outView.size() > 0) {
-            int pos = CDState.r.nextInt(this.degree());
-            int i = 0;
-            for (Node e : this.outView.values()) {
-                if (i == pos) {
-                    return e;
-                }
-                i++;
-            }
-        }
-        return null;
-    }
-
-
 }

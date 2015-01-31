@@ -166,6 +166,10 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      * I N T E R N A L  I N T E R F A C E
      */
 
+    protected boolean isExpired() {
+        return ((CDState.getCycle() - this.birthDate) > leaseTimeout);
+    }
+
     protected boolean addToOutView (Node n) {
         if (this.outView.containsKey(n.getID())) {
             return false;
