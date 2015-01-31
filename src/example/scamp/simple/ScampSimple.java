@@ -77,6 +77,9 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
      */
     private int birthDate;
 
+    private List<Node> inViewList, outViewList;
+    private List<Long> deleteList;
+
     // ===================== initialization ================================
     // =====================================================================
 
@@ -89,6 +92,9 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
         inView = new HashMap<Long, Node>();
         outView = new HashMap<Long, Node>();
         birthDate = CDState.getCycle();
+        this.inViewList = new ArrayList<Node>();
+        this.outViewList = new ArrayList<Node>();
+        this.deleteList = new ArrayList<Long>(); // we can actually share this object...
     }
 
     @Override
@@ -99,7 +105,7 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
         } catch (CloneNotSupportedException e) { }
         scamp.outView = new HashMap<Long, Node>();
         scamp.inView = new HashMap<Long, Node>();
-
+        scamp.inViewList = new ArrayList<Node>();
         return scamp;
     }
 
@@ -109,26 +115,52 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
     @Override
     public void nextCycle(Node node, int protocolID) {
 
+        // lease (re-subscription)
+        if (this.isExpired()) {
+            this.unsubscribe(node);
+        }
+
+        // remove all expired nodes from our partial view
+        this.deleteList.clear();
+        for (Node n : this.outView.values()) {
+            ScampSimple scamp = (ScampSimple) n.getProtocol(pid);
+            if (scamp.isExpired()) {
+                this.deleteList.add(n.getID());
+            }
+        }
+        for (long id : this.deleteList) {
+            this.outView.remove(id);
+        }
+        this.deleteList.clear();
+
+
     }
 
     @Override
     public int degree() {
-        return 0;
+        return this.outView.size();
     }
 
     @Override
     public Node getNeighbor(int i) {
-        return null;
+        return getPeers().get(i);
     }
 
     @Override
     public boolean addNeighbor(Node neighbour) {
-        return false;
+        if (neighbour == null) System.err.println("NUUUULLL");
+        if (this.outView.containsKey(neighbour.getID())) {
+            this.outView.put(neighbour.getID(), neighbour);
+            return false;
+        } else {
+            this.outView.put(neighbour.getID(), neighbour);
+            return true;
+        }
     }
 
     @Override
     public boolean contains(Node neighbor) {
-        return false;
+        return this.outView.containsKey(neighbor.getID());
     }
 
     @Override
@@ -168,14 +200,14 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
 
     @Override
     public List<Node> getPeers() {
-        List<Node> result = new ArrayList<Node>();
+        this.outViewList.clear();
         for (Node n : this.outView.values()) {
-            result.add(n);
+            this.outViewList.add(n);
         }
-        return result;
+        return this.outViewList;
     }
 
-    // =================== internal =======================================
+    // =================== PUBLIC SCAMP ===================================
     // ====================================================================
 
     /**
@@ -184,13 +216,62 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
      */
     public void join(Node me, Node contact) {
         this.birthDate = CDState.getCycle();
-        this.inView.clear();
-        this.outView.clear();
-        this.outView.put(contact.getID(), contact);
+        //this.inView.clear();
+        //this.outView.clear();
+        //this.outView.put(contact.getID(), contact);
+        this.addNeighbor(contact);
         ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
         Transport tr = (Transport) me.getProtocol(tid);
         tr.send(me, contact, message, pid);
     }
+
+    /**
+     *
+     * @param me
+     */
+    public void unsubscribe(Node me) {
+
+        // select random entry point
+        Node n = randomNode();
+
+        join(me, n);
+
+        // CHECK
+
+
+    }
+
+
+
+    // =================== helper =========================================
+    // ====================================================================
+
+
+    /**
+     * @return OutView
+     */
+    private List<Node> succ() {
+        return this.getPeers();
+    }
+
+    /**
+     * @return InView
+     */
+    private List<Node> prod() {
+        this.inViewList.clear();
+        for (Node e : this.inView.values()) this.inViewList.add(e);
+        return this.inViewList;
+    }
+
+
+    protected boolean isExpired() {
+        return ((CDState.getCycle() - this.birthDate) > leaseTimeout);
+    }
+
+
+    // =================== event handler ==================================
+    // ====================================================================
+
 
     /**
      *

@@ -1,4 +1,7 @@
-SIZE 1
+# a simplistic example to start with. It builds a SCAMP network and then
+# prints degree statistics
+
+SIZE 10
 
 # parameters of periodic execution
 CYCLES 2500
@@ -9,7 +12,6 @@ simulation.endtime CYCLE*CYCLES
 simulation.logtime CYCLE
 simulation.cycles CYCLES
 network.node GeneralNode
-
 
 # parameters of message transfer
 # delay values here are relative to cycle length, in percentage,
@@ -23,12 +25,14 @@ random.seed 1234569890
 
 overlay.size SIZE
 
-protocol.0 example.scamp.simple.ScampSimple
+protocol.0 example.scamp.Scamp
 protocol.0.c 0
+#protocol.0.step CYCLE
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
-protocol.0.leaseTimeout 20
+protocol.0.leaseTimeout 10
+#protocol.0.indirectionTTL 10
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay (CYCLE*MINDELAY)/100
@@ -38,18 +42,22 @@ protocol.tr UnreliableTransport
 protocol.tr.transport urt
 protocol.tr.drop DROP
 
-init.0 example.scamp.simple.ScampSubscribe
+init.0 example.scamp.Subscribe
 init.0.protocol 0
 
 control.dynadd DynamicNetwork
 control.dynadd.init.rand RandNI
 control.dynadd.init.rand.k 1
 control.dynadd.add 1
-control.dynadd.maxsize 1
+control.dynadd.maxsize 1000
 control.dynadd.init.rand.protocol 0
 control.dynadd.step 2
 
+# this will print statistics about the degree of the nodes (size of out-view)
+# the numbers printed are min, max, number of nodes, avg, std.
+#control.o0 peersim.reports.DegreeStats
 control.o0 example.PeerSamplingServiceObserver
 control.o0.protocol 0
 control.o0.FINAL
+#control.o0.step CYCLE
 control.o0.step 1
