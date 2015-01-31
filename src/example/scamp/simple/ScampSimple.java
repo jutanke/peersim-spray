@@ -216,13 +216,18 @@ public class ScampSimple implements Linkable, EDProtocol, CDProtocol, example.Pe
      */
     public void join(Node me, Node contact) {
         this.birthDate = CDState.getCycle();
-        //this.inView.clear();
-        //this.outView.clear();
-        //this.outView.put(contact.getID(), contact);
-        this.addNeighbor(contact);
-        ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
-        Transport tr = (Transport) me.getProtocol(tid);
-        tr.send(me, contact, message, pid);
+        if (contact != null) {
+            System.err.println("JOIN " + me.getID() + " to contact " + contact.getID());
+            //this.inView.clear();
+            //this.outView.clear();
+            //this.outView.put(contact.getID(), contact);
+            this.addNeighbor(contact);
+            ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
+            Transport tr = (Transport) me.getProtocol(tid);
+            tr.send(me, contact, message, pid);
+        } else {
+            System.err.println("JOIN-ERROR:COULD NOT FIND A CONTACT FOR NODE " + me.getID());
+        }
     }
 
     /**

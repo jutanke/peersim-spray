@@ -37,12 +37,16 @@ public class ScampSubscribe implements NodeInitializer, Control {
 
         ScampSimple scamp = (ScampSimple) n.getProtocol(protocolID);
 
+        System.err.println("TRY TO JOIN: " + n.getID());
         scamp.join(n, contact);
 
     }
 
     @Override
     public boolean execute() {
+
+        System.err.println("EXEC");
+
         return false;
     }
 }

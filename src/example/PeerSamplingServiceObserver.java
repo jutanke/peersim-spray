@@ -75,7 +75,7 @@ public class PeerSamplingServiceObserver implements Control {
 
 
 
-        if (step == 1) {
+        if (step == -1) {
             System.out.println("============== BABY ==============");
             printHistogram(observer);
         }
@@ -90,7 +90,7 @@ public class PeerSamplingServiceObserver implements Control {
             printHistogram(observer);
         }
 
-        if (step == 5) {
+        if (step == -5) {
             System.out.println("============== START ==============");
             printHistogram(observer);
         }

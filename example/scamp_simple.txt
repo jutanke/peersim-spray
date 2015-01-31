@@ -1,7 +1,7 @@
 SIZE 1
 
 # parameters of periodic execution
-CYCLES 2500
+CYCLES 15
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -28,7 +28,7 @@ protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
-protocol.0.leaseTimeout 20
+protocol.0.leaseTimeout 10
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay (CYCLE*MINDELAY)/100
@@ -41,13 +41,20 @@ protocol.tr.drop DROP
 init.0 example.scamp.simple.ScampSubscribe
 init.0.protocol 0
 
-control.dynadd DynamicNetwork
-control.dynadd.init.rand RandNI
-control.dynadd.init.rand.k 1
-control.dynadd.add 1
-control.dynadd.maxsize 1
-control.dynadd.init.rand.protocol 0
-control.dynadd.step 2
+#control.dynadd DynamicNetwork
+#control.dynadd.init.rand RandNI
+#control.dynadd.init.rand.k 1
+#control.dynadd.add 1
+#control.dynadd.maxsize 3
+#control.dynadd.init.rand.protocol 0
+#control.dynadd.step 2
+
+control.d0 DynamicNetwork
+control.d0.add 1
+control.d0.step 1
+control.d0.maxsize 3
+control.d0.init.0 example.scamp.simple.ScampSubscribe
+control.d0.init.0.protocol 0
 
 control.o0 example.PeerSamplingServiceObserver
 control.o0.protocol 0
