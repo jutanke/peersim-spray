@@ -11,4 +11,6 @@ public interface PeerSamplingService {
 
     List<Node> getPeers();
 
+    String debug();
+
 }

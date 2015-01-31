@@ -1,11 +1,13 @@
 package example.scamp;
 
+import example.scamp.simple.ScampMessage;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
 import peersim.core.Linkable;
 import peersim.core.Node;
 import peersim.edsim.EDProtocol;
+import peersim.transport.Transport;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,7 +70,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     /**
      *
      */
-    protected int birthDate;
+    protected int age;
 
     protected Map<Long, Node> inView;
     protected Map<Long, Node> outView;
@@ -85,7 +87,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         this.pid = Configuration.lookupPid(SCAMP_PROT);
         inView = new HashMap<Long, Node>();
         outView = new HashMap<Long, Node>();
-        birthDate = CDState.getCycle();
+        age = 0;
         this.inViewList = new ArrayList<Node>();
         this.outViewList = new ArrayList<Node>();
         inView = new HashMap<Long, Node>();
@@ -131,6 +133,11 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     }
 
     @Override
+    public String debug() {
+        return this.toString();
+    }
+
+    @Override
     public boolean addNeighbor(Node n) {
         return this.addToOutView(n);
     }
@@ -162,12 +169,20 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         return sb.toString();
     }
 
+    @Override
+    public void nextCycle(Node node, int protocolID) {
+        subNextCycle(node, protocolID);
+        this.age += 1;
+    }
+
+    protected abstract void subNextCycle(Node node, int protocolID);
+
     /*
      * I N T E R N A L  I N T E R F A C E
      */
 
     protected boolean isExpired() {
-        return ((CDState.getCycle() - this.birthDate) > leaseTimeout);
+        return (this.age >= leaseTimeout);
     }
 
     protected boolean addToOutView (Node n) {
@@ -228,6 +243,29 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
             this.outViewList.add(e);
         }
         return this.outViewList;
+    }
+
+
+    /**
+     * this is the first step to enter a network
+     * @param contact
+     */
+    public void join(Node me, Node contact) {
+        //this.birthDate = CDState.getCycle();
+        this.age = 0;
+        if (contact != null) {
+            System.err.println("JOIN " + me.getID() + " to contact " + contact.getID());
+            //this.inView.clear();
+            //this.outView.clear();
+            //this.outView.put(contact.getID(), contact);
+            this.addNeighbor(contact);
+            ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
+            Transport tr = (Transport) me.getProtocol(tid);
+            System.err.println("SEND MSG: " + message);
+            tr.send(me, contact, message, pid);
+        } else {
+            System.err.println("JOIN-ERROR:COULD NOT FIND A CONTACT FOR NODE " + me.getID());
+        }
     }
 
 }

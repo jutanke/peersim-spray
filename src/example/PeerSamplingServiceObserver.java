@@ -1,5 +1,6 @@
 package example;
 
+import example.scamp.ScampProtocol;
 import example.webrtc.data.DictGraph;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
@@ -62,6 +63,8 @@ public class PeerSamplingServiceObserver implements Control {
                     Network.get(i).getProtocol(pid);
 
             observer.add(n, pss);
+
+            System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());

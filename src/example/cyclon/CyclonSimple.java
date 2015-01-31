@@ -332,4 +332,9 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
         }
         return result;
     }
+
+    @Override
+    public String debug() {
+        return this.toString();
+    }
 }

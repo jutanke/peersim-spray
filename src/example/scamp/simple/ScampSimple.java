@@ -1,13 +1,8 @@
 package example.scamp.simple;
 
-import example.scamp.Scamp;
 import example.scamp.ScampProtocol;
-import peersim.cdsim.CDProtocol;
-import peersim.cdsim.CDState;
-import peersim.config.Configuration;
-import peersim.core.Linkable;
 import peersim.core.Node;
-import peersim.edsim.EDProtocol;
+import peersim.edsim.EDSimulator;
 import peersim.transport.Transport;
 
 import java.util.*;
@@ -40,7 +35,7 @@ public class ScampSimple extends ScampProtocol {
     // ====================================================================
 
     @Override
-    public void nextCycle(Node node, int protocolID) {
+    public void subNextCycle(Node node, int protocolID) {
 
         // lease (re-subscription)
         if (this.isExpired()) {
@@ -68,6 +63,8 @@ public class ScampSimple extends ScampProtocol {
 
         ScampMessage message = (ScampMessage) event;
 
+        System.err.println(message);
+
         message.reduceTTL();  // handle ttl
         if (message.isValid()) {  // else the message just gets discarded
             switch (message.type) {
@@ -91,25 +88,6 @@ public class ScampSimple extends ScampProtocol {
     // =================== PUBLIC SCAMP ===================================
     // ====================================================================
 
-    /**
-     * this is the first step to enter a network
-     * @param contact
-     */
-    public void join(Node me, Node contact) {
-        this.birthDate = CDState.getCycle();
-        if (contact != null) {
-            System.err.println("JOIN " + me.getID() + " to contact " + contact.getID());
-            //this.inView.clear();
-            //this.outView.clear();
-            //this.outView.put(contact.getID(), contact);
-            this.addNeighbor(contact);
-            ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
-            Transport tr = (Transport) me.getProtocol(tid);
-            tr.send(me, contact, message, pid);
-        } else {
-            System.err.println("JOIN-ERROR:COULD NOT FIND A CONTACT FOR NODE " + me.getID());
-        }
-    }
 
     /**
      *

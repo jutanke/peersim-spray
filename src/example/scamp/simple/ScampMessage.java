@@ -34,4 +34,9 @@ public class ScampMessage {
         this.ttl -= 1;
     }
 
+    @Override
+    public String toString(){
+        return "Msg: {" + sender.getID() + "-> s:" + subscriber.getID() + " t:" + type + "}";
+    }
+
 }
