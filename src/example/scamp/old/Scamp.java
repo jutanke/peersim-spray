@@ -461,6 +461,7 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
         if (outViewDates != null) {
             if ((CDState.getCycle() - birthDate) % Scamp.leaseTimeout == 0 &&
                     degree() > 0 && CDState.getCycle() > birthDate) {
+                this.inView.clear();
                 Scamp.subscribe(
                         getNeighbor(CDState.r.nextInt(degree())),
                         thisNode,
@@ -625,6 +626,20 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
 
     @Override
     public String debug() {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("In:[");
+        for (Node n : this.inView) {
+            sb.append(" ");
+            sb.append(n.getID());
+        }
+        sb.append("] Out:[");
+        for (Node n : this.outView) {
+            sb.append(" ");
+            sb.append(n.getID());
+        }
+        sb.append("]");
+
+        return sb.toString();
     }
 }

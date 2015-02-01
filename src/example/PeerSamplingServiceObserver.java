@@ -122,7 +122,8 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+        DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+        System.err.println("avg: " + avg);
 
         if (step == 100) {
             PeerSamplingService pss = (PeerSamplingService)
@@ -133,15 +134,15 @@ public class PeerSamplingServiceObserver implements Control {
             System.err.println("mean cluster:" + cluster);
         }
 
-        //double cluster = observer.meanClusterCoefficient();
-        //System.err.println("mean cluster:" + cluster);
+        double cluster = observer.meanClusterCoefficient();
+        System.err.println("mean cluster:" + cluster);
         //System.out.println(cluster);
 
         //if (step == )
 
         System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
-        //System.err.println("avg: " + avg);
+
 
         //System.out.println(avg.avg);
 
