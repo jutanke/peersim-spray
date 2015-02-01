@@ -116,4 +116,5 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     public abstract void rejoin(Node me);
 
     public abstract void unsubscribe(Node me);
+
 }

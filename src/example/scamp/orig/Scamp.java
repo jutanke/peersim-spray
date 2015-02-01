@@ -1,6 +1,8 @@
 package example.scamp.orig;
 
 import example.scamp.ScampProtocol;
+import example.scamp.ScampWithView;
+import example.scamp.View;
 import peersim.core.Node;
 
 import java.util.List;
@@ -8,15 +10,21 @@ import java.util.List;
 /**
  * Created by julian on 01/02/15.
  */
-public class Scamp extends ScampProtocol {
-
-
+public class Scamp extends ScampWithView {
 
     // ===================================================
     // E N T I T Y
     // ===================================================
 
-    public Scamp(String s) { super(s);}
+    public Scamp(String s) {
+        super(s);
+    }
+
+    @Override
+    public Object clone() {
+        Scamp s = (Scamp) super.clone();
+        return s;
+    }
 
     // ===================================================
     // P U B L I C  I N T E R F A C E
@@ -45,36 +53,6 @@ public class Scamp extends ScampProtocol {
     @Override
     public void processEvent(Node node, int pid, Object event) {
 
-    }
-
-    @Override
-    public int degree() {
-        return 0;
-    }
-
-    @Override
-    public Node getNeighbor(int i) {
-        return null;
-    }
-
-    @Override
-    public boolean addNeighbor(Node neighbour) {
-        return false;
-    }
-
-    @Override
-    public boolean contains(Node neighbor) {
-        return false;
-    }
-
-    @Override
-    public List<Node> getPeers() {
-        return null;
-    }
-
-    @Override
-    public String debug() {
-        return null;
     }
 
     // ===================================================
