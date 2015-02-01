@@ -370,7 +370,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
             System.err.println("@" + me.getID() + " join -> " + contact.getID());
 
             this.inView.clear();
-            this.partialView.clear();
+            //this.partialView.clear();
 
             this.acceptSubscription(me, contact);
 

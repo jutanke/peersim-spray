@@ -1,6 +1,7 @@
 package example.scamp;
 
 import example.cyclon.PeerSamplingService;
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.text.DecimalFormat;
@@ -165,6 +166,19 @@ public class View {
         this.array.clear();
     }
 
+    public List<Node> leaseTimeout() {
+        this.exportFiltered.clear();
+        for(ViewEntry e : this.array) {
+            example.scamp.nohandshake.Scamp pp = (example.scamp.nohandshake.Scamp) e.node.getProtocol(
+                    example.scamp.nohandshake.Scamp.pid
+            );
+            if (pp.isExpired()) {
+                this.exportFiltered.add(e.node);
+            }
+        }
+        return this.exportFiltered;
+    }
+
     /**
      * *************************************
      * <p/>
@@ -172,13 +186,20 @@ public class View {
      */
     public class ViewEntry {
         public final long id;
+        public long birthDate;
         public final Node node;
+        public final long leaseTimeout;
         public double weight;
 
         public ViewEntry(Node n, Double w) {
             this.id = n.getID();
             this.node = n;
             this.weight = w;
+            example.scamp.nohandshake.Scamp pp = (example.scamp.nohandshake.Scamp) n.getProtocol(
+                    example.scamp.nohandshake.Scamp.pid
+            );
+            this.birthDate = pp.birthDate;
+            this.leaseTimeout = pp.randomLeaseTimeout;
         }
     }
 

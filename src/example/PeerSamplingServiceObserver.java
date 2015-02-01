@@ -124,10 +124,13 @@ public class PeerSamplingServiceObserver implements Control {
 
         DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
 
-        if (step == 500) {
+        if (step == 100) {
             PeerSamplingService pss = (PeerSamplingService)
                     Network.get(0).getProtocol(pid);
             System.err.println(observer);
+
+            double cluster = observer.meanClusterCoefficient();
+            System.err.println("mean cluster:" + cluster);
         }
 
         //double cluster = observer.meanClusterCoefficient();
