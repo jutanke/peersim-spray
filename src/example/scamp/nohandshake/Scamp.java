@@ -1,7 +1,7 @@
 package example.scamp.nohandshake;
 
 import example.scamp.View;
-import example.scamp.simple.ScampMessage;
+import example.scamp.ScampMessage;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -11,7 +11,6 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -166,8 +165,33 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
         return (currentTime - this.birthDate) > this.randomLeaseTimeout;
     }
 
+    @Override
+    public void nextCycle(Node node, int protocolID) {
+        subNextCycle(node, protocolID);
+    }
+
+    @Override
+    public void processEvent(Node node, int pid, Object event) {
+        ScampMessage message = (ScampMessage) event;
+        switch (message.type) {
+            case AcceptedSubscription:
+                this.addToInView(message.acceptor);
+                break;
+            default:
+                subProcessEvent(node, pid, message);
+                break;
+        }
+    }
+
+    protected abstract void subNextCycle(Node node, int protocolID);
+
+    protected abstract void subProcessEvent(Node node, int pid, ScampMessage message);
+
+    protected abstract void acceptSubscription(Node acceptor, Node subscriber);
+
     protected boolean addToOutView(Node n) {
         if (this.partialView.contains(n)) {
+            this.partialView.updateBirthdate(n);
             return false;
         } else {
             this.partialView.add(n);
@@ -177,11 +201,16 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
 
     protected boolean addToInView(Node n) {
         if (this.inView.contains(n)) {
+            this.inView.updateBirthdate(n);
             return false;
         } else {
             this.inView.add(n);
             return true;
         }
+    }
+
+    protected boolean p() {
+        return CDState.r.nextDouble() < 1.0 / (1.0 + this.degree());
     }
 
     protected void send(Node me, Node destination, ScampMessage m) {

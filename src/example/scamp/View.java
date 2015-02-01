@@ -1,6 +1,7 @@
 package example.scamp;
 
 import example.cyclon.PeerSamplingService;
+import example.scamp.nohandshake.*;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -82,6 +83,13 @@ public class View {
             }
         }
         return false;
+    }
+
+    public void updateBirthdate(Node n) {
+        example.scamp.nohandshake.Scamp pp = (example.scamp.nohandshake.Scamp)
+                n.getProtocol(example.scamp.nohandshake.Scamp.pid);
+        ViewEntry e = this.array.get(findPosition(n));
+        e.birthDate = pp.birthDate;
     }
 
     public ViewEntry get(int i) {

@@ -1,6 +1,5 @@
 package example.scamp;
 
-import example.scamp.simple.ScampMessage;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -9,12 +8,8 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
-import javax.sql.rowset.spi.SyncProvider;
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by julian on 31/01/15.

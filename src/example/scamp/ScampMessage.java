@@ -1,4 +1,4 @@
-package example.scamp.simple;
+package example.scamp;
 
 import peersim.core.Node;
 
@@ -26,9 +26,10 @@ public class ScampMessage {
     public final boolean updateInView;
     public Node contact;
     public int hop;
+    public Node acceptor;
     public final Node replacer;
 
-    public ScampMessage(Node n, Type t, Node s) {
+    protected ScampMessage(Node n, Type t, Node s) {
         this.ttl = 15;
         this.type = t;
         this.weight = -1.0;
@@ -38,7 +39,7 @@ public class ScampMessage {
         this.replacer = null;
     }
 
-    public ScampMessage(Node newsender, ScampMessage m) {
+    protected ScampMessage(Node newsender, ScampMessage m) {
         this.ttl = m.ttl;
         this.type = m.type;
         this.subscriber = m.subscriber;
@@ -68,6 +69,18 @@ public class ScampMessage {
         this.subscriber = null;
     }
 
+    public static ScampMessage forward(Node sender, ScampMessage m) {
+        ScampMessage message = new ScampMessage(sender, m);
+        message.reduceTTL();
+        return message;
+    }
+
+    public static ScampMessage acceptMessage(Node sender, Node subscriber, Node acceptor) {
+        ScampMessage m = new ScampMessage(sender, Type.AcceptedSubscription, subscriber);
+        m.acceptor = acceptor;
+        return m;
+    }
+
     public static ScampMessage updateInViewAfterUnsubscribe(Node sender, Node replacer) {
         return new ScampMessage(sender, replacer, Type.HandleUnsubscribeIn);
     }
@@ -92,7 +105,8 @@ public class ScampMessage {
         return m;
     }
 
-    public static ScampMessage forwardSubscription(Node sender, Node subscriber) {
+
+    public static ScampMessage createForwardSubscription(Node sender, Node subscriber) {
         return new ScampMessage(sender, Type.ForwardSubscription, subscriber);
     }
 
