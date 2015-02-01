@@ -84,6 +84,19 @@ public abstract class ScampWithView extends ScampProtocol {
 
     public abstract void subRejoin(Node me);
 
+    @Override
+    public void nextCycle(Node node, int protocolID) {
+
+        if (this.isExpired() && this.degree() > 0) {
+            this.rejoin(node);
+        }
+
+        this.subNextCycle(node);
+
+    }
+
+    public abstract void subNextCycle(Node node);
+
     // ===================================================
     // I N T E R N A L  I N T E R F A C E
     // ===================================================
@@ -126,7 +139,7 @@ public abstract class ScampWithView extends ScampProtocol {
     protected static Node getRandomNode(Node n) {
 
         double ttl = indirTTL;
-        Scamp l = (Scamp) n.getProtocol(pid);
+        ScampWithView l = (ScampWithView) n.getProtocol(pid);
         ttl -= 1.0 / l.degree();
 
         while (n.isUp() && ttl > 0.0) {
@@ -137,7 +150,7 @@ public abstract class ScampWithView extends ScampProtocol {
                 else n = l.inView.get(id - l.degree()).node;
             } else break;
 
-            l = (Scamp) n.getProtocol(pid);
+            l = (ScampWithView) n.getProtocol(pid);
             ttl -= 1.0 / l.degree();
         }
 

@@ -1,10 +1,8 @@
 package example.scamp;
 
-import example.scamp.orig.messaging.*;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
-import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 import peersim.edsim.EDProtocol;
@@ -72,12 +70,15 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
 
     public ScampProtocol(String n) {
-        Scamp.c = Configuration.getInt(n + "." + PAR_C, 0);
-        Scamp.indirTTL = Configuration.getInt(n + "." + PAR_INDIRTTL, -1);
-        Scamp.leaseTimeoutMax = Configuration.getInt(n + "." + PAR_LEASE_MAX, -1);
-        Scamp.leaseTimeoutMin = Configuration.getInt(n + "." + PAR_LEASE_MIN, -1);
+        ScampProtocol.c = Configuration.getInt(n + "." + PAR_C, 0);
+        ScampProtocol.indirTTL = Configuration.getInt(n + "." + PAR_INDIRTTL, -1);
+        ScampProtocol.leaseTimeoutMax = Configuration.getInt(n + "." + PAR_LEASE_MAX, -1);
+        ScampProtocol.leaseTimeoutMin = Configuration.getInt(n + "." + PAR_LEASE_MIN, -1);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         pid = Configuration.lookupPid(SCAMP_PROT);
+
+        System.err.println("min:" + leaseTimeoutMin + "  max:" + leaseTimeoutMax);
+
         this.randomLeaseTimeout = CDState.r.nextLong(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
         System.out.println("Lease:" + this.randomLeaseTimeout);
         System.out.println("indirTTL:" + indirTTL);

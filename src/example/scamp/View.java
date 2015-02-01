@@ -83,8 +83,8 @@ public class View {
     }
 
     public void updateBirthdate(Node n) {
-        Scamp pp = (Scamp)
-                n.getProtocol(Scamp.pid);
+        ScampWithView pp = (ScampWithView)
+                n.getProtocol(ScampWithView.pid);
         ViewEntry e = this.array.get(findPosition(n));
         e.birthDate = pp.birthDate;
     }
@@ -174,8 +174,8 @@ public class View {
     public List<Node> leaseTimeout() {
         this.exportFiltered.clear();
         for(ViewEntry e : this.array) {
-            Scamp pp = (Scamp) e.node.getProtocol(
-                    Scamp.pid
+            ScampWithView pp = (ScampWithView) e.node.getProtocol(
+                    ScampWithView.pid
             );
             if (pp.isExpired()) {
                 this.exportFiltered.add(e.node);
@@ -200,8 +200,8 @@ public class View {
             this.id = n.getID();
             this.node = n;
             this.weight = w;
-            Scamp pp = (Scamp) n.getProtocol(
-                    Scamp.pid
+            ScampWithView pp = (ScampWithView) n.getProtocol(
+                    ScampWithView.pid
             );
             this.birthDate = pp.birthDate;
             this.leaseTimeout = pp.randomLeaseTimeout;

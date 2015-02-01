@@ -1,10 +1,11 @@
 package example.scamp.orig;
 
-import example.cyclon.PeerSamplingService;
 import example.scamp.ScampWithView;
 import example.scamp.orig.messaging.ScampMessage;
 import peersim.cdsim.CDState;
+import peersim.core.CommonState;
 import peersim.core.Node;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Created by julian on 01/02/15.
@@ -31,22 +32,24 @@ public class Scamp extends ScampWithView {
 
     @Override
     public void join(Node me, Node subscriber) {
-
+        Scamp.subscribe(me, subscriber);
     }
 
     @Override
     public void subRejoin(Node me) {
+        print("Rejoin: " + me.getID());
+    }
+
+    @Override
+    public void subNextCycle(Node node) {
+
+
 
     }
 
     @Override
     public void unsubscribe(Node me) {
-
-    }
-
-    @Override
-    public void nextCycle(Node node, int protocolID) {
-
+        throw new NotImplementedException();
     }
 
     @Override
