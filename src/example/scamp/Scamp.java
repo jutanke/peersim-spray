@@ -140,7 +140,13 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
 
     @Override
     public String debug() {
-        return this.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("{In:");
+        sb.append(this.inView);
+        sb.append(" Out:");
+        sb.append(this.partialView);
+        sb.append("}");
+        return sb.toString();
     }
 
     @Override
@@ -185,7 +191,7 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
 
     protected abstract void subProcessEvent(Node node, int pid, ScampMessage message);
 
-    protected abstract void acceptSubscription(Node acceptor, Node subscriber);
+    public abstract void acceptSubscription(Node acceptor, Node subscriber);
 
     protected boolean addToOutView(Node n) {
         if (this.partialView.contains(n)) {

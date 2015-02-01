@@ -52,7 +52,7 @@ public class ScampNoHandshake extends Scamp {
     }
 
     @Override
-    protected void acceptSubscription(Node acceptor, Node subscriber) {
+    public void acceptSubscription(Node acceptor, Node subscriber) {
         if (acceptor.getID() == subscriber.getID()) {
             throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
         } else {
@@ -76,14 +76,18 @@ public class ScampNoHandshake extends Scamp {
      * @param forward the subscribing message
      */
     private static void doSubscribe(final Node n, ScampMessage forward) {
-        Node s = forward.subscriber;
-        Scamp pp = (Scamp) n.getProtocol(Scamp.pid);
-        if (pp.p() && !pp.contains(s)) {
-            pp.addNeighbor(s);
-        } else if (pp.degree() > 0) {
-            Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
-            forward = ScampMessage.forward(n, forward); // we update the TTL of the message
-            pp.send(n, forwardTarget, forward);
+        if (forward.ttl > 0) {
+            Node s = forward.subscriber;
+            System.err.println("subscribe fwd " + s.getID() + " to " + n.getID() + " ttl:" + forward.ttl);
+            Scamp pp = (Scamp) n.getProtocol(Scamp.pid);
+            if (pp.p() && !pp.contains(s) && n.getID() != s.getID()) {
+                //pp.addNeighbor(s);
+                pp.acceptSubscription(n, s);
+            } else if (pp.degree() > 0) {
+                Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
+                forward = ScampMessage.forward(n, forward); // we update the TTL of the message
+                pp.send(n, forwardTarget, forward);
+            }
         }
     }
 
@@ -137,6 +141,8 @@ public class ScampNoHandshake extends Scamp {
         if (indirTTL > 0.0) {
             n = getRandomNode(n);
         }
+
+        System.err.println("Start subscribe " + s.getID() + " to " + n.getID());
 
         if (!n.isUp()) {
             return; // quietly returning, no feedback
