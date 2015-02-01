@@ -107,7 +107,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     }
 
-    public void send(Node sender, Node destination, example.scamp.orig.messaging.ScampMessage m) {
+    public void send(Node sender, Node destination, example.scamp.messaging.ScampMessage m) {
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, destination, m, pid);
     }

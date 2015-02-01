@@ -27,7 +27,7 @@ overlay.size SIZE
 
 protocol.link peersim.core.IdleProtocol
 
-protocol.0 example.scamp.orig.Scamp
+protocol.0 example.scamp.simple.Scamp
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr

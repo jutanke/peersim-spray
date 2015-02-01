@@ -1,9 +1,8 @@
-package example.scamp.orig;
+package example.scamp.simple;
 
 import example.scamp.ScampWithView;
-import example.scamp.orig.messaging.ScampMessage;
+import example.scamp.messaging.ScampMessage;
 import peersim.cdsim.CDState;
-import peersim.core.CommonState;
 import peersim.core.Node;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 

@@ -1,4 +1,4 @@
-package example.scamp.orig.messaging;
+package example.scamp.messaging;
 
 import peersim.core.Node;
 
