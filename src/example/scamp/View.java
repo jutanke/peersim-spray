@@ -3,6 +3,7 @@ package example.scamp;
 import example.cyclon.PeerSamplingService;
 import peersim.core.Node;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,8 @@ public class View {
 
     private final List<ViewEntry> array;
     private final List<Node> export;
-    private final List<Node> normalized;
+    private final List<Node> exportFiltered;
+    private final List<ViewEntry> normalized;
 
     private double totalWeight;
 
@@ -22,7 +24,8 @@ public class View {
         this.array = new ArrayList<ViewEntry>();
         this.totalWeight = 0;
         this.export = new ArrayList<Node>();
-        this.normalized = new ArrayList<Node>();
+        this.normalized = new ArrayList<ViewEntry>();
+        this.exportFiltered = new ArrayList<Node>();
     }
 
     public int length() {
@@ -45,7 +48,7 @@ public class View {
         this.export.remove(index);
     }
 
-    public void del(Node n){
+    public void del(Node n) {
         int i = 0;
         for (; i < this.array.size(); i++) {
             if (this.array.get(i).id == n.getID()) {
@@ -59,6 +62,16 @@ public class View {
 
     public List<Node> list() {
         return this.export;
+    }
+
+    public List<Node> list(Node filter) {
+        this.exportFiltered.clear();
+        for (Node n : list()) {
+            if (n.getID() != filter.getID()) {
+                exportFiltered.add(n);
+            }
+        }
+        return exportFiltered;
     }
 
     public boolean contains(Node s) {
@@ -79,6 +92,11 @@ public class View {
     }
 
     public boolean updateWeight(int index, double weight) {
+        if (index >= this.length()) {
+            return false;
+            //throw new RuntimeException("OOB! {updateWeight} " +
+            //    " i:" + index + " size:" + length());
+        }
         boolean isUpdated = (weight != this.get(index).weight);
         if (isUpdated) {
             this.totalWeight = this.totalWeight - this.get(index).weight + weight;
@@ -87,16 +105,15 @@ public class View {
         return isUpdated;
     }
 
-    public boolean updateWeight(Node n, double weight){
+    public boolean updateWeight(Node n, double weight) {
         return this.updateWeight(this.findPosition(n), weight);
     }
 
-    public List<Node> normalizeWeights() {
-        boolean isUpdated;
+    public List<ViewEntry> normalizeWeights() {
         this.normalized.clear();
         for (int i = 0; i < this.array.size(); ++i) {
             if (this.updateWeight(i, this.get(i).weight / this.totalWeight)) {
-                this.normalized.add(this.array.get(i).node);
+                this.normalized.add(this.array.get(i));
             }
         }
         return this.normalized;
@@ -113,7 +130,7 @@ public class View {
 
     private int findPosition(Node n) {
         int i = 0;
-        for (;i<this.array.size();i++) {
+        for (; i < this.array.size(); i++) {
             if (this.array.get(i).id == n.getID()) {
                 break;
             }
@@ -121,13 +138,38 @@ public class View {
         return i;
     }
 
-    /****************************************
-     *
-     ****************************************/
+    private static final DecimalFormat df = new DecimalFormat("0.00");
+
+    public static boolean SHOW_WEIGHT = false;
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (ViewEntry e : this.array) {
+            if (sb.length() > 1) sb.append(",");
+            sb.append("{");
+            sb.append(e.id);
+            if (SHOW_WEIGHT) {
+                sb.append("|w:");
+                sb.append(df.format(e.weight));
+            }
+            sb.append("}");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    /**
+     * *************************************
+     * <p/>
+     * **************************************
+     */
     public class ViewEntry {
         public final long id;
         public final Node node;
         public double weight;
+
         public ViewEntry(Node n, Double w) {
             this.id = n.getID();
             this.node = n;

@@ -24,7 +24,7 @@ public class ScampSimple extends ScampProtocol {
     }
 
     @Override
-    public Object clone(){
+    public Object clone() {
         ScampSimple scamp = null;
         scamp = (ScampSimple) super.clone();
         this.deleteList = new ArrayList<Node>();
@@ -37,12 +37,7 @@ public class ScampSimple extends ScampProtocol {
     @Override
     public void subNextCycle(Node node, int protocolID) {
 
-        System.err.println("+++++++++++ CYCLE ++++++++++++ (" + node.getID());
-
-        // lease (re-subscription)
-        if (this.isExpired()) {
-            this.unsubscribe(node);
-        }
+        //System.err.println("+++++++++++ CYCLE ++++++++++++ (" + node.getID());
 
         // remove all expired nodes from our partial view
         this.deleteList.clear();
@@ -58,14 +53,17 @@ public class ScampSimple extends ScampProtocol {
         this.deleteList.clear();
 
 
+        // lease (re-subscription)
+        if (this.isExpired()) {
+            this.unsubscribe(node);
+        }
+
     }
 
     @Override
-    public void processEvent(Node node, int pid, Object event) {
+    public void subProcessEvent(Node node, int pid, ScampMessage message) {
 
-        ScampMessage message = (ScampMessage) event;
-
-        System.err.println(node.getID() + "=>:" + message);
+        //System.err.println(node.getID() + "=>:" + message);
 
         message.reduceTTL();  // handle ttl
         if (message.isValid()) {  // else the message just gets discarded
@@ -76,14 +74,28 @@ public class ScampSimple extends ScampProtocol {
                 case Unsubscribe:
                     break;
                 case ForwardSubscription:
-                    handleForwardedSubscription(node, message.subscriber);
+                    handleForwardedSubscription(node, message);
                     break;
                 case AcceptedSubscription:
-                    if (this.inView.contains(message.sender)) throw new RuntimeException("QNOPE");
-                    this.inView.add(message.sender);
+                    if (this.inView.contains(message.sender)) {
+                        System.out.println("must not happen..");
+                    }
+                    this.addToInView(message.sender);
+                    break;
+                case RequestContact:
                     break;
             }
         }
+
+    }
+
+    @Override
+    public void requestConnection(Node me, Node subscriber) {
+
+        // TODO figure out how to calculate the {proportionality constant}
+        int counter = 2 * (int) Math.ceil(Math.log(this.partialView.length()));
+
+        //TODO keep going!
 
     }
 
@@ -92,7 +104,6 @@ public class ScampSimple extends ScampProtocol {
 
 
     /**
-     *
      * @param me
      */
     public void unsubscribe(Node me) {
@@ -108,10 +119,8 @@ public class ScampSimple extends ScampProtocol {
     }
 
 
-
     // =================== helper =========================================
     // ====================================================================
-
 
 
     // =================== event handler ==================================
@@ -119,7 +128,6 @@ public class ScampSimple extends ScampProtocol {
 
 
     /**
-     *
      * @param me
      * @param subscriber
      */
@@ -128,48 +136,54 @@ public class ScampSimple extends ScampProtocol {
         // we must put the subscriber into our inview
         this.addToInView(subscriber);
 
+        ScampMessage message = ScampMessage.forwardSubscription(me, subscriber);
+
         for (Node e : this.partialView.list()) {
-            forwardSubscription(me, e, subscriber);
+            forwardSubscription(me, e, message);
         }
         for (int j = 0; j < c; j++) {
             Node n = randomOutNode();
-            forwardSubscription(me, n, subscriber);
+            forwardSubscription(me, n, message);
         }
     }
 
     /**
-     *
      * @param me
-     * @param subscriber
+     * @param message
      */
-    private void handleForwardedSubscription(Node me, Node subscriber) {
-        if (p() && !this.partialView.contains(subscriber)) {
-            this.partialView.add(subscriber);
-            this.acceptSubscription(me, subscriber);
+    private void handleForwardedSubscription(Node me, ScampMessage message) {
+        if (p() && !this.partialView.contains(message.subscriber) && me.getID() != message.subscriber.getID()) {
+            this.acceptSubscription(me, message.subscriber);
         } else {
             Node n = randomOutNode();
-            forwardSubscription(me, n, subscriber);
+            if (n != null) {
+                forwardSubscription(me, n, message);
+            } else {
+                System.out.println("DEAD END for " + message.subscriber.getID() + " @" + me.getID());
+            }
+
         }
     }
 
-    /**
-     * forward the subscription
-     * @param sender
-     * @param receiver
-     * @param subscriber
-     */
-    private void forwardSubscription(Node sender, Node receiver, Node subscriber) {
-        if (receiver.getID() != subscriber.getID()) {
-            ScampMessage message = new ScampMessage(sender, ScampMessage.Type.ForwardSubscription, subscriber);
-            Transport tr = (Transport) sender.getProtocol(tid);
-            tr.send(sender, receiver, message, pid);
-        } else {
-            System.err.println("CANNOT FORWARD OWN SUBSCRIPTION!");
-        }
+    //private void forwardSubscription(Node sender, Node receiver, Node subscriber) {
+    private void forwardSubscription(Node me, Node receiver, ScampMessage message) {
+        //if (receiver.getID() != message.subscriber.getID()) {
+        //ScampMessage message = new ScampMessage(sender, ScampMessage.Type.ForwardSubscription, subscriber);
+        //Transport tr = (Transport) sender.getProtocol(tid);
+        //tr.send(sender, receiver, message, pid);
+        message = new ScampMessage(me, message);
+        send(me, receiver, message);
+        //} else {
+        //    System.err.println("CANNOT FORWARD OWN SUBSCRIPTION!" + receiver.getID() + "-" + message.subscriber.getID());
+
+//            ScampProtocol pp = (ScampProtocol) me.getProtocol(pid);
+        //          System.err.println(me.getID() + " -> " + pp);
+
+        //}
+
     }
 
     /**
-     *
      * @param sender
      * @param subscriber
      */
@@ -177,6 +191,7 @@ public class ScampSimple extends ScampProtocol {
         if (sender.getID() == subscriber.getID()) {
             throw new RuntimeException("MUST NOT SUBSCRIBE TO MYSELF!");
         }
+        this.partialView.add(subscriber);
         ScampMessage message = new ScampMessage(sender, ScampMessage.Type.AcceptedSubscription, null);
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, subscriber, message, pid);

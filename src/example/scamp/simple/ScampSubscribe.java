@@ -48,11 +48,24 @@ public class ScampSubscribe implements NodeInitializer, Control {
     @Override
     public boolean execute() {
 
-        star();
+        line();
 
         return false;
     }
 
+
+    private void line() {
+        System.err.println("++++++++++++++ interconnect nodes as LINE! ++++++++++++++");
+
+        Node contact = Network.get(0);
+        for (int i = 1; i < Network.size(); i++) {
+
+            Node me = Network.get(i);
+            ScampProtocol current = get(i);
+            current.join(me, contact);
+            contact = me;
+        }
+    }
 
     private void star() {
         System.err.println("++++++++++++++ interconnect nodes as STAR! ++++++++++++++");
