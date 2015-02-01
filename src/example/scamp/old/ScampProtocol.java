@@ -1,6 +1,5 @@
 package example.scamp.old;
 
-import example.scamp.ScampMessageOld;
 import example.scamp.View;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;

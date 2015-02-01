@@ -1,6 +1,6 @@
 package example.scamp.simple;
 
-import example.scamp.ScampMessageOld;
+import example.scamp.old.ScampMessageOld;
 import peersim.core.Node;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 

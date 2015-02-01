@@ -1,7 +1,7 @@
 package example.scamp.nohandshake;
 
 import example.scamp.Scamp;
-import example.scamp.ScampMessageOld;
+import example.scamp.old.ScampMessageOld;
 import peersim.cdsim.CDState;
 import peersim.core.Node;
 

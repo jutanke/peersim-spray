@@ -1,6 +1,7 @@
 package example.scamp;
 
 import peersim.cdsim.CDState;
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.util.List;
@@ -17,10 +18,13 @@ public abstract class ScampWithView extends ScampProtocol {
     private View inView;
     private View partialView;
 
+    protected long birthDate;
+
     public ScampWithView(String s) {
         super(s);
         this.inView = new View();
         this.partialView = new View();
+        this.birthDate = CommonState.getTime();
     }
 
     @Override
@@ -28,6 +32,7 @@ public abstract class ScampWithView extends ScampProtocol {
         ScampWithView s = (ScampWithView) super.clone();
         s.partialView = new View();
         s.inView = new View();
+        s.birthDate = CommonState.getTime();
         return s;
     }
 
@@ -71,9 +76,22 @@ public abstract class ScampWithView extends ScampProtocol {
         return sb.toString();
     }
 
+    @Override
+    public void rejoin(Node me) {
+        this.birthDate = CommonState.getTime();
+        this.subRejoin(me);
+    }
+
+    public abstract void subRejoin(Node me);
+
     // ===================================================
     // I N T E R N A L  I N T E R F A C E
     // ===================================================
+
+    public boolean isExpired() {
+        long currentTime = CommonState.getTime();
+        return (currentTime - this.birthDate) > this.randomLeaseTimeout;
+    }
 
     protected boolean addToOutView(Node n) {
         if (this.partialView.contains(n)) {
@@ -93,6 +111,10 @@ public abstract class ScampWithView extends ScampProtocol {
             this.inView.add(n);
             return true;
         }
+    }
+
+    public boolean p() {
+        return CDState.r.nextDouble() < 1.0 / (1.0 + this.degree());
     }
 
     /**

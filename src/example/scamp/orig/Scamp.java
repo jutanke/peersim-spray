@@ -1,11 +1,9 @@
 package example.scamp.orig;
 
-import example.scamp.ScampProtocol;
 import example.scamp.ScampWithView;
-import example.scamp.View;
+import example.scamp.orig.messaging.ScampMessage;
+import peersim.cdsim.CDState;
 import peersim.core.Node;
-
-import java.util.List;
 
 /**
  * Created by julian on 01/02/15.
@@ -36,7 +34,7 @@ public class Scamp extends ScampWithView {
     }
 
     @Override
-    public void rejoin(Node me) {
+    public void subRejoin(Node me) {
 
     }
 
@@ -55,7 +53,44 @@ public class Scamp extends ScampWithView {
 
     }
 
+    @Override
+    public void acceptSubscription(Node acceptor, Node subscriber) {
+        if (acceptor.getID() == subscriber.getID()) {
+            throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
+        } else {
+            System.err.println("Accept 1(out) " + subscriber.getID() + " @" + acceptor.getID());
+            ScampMessage m = ScampMessage.createAccept(acceptor, subscriber, acceptor);
+            this.send(acceptor, subscriber, m);
+            this.addNeighbor(subscriber);
+        }
+    }
+
     // ===================================================
     // P R I V A T E  I N T E R F A C E
     // ===================================================
+
+    /**
+     * Performs the forwarding cycle. Applies a little simplification compared
+     * to the original SCAMP protocol. To avoid infinite cycles, instead of
+     * counters in each node, we allow only a limited number of steps, ie
+     * we introduce a TTL instead. It consumes less memory and easier to implement.
+     *
+     * @param n       the node which receives the given subscription
+     * @param forward the subscribing message
+     */
+    private static void doSubscribe(final Node n, ScampMessage forward) {
+        if (!forward.isExpired()) {
+            Node s = forward.payload;
+            System.err.println("subscribe fwd " + s.getID() + " to " + n.getID());
+            Scamp pp = (Scamp) n.getProtocol(example.scamp.Scamp.pid);
+            if (pp.p() && !pp.contains(s) && n.getID() != s.getID()) {
+                //pp.addNeighbor(s);
+                pp.acceptSubscription(n, s);
+            } else if (pp.degree() > 0) {
+                Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
+                forward = ScampMessage.updateForwardSubscription(n, forward); // we update the TTL of the message
+                pp.send(n, forwardTarget, forward);
+            }
+        }
+    }
 }
