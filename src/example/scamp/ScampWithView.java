@@ -15,8 +15,8 @@ public abstract class ScampWithView extends ScampProtocol {
     // E N T I T Y
     // ===================================================
 
-    private View inView;
-    private View partialView;
+    protected View inView;
+    protected View partialView;
 
     protected long birthDate;
 
@@ -123,10 +123,10 @@ public abstract class ScampWithView extends ScampProtocol {
      * the node which is down is returned. This models the fact that in the real
      * protocol in fact nothing is returned.
      */
-    protected static Node getRandomNode(Node n, int protocolID) {
+    protected static Node getRandomNode(Node n) {
 
         double ttl = indirTTL;
-        Scamp l = (Scamp) n.getProtocol(protocolID);
+        Scamp l = (Scamp) n.getProtocol(pid);
         ttl -= 1.0 / l.degree();
 
         while (n.isUp() && ttl > 0.0) {
@@ -137,7 +137,7 @@ public abstract class ScampWithView extends ScampProtocol {
                 else n = l.inView.get(id - l.degree()).node;
             } else break;
 
-            l = (Scamp) n.getProtocol(protocolID);
+            l = (Scamp) n.getProtocol(pid);
             ttl -= 1.0 / l.degree();
         }
 

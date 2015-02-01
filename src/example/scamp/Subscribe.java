@@ -48,7 +48,7 @@ public class Subscribe implements NodeInitializer, Control {
         Node contact = Network.get(0);
         for (int i = 1; i < Network.size(); i++) {
             Node me = Network.get(i);
-            Scamp.subscribe(contact, me);
+            ScampProtocol.subscribe(contact, me);
             contact = me;
         }
     }

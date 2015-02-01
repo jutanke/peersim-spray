@@ -76,6 +76,12 @@ public class ScampMessage {
     }
 
 
+    @Override
+    public String toString(){
+        return "msg: " + type + " sender:" + this.sender.getID() + " payload1:" +
+                ((payload == null) ? "<null>" : payload.getID()) + " payload2" +
+                ((payload2 == null) ? "<null>" : payload2.getID()) + " ttl:" + ttl;
+    }
 
     public boolean isExpired() {
         return this.ttl <= 0;

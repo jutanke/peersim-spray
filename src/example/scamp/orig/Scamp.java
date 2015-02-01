@@ -1,5 +1,6 @@
 package example.scamp.orig;
 
+import example.cyclon.PeerSamplingService;
 import example.scamp.ScampWithView;
 import example.scamp.orig.messaging.ScampMessage;
 import peersim.cdsim.CDState;
@@ -51,6 +52,18 @@ public class Scamp extends ScampWithView {
     @Override
     public void processEvent(Node node, int pid, Object event) {
 
+        ScampMessage message = (ScampMessage) event;
+        switch (message.type) {
+            case AcceptSubscription:
+                print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
+                Node acceptor = message.payload;
+                this.addToInView(acceptor);
+                break;
+            case ForwardSubscription:
+                Scamp.doSubscribe(node, message);
+                break;
+        }
+
     }
 
     @Override
@@ -58,7 +71,7 @@ public class Scamp extends ScampWithView {
         if (acceptor.getID() == subscriber.getID()) {
             throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
         } else {
-            System.err.println("Accept 1(out) " + subscriber.getID() + " @" + acceptor.getID());
+            print("Accept [OUT] " + subscriber.getID() + " -> " + acceptor.getID());
             ScampMessage m = ScampMessage.createAccept(acceptor, subscriber, acceptor);
             this.send(acceptor, subscriber, m);
             this.addNeighbor(subscriber);
@@ -68,6 +81,16 @@ public class Scamp extends ScampWithView {
     // ===================================================
     // P R I V A T E  I N T E R F A C E
     // ===================================================
+
+    /**
+     * for debugging
+     * @param s
+     */
+    private static void print(Object s) {
+        if (true) {
+            System.out.println(s);
+        }
+    }
 
     /**
      * Performs the forwarding cycle. Applies a little simplification compared
@@ -81,7 +104,7 @@ public class Scamp extends ScampWithView {
     private static void doSubscribe(final Node n, ScampMessage forward) {
         if (!forward.isExpired()) {
             Node s = forward.payload;
-            System.err.println("subscribe fwd " + s.getID() + " to " + n.getID());
+            print("subscribe fwd " + s.getID() + " to " + n.getID());
             Scamp pp = (Scamp) n.getProtocol(example.scamp.Scamp.pid);
             if (pp.p() && !pp.contains(s) && n.getID() != s.getID()) {
                 //pp.addNeighbor(s);
@@ -90,6 +113,56 @@ public class Scamp extends ScampWithView {
                 Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
                 forward = ScampMessage.updateForwardSubscription(n, forward); // we update the TTL of the message
                 pp.send(n, forwardTarget, forward);
+            }
+        } else {
+            print("message expired.. " + forward);
+        }
+    }
+
+    /**
+     * This node will act as a contact node forwarding the subscription to nodes
+     * from its view and c other random nodes.
+     *
+     * @param n the contact node
+     * @param s the subscribing node
+     */
+    public static void subscribe(Node n, Node s) {
+
+        if (indirTTL > 0.0) {
+            n = getRandomNode(n);
+        }
+
+        System.err.println("Start subscribe " + s.getID() + " to " + n.getID());
+
+        if (!n.isUp()) {
+            return; // quietly returning, no feedback
+        }
+
+        Scamp contact = (Scamp) n.getProtocol(pid);
+        Scamp subscriber = (Scamp) s.getProtocol(pid);
+
+        //TODO MAKE THIS ASYNC
+
+        contact.addToInView(s);
+        subscriber.addNeighbor(n);
+
+        ScampMessage forward = ScampMessage.createForwardSubscription(n, s);
+
+        if (contact.degree() == 0) {
+            System.err.println("SCAMP: zero degree contact node " + s.getID() + " -> " + n.getID());
+            Scamp.doSubscribe(n, forward);
+        } else {
+
+            for (int i = 0; i < contact.partialView.length(); ++i) {
+                Scamp.doSubscribe(contact.getNeighbor(i), forward);
+            }
+
+            if (indirTTL > 0.0) {
+                for (int i = 0; i < c; ++i) {
+                    Scamp.doSubscribe(
+                            contact.getNeighbor(CDState.r.nextInt(contact.degree())),
+                            forward);
+                }
             }
         }
     }

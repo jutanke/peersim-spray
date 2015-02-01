@@ -111,6 +111,10 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         tr.send(sender, destination, m, pid);
     }
 
+    public static void subscribe(Node n, Node s) {
+        ((ScampProtocol) n.getProtocol(pid)).join(n, s);
+    }
+
     public abstract void acceptSubscription(Node acceptor, Node subscriber);
 
     public abstract void join(Node me, Node subscriber);
