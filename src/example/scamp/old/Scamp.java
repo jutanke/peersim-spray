@@ -15,7 +15,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-package example.scamp;
+package example.scamp.old;
 
 import example.PeerSamplingService;
 import peersim.cdsim.CDProtocol;
@@ -250,7 +250,7 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
 
         //I guess this is needed
         contact.addInNeighbor(s);
-        subscriber.addNeighbor(n);
+        //subscriber.addNeighbor(n);
 
         if (contact.degree() == 0) {
             System.err.println("SCAMP: zero degree contact node!");

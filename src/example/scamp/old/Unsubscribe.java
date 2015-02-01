@@ -15,7 +15,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-package example.scamp;
+package example.scamp.old;
 
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -78,7 +78,7 @@ public class Unsubscribe extends DynamicNetwork {
             Network.swap(
                     Network.size() - 1,
                     CommonState.r.nextInt(Network.size()));
-            Scamp.unsubscribe(
+            example.scamp.old.Scamp.unsubscribe(
                     Network.get(Network.size() - 1),
                     protocolID);
             Network.remove();

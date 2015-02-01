@@ -15,7 +15,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-package example.scamp;
+package example.scamp.old;
 
 import peersim.config.Configuration;
 import peersim.core.Control;
