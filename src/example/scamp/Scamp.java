@@ -179,6 +179,7 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
         ScampMessage message = (ScampMessage) event;
         switch (message.type) {
             case AcceptedSubscription:
+                System.err.println("Accept 2(in) " + message.acceptor.getID() + " @" + node.getID());
                 this.addToInView(message.acceptor);
                 break;
             default:

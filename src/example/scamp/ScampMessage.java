@@ -30,7 +30,7 @@ public class ScampMessage {
     public final Node replacer;
 
     protected ScampMessage(Node n, Type t, Node s) {
-        this.ttl = 15;
+        this.ttl = 100;
         this.type = t;
         this.weight = -1.0;
         this.sender = n;

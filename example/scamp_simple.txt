@@ -1,7 +1,7 @@
-SIZE 10
+SIZE 100
 
 # parameters of periodic execution
-CYCLES 20
+CYCLES 200
 CYCLE SIZE*10000
 
 
@@ -32,8 +32,8 @@ protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
-protocol.0.leaseTimeoutMin 7
-protocol.0.leaseTimeoutMax 12
+protocol.0.leaseTimeoutMin 37
+protocol.0.leaseTimeoutMax 181
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay (CYCLE*MINDELAY)/100

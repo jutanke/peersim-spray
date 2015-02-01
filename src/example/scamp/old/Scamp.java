@@ -193,7 +193,7 @@ public class Scamp implements CDProtocol, Linkable, PeerSamplingService {
         }
 
         if (!added && false)
-            System.err.println("SCAMP: subscription not succesful! (" +
+            System.err.println("SCAMP: subscription not successful! (" +
                     Network.size() + "," + i + "," + n.isUp() + ")");
     }
 

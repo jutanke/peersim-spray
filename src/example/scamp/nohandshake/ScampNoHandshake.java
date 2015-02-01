@@ -27,6 +27,7 @@ public class ScampNoHandshake extends Scamp {
     protected void subNextCycle(Node node, int protocolID) {
 
         if (this.isExpired() && this.degree() > 0) {
+            this.inView.clear();
             ScampNoHandshake.subscribe(getNeighbor(CDState.r.nextInt(degree())), node);
         }
 
@@ -56,6 +57,7 @@ public class ScampNoHandshake extends Scamp {
         if (acceptor.getID() == subscriber.getID()) {
             throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
         } else {
+            System.err.println("Accept 1(out) " + subscriber.getID() + " @" + acceptor.getID());
             ScampMessage m = ScampMessage.acceptMessage(acceptor, subscriber, acceptor);
             this.send(acceptor, subscriber, m);
             this.addNeighbor(subscriber);
