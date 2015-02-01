@@ -9,6 +9,7 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
+import javax.sql.rowset.spi.SyncProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -299,12 +300,10 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     public void join(Node me, Node contact) {
         //this.birthDate = CDState.getCycle();
         this.age = 0;
+
         if (contact != null) {
 
-            //System.err.println("JOIN " + me.getID() + " to contact " + contact.getID());
-            //this.inView.clear();
-            //this.outView.clear();
-            //this.outView.put(contact.getID(), contact);
+            this.inView.clear();
             this.addNeighbor(contact);
             ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
             //Transport tr = (Transport) me.getProtocol(tid);

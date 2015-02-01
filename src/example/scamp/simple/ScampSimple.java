@@ -4,6 +4,7 @@ import example.scamp.ScampProtocol;
 import peersim.core.Node;
 import peersim.edsim.EDSimulator;
 import peersim.transport.Transport;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -48,6 +49,7 @@ public class ScampSimple extends ScampProtocol {
             }
         }
         for (Node n : this.deleteList) {
+            System.out.println("@" + node.getID() + ":remove from partial view:" + n.getID());
             this.partialView.del(n);
         }
         this.deleteList.clear();
@@ -55,6 +57,7 @@ public class ScampSimple extends ScampProtocol {
 
         // lease (re-subscription)
         if (this.isExpired()) {
+            System.err.println( node.getID() + " is expired!");
             this.unsubscribe(node);
         }
 
@@ -96,7 +99,7 @@ public class ScampSimple extends ScampProtocol {
         int counter = 2 * (int) Math.ceil(Math.log(this.partialView.length()));
 
         //TODO keep going!
-
+        throw new NotImplementedException();
     }
 
     // =================== PUBLIC SCAMP ===================================

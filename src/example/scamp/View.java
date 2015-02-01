@@ -160,6 +160,11 @@ public class View {
         return sb.toString();
     }
 
+    public void clear() {
+        this.export.clear();
+        this.array.clear();
+    }
+
     /**
      * *************************************
      * <p/>
