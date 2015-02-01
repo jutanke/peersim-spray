@@ -1,7 +1,5 @@
-package example.scamp.nohandshake;
+package example.scamp;
 
-import example.scamp.View;
-import example.scamp.ScampMessage;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -199,7 +197,7 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
         }
     }
 
-    protected boolean addToInView(Node n) {
+    public boolean addToInView(Node n) {
         if (this.inView.contains(n)) {
             this.inView.updateBirthdate(n);
             return false;
@@ -209,14 +207,27 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
         }
     }
 
-    protected boolean p() {
+    public boolean p() {
         return CDState.r.nextDouble() < 1.0 / (1.0 + this.degree());
     }
 
-    protected void send(Node me, Node destination, ScampMessage m) {
+    public void send(Node me, Node destination, ScampMessage m) {
         Transport tr = (Transport) me.getProtocol(tid);
         tr.send(me, destination, m, pid);
     }
+
+    /**
+     * This node will act as a contact node forwarding the subscription to nodes
+     * from its view and c other random nodes.
+     *
+     * @param n the contact node
+     * @param s the subscribing node
+     */
+    public static void subscribe(Node n, Node s) {
+        ((Scamp) n.getProtocol(pid)).startSubscribe(n, s);
+    }
+
+    public abstract void startSubscribe(Node me, Node s);
 
 
 }

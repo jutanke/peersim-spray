@@ -1,7 +1,7 @@
-SIZE 100
+SIZE 10
 
 # parameters of periodic execution
-CYCLES 100
+CYCLES 20
 CYCLE SIZE*10000
 
 
@@ -27,7 +27,7 @@ overlay.size SIZE
 
 protocol.link peersim.core.IdleProtocol
 
-protocol.0 example.scamp.simple.ScampSimple
+protocol.0 example.scamp.nohandshake.ScampNoHandshake
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
@@ -43,7 +43,7 @@ protocol.tr UnreliableTransport
 protocol.tr.transport urt
 protocol.tr.drop DROP
 
-init.0 example.scamp.simple.ScampSubscribe
+init.0 example.scamp.Subscribe
 init.0.protocol 0
 
 init.sch CDScheduler
@@ -62,7 +62,7 @@ init.sch.randstart
 #control.d0.add 1
 #control.d0.step 1
 #control.d0.maxsize 3
-#control.d0.init.0 example.scamp.simple.ScampSubscribe
+#control.d0.init.0 example.scamp.Subscribe
 #control.d0.init.0.protocol 0
 
 control.o0 example.PeerSamplingServiceObserver

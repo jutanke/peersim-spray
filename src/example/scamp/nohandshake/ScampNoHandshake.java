@@ -1,5 +1,6 @@
 package example.scamp.nohandshake;
 
+import example.scamp.Scamp;
 import example.scamp.ScampMessage;
 import peersim.cdsim.CDState;
 import peersim.core.Node;
@@ -168,6 +169,11 @@ public class ScampNoHandshake extends Scamp {
                 }
             }
         }
+    }
+
+    @Override
+    public void startSubscribe(Node me, Node s) {
+        ScampNoHandshake.subscribe(me, s);
     }
 
     // ----------------------------------------------------------------------

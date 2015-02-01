@@ -1,8 +1,5 @@
 package example.scamp;
 
-import example.cyclon.PeerSamplingService;
-import example.scamp.nohandshake.*;
-import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.text.DecimalFormat;
@@ -86,8 +83,8 @@ public class View {
     }
 
     public void updateBirthdate(Node n) {
-        example.scamp.nohandshake.Scamp pp = (example.scamp.nohandshake.Scamp)
-                n.getProtocol(example.scamp.nohandshake.Scamp.pid);
+        Scamp pp = (Scamp)
+                n.getProtocol(Scamp.pid);
         ViewEntry e = this.array.get(findPosition(n));
         e.birthDate = pp.birthDate;
     }
@@ -177,8 +174,8 @@ public class View {
     public List<Node> leaseTimeout() {
         this.exportFiltered.clear();
         for(ViewEntry e : this.array) {
-            example.scamp.nohandshake.Scamp pp = (example.scamp.nohandshake.Scamp) e.node.getProtocol(
-                    example.scamp.nohandshake.Scamp.pid
+            Scamp pp = (Scamp) e.node.getProtocol(
+                    Scamp.pid
             );
             if (pp.isExpired()) {
                 this.exportFiltered.add(e.node);
@@ -203,8 +200,8 @@ public class View {
             this.id = n.getID();
             this.node = n;
             this.weight = w;
-            example.scamp.nohandshake.Scamp pp = (example.scamp.nohandshake.Scamp) n.getProtocol(
-                    example.scamp.nohandshake.Scamp.pid
+            Scamp pp = (Scamp) n.getProtocol(
+                    Scamp.pid
             );
             this.birthDate = pp.birthDate;
             this.leaseTimeout = pp.randomLeaseTimeout;
