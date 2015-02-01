@@ -182,7 +182,21 @@ public class DictGraph {
 
     @Override
     public String toString() {
-        return this.nodes.toString();
+        //return this.nodes.toString();
+        StringBuilder sb = new StringBuilder();
+
+        for (DictNode n : this.nodes.values()) {
+            sb.append("{");
+            sb.append(n.id);
+            sb.append("}->[");
+            for (long neighbor : n.neighbors) {
+                sb.append(" ");
+                sb.append(neighbor);
+            }
+            sb.append("]\n\r");
+        }
+
+        return sb.toString();
     }
 
     public double meanClusterCoefficient() {

@@ -64,61 +64,71 @@ public class PeerSamplingServiceObserver implements Control {
 
             observer.add(n, pss);
 
-            System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
             }
 
+
         }
+
+        boolean histo = false;
 
         //System.err.println(observer);
 
         //DictGraph.MeanPathLength mean = observer.meanPathLength();
 
 
+        if (histo) {
+            if (step == -1) {
+                System.out.println("============== BABY ==============");
+                printHistogram(observer);
+            }
 
-        if (step == -1) {
-            System.out.println("============== BABY ==============");
-            printHistogram(observer);
-        }
+            if (step == 999) {
+                System.out.println("============== Super END ==============");
+                printHistogram(observer);
+            }
 
-        if (step == 999) {
-            System.out.println("============== Super END ==============");
-            printHistogram(observer);
-        }
+            if (step == 499) {
+                System.out.println("============== END ==============");
+                printHistogram(observer);
+            }
 
-        if (step == 499) {
-            System.out.println("============== END ==============");
-            printHistogram(observer);
-        }
+            if (step == -5) {
+                System.out.println("============== START ==============");
+                printHistogram(observer);
+            }
 
-        if (step == -5) {
-            System.out.println("============== START ==============");
-            printHistogram(observer);
-        }
+            if (step == 250) {
+                System.out.println("============== MIDDLE ==============");
+                printHistogram(observer);
+            }
 
-        if (step == 250) {
-            System.out.println("============== MIDDLE ==============");
-            printHistogram(observer);
-        }
+            if (step == 1500) {
+                System.out.println("============== SUPPPER END ==============");
+                printHistogram(observer);
+            }
 
-        if (step == 1500) {
-            System.out.println("============== SUPPPER END ==============");
-            printHistogram(observer);
-        }
+            if (step == 1999) {
+                System.out.println("============== SUPPPER++ END ==============");
+                printHistogram(observer);
+            }
 
-        if (step == 1999) {
-            System.out.println("============== SUPPPER++ END ==============");
-            printHistogram(observer);
-        }
-
-        if (step == 2499) {
-            System.out.println("============== SUPPPER++++ END ==============");
-            printHistogram(observer);
+            if (step == 2499) {
+                System.out.println("============== SUPPPER++++ END ==============");
+                printHistogram(observer);
+            }
         }
 
         DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+
+        if (step == 500) {
+            PeerSamplingService pss = (PeerSamplingService)
+                    Network.get(0).getProtocol(pid);
+            System.err.println(observer);
+        }
 
         //double cluster = observer.meanClusterCoefficient();
         //System.err.println("mean cluster:" + cluster);
@@ -128,7 +138,7 @@ public class PeerSamplingServiceObserver implements Control {
 
         System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
 
-        //System.err.println("avg: " + avg);
+        System.err.println("avg: " + avg);
 
         //System.out.println(avg.avg);
 

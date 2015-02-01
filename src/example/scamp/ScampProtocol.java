@@ -10,6 +10,7 @@ import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
 import javax.sql.rowset.spi.SyncProvider;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +85,9 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     public int randomLeaseTimeout;
 
+    private final List<Node> deleteListA; // can be shared!
+    private final List<Node> deleteListB; // can be shared!
+
     //private List<Node> outViewList;
     //private List<Node> inViewList;
 
@@ -93,12 +97,14 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         ScampProtocol.indirTTL = Configuration.getInt(n + "." + PAR_INDIRTTL, -1);
         ScampProtocol.leaseTimeoutMax = Configuration.getInt(n + "." + PAR_LEASE_MAX, -1);
         ScampProtocol.leaseTimeoutMin = Configuration.getInt(n + "." + PAR_LEASE_MIN, -1);
+        this.deleteListA = new ArrayList<Node>();
+        this.deleteListB = new ArrayList<Node>();
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         this.pid = Configuration.lookupPid(SCAMP_PROT);
         inView = new View();
         partialView = new View();
         age = 0;
-        this.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax-leaseTimeoutMin) + leaseTimeoutMin;
+        this.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
         System.out.println("Lease:" + this.randomLeaseTimeout);
     }
 
@@ -111,7 +117,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         }
         p.partialView = new View();
         p.inView = new View();
-        p.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax-leaseTimeoutMin) + leaseTimeoutMin;
+        p.randomLeaseTimeout = CDState.r.nextInt(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
         System.out.println("Lease:" + p.randomLeaseTimeout);
         return p;
     }
@@ -156,7 +162,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     }
 
     @Override
-    public List<Node> getPeers(){
+    public List<Node> getPeers() {
         return this.partialView.list();
     }
 
@@ -174,11 +180,48 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     @Override
     public void nextCycle(Node node, int protocolID) {
 
+        this.age += 1;
+
+        // remove all expired nodes from our partial view
+
+        this.deleteListA.clear();
+        this.deleteListB.clear();
+        for (Node n : this.partialView.list()) {
+            ScampProtocol scamp = (ScampProtocol) n.getProtocol(pid);
+            if (scamp.isExpired()) {
+                this.deleteListA.add(n);
+                System.err.println("@" + node.getID() + " delete from partialview: " + n.getID());
+            }
+        }
+
+        for (Node n : this.inView.list()) {
+            ScampProtocol scamp = (ScampProtocol) n.getProtocol(pid);
+            if (scamp.isExpired()) {
+                this.deleteListB.add(n);
+                System.err.println("@" + node.getID() + " delete from inview: " + n.getID());
+            }
+        }
+
+        for (Node n : this.deleteListA) {
+            this.partialView.del(n);
+        }
+        for (Node n : this.deleteListB) {
+            this.inView.del(n);
+        }
+        this.deleteListA.clear();
+        this.deleteListB.clear();
+        // lease (re-subscription)
+        if (this.isExpired()) {
+            System.err.println( node.getID() + " is expired!");
+            this.lease(node);
+        }
+
         this.updateWeights(node);
 
         subNextCycle(node, protocolID);
-        this.age += 1;
     }
+
+    protected abstract void lease(Node n);
 
     @Override
     public void processEvent(Node node, int pid, Object event) {
@@ -196,6 +239,13 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
             case GiveContact:
                 this.join(node, message.contact);
                 break;
+            case AcceptedSubscription:
+                if (this.inView.contains(message.sender)) {
+                    System.out.println("@" + node.getID()+":must not happen.." +
+                        message.sender.getID() + " -> " + this.inView);
+                }
+                this.addToInView(message.sender);
+                break;
             default:
                 subProcessEvent(node, pid, message);
         }
@@ -203,6 +253,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     }
 
     protected abstract void subNextCycle(Node node, int protocolID);
+
     protected abstract void subProcessEvent(Node node, int pid, ScampMessage message);
 
     /*
@@ -234,7 +285,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         return (this.age >= randomLeaseTimeout);
     }
 
-    protected boolean addToOutView (Node n) {
+    protected boolean addToOutView(Node n) {
         if (this.partialView.contains(n)) {
             return false;
         } else {
@@ -292,9 +343,22 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         return this.partialView.list();
     }
 
+    /**
+     * remove the node from the network
+     */
+    public void unsubscribe() {
+        int l = this.partialView.length();
+        int ll = this.inView.length();
+        int i = 0;
+        if (l > 0) {
+
+        }
+
+    }
 
     /**
      * this is the first step to enter a network
+     *
      * @param contact
      */
     public void join(Node me, Node contact) {
@@ -303,9 +367,17 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
         if (contact != null) {
 
+            System.err.println("@" + me.getID() + " join -> " + contact.getID());
+
             this.inView.clear();
-            this.addNeighbor(contact);
+            this.partialView.clear();
+
+            this.acceptSubscription(me, contact);
+
+            //this.addNeighbor(contact);
             ScampMessage message = new ScampMessage(me, ScampMessage.Type.Subscribe, me);
+
+
             //Transport tr = (Transport) me.getProtocol(tid);
             //System.err.println("SEND MSG: " + message);
             //tr.send(me, contact, message, pid);
@@ -315,6 +387,19 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         }
     }
 
+    /**
+     * @param sender
+     * @param subscriber
+     */
+    protected void acceptSubscription(Node sender, Node subscriber) {
+        if (sender.getID() == subscriber.getID()) {
+            throw new RuntimeException("MUST NOT SUBSCRIBE TO MYSELF!");
+        }
+        this.partialView.add(subscriber);
+        ScampMessage message = new ScampMessage(sender, ScampMessage.Type.AcceptedSubscription, null);
+        Transport tr = (Transport) sender.getProtocol(tid);
+        tr.send(sender, subscriber, message, pid);
+    }
 
     /**
      * The answer will be sent with the event "GiveContact"

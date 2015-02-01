@@ -14,7 +14,8 @@ public class ScampMessage {
         AcceptedSubscription,
         WeightUpdate,
         RequestContact,
-        GiveContact
+        GiveContact,
+        HandleUnsubscribeIn,  // handles the nodes in-view
     }
 
     public final Type type;
@@ -25,14 +26,16 @@ public class ScampMessage {
     public final boolean updateInView;
     public Node contact;
     public int hop;
+    public final Node replacer;
 
     public ScampMessage(Node n, Type t, Node s) {
-        this.ttl = 50;
+        this.ttl = 15;
         this.type = t;
         this.weight = -1.0;
         this.sender = n;
         this.subscriber = s;
         updateInView = false;
+        this.replacer = null;
     }
 
     public ScampMessage(Node newsender, ScampMessage m) {
@@ -43,6 +46,7 @@ public class ScampMessage {
         this.updateInView = m.updateInView;
         this.contact = m.contact;
         this.hop = m.hop;
+        this.replacer = m.replacer;
         this.sender = newsender;
     }
 
@@ -52,6 +56,20 @@ public class ScampMessage {
         this.subscriber = null;
         this.type = Type.WeightUpdate;
         this.updateInView = updateInView;
+        this.replacer = null;
+    }
+
+    private ScampMessage(Node sender, Node replacer, Type t) {
+        this.replacer = replacer;
+        this.sender = sender;
+        this.type = t;
+        this.weight = -1;
+        this.updateInView = false;
+        this.subscriber = null;
+    }
+
+    public static ScampMessage updateInViewAfterUnsubscribe(Node sender, Node replacer) {
+        return new ScampMessage(sender, replacer, Type.HandleUnsubscribeIn);
     }
 
     public static ScampMessage updateWeightMessageInView(Node sender, double weight) {
