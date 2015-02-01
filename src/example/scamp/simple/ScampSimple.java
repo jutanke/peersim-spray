@@ -1,14 +1,13 @@
 package example.scamp.simple;
 
-import example.scamp.*;
-import example.scamp.ScampMessage;
+import example.scamp.ScampMessageOld;
 import peersim.core.Node;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Created by julian on 29/01/15.
  */
-public class ScampSimple extends ScampProtocol {
+public class ScampSimple extends example.scamp.old.ScampProtocol {
 
 
 
@@ -31,7 +30,7 @@ public class ScampSimple extends ScampProtocol {
     }
 
     @Override
-    public void subProcessEvent(Node node, int pid, example.scamp.ScampMessage message) {
+    public void subProcessEvent(Node node, int pid, ScampMessageOld message) {
 
         //System.err.println(node.getID() + "=>:" + message);
 
@@ -107,7 +106,7 @@ public class ScampSimple extends ScampProtocol {
         // we must put the subscriber into our inview
         //this.addToInView(subscriber);
 
-        ScampMessage message = ScampMessage.createForwardSubscription(me, subscriber);
+        ScampMessageOld message = ScampMessageOld.createForwardSubscription(me, subscriber);
 
         for (Node e : this.partialView.list()) {
             forwardSubscription(me, e, message);
@@ -122,7 +121,7 @@ public class ScampSimple extends ScampProtocol {
      * @param me
      * @param message
      */
-    private void handleForwardedSubscription(Node me, ScampMessage message) {
+    private void handleForwardedSubscription(Node me, ScampMessageOld message) {
         if (p() && !this.partialView.contains(message.subscriber) && me.getID() != message.subscriber.getID()) {
             this.acceptSubscription(me, message.subscriber);
         } else {
@@ -136,10 +135,10 @@ public class ScampSimple extends ScampProtocol {
         }
     }
 
-    private void forwardSubscription(Node me, Node receiver, example.scamp.ScampMessage message) {
+    private void forwardSubscription(Node me, Node receiver, ScampMessageOld message) {
 
         //message = new example.scamp.ScampMessage(me, message);
-        message = ScampMessage.forward(me, message);
+        message = ScampMessageOld.forward(me, message);
         send(me, receiver, message);
 
     }

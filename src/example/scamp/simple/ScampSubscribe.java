@@ -1,6 +1,6 @@
 package example.scamp.simple;
 
-import example.scamp.ScampProtocol;
+import example.scamp.old.ScampProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;

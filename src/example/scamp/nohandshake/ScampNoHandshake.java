@@ -1,7 +1,7 @@
 package example.scamp.nohandshake;
 
 import example.scamp.Scamp;
-import example.scamp.ScampMessage;
+import example.scamp.ScampMessageOld;
 import peersim.cdsim.CDState;
 import peersim.core.Node;
 
@@ -27,6 +27,9 @@ public class ScampNoHandshake extends Scamp {
     protected void subNextCycle(Node node, int protocolID) {
 
         if (this.isExpired() && this.degree() > 0) {
+
+            System.err.println("@" + node.getID() + " expired!");
+
             this.inView.clear();
             ScampNoHandshake.subscribe(getNeighbor(CDState.r.nextInt(degree())), node);
         }
@@ -42,9 +45,13 @@ public class ScampNoHandshake extends Scamp {
     }
 
     @Override
-    protected void subProcessEvent(Node node, int pid, ScampMessage message) {
+    protected void subProcessEvent(Node node, int pid, ScampMessageOld message) {
 
         switch (message.type) {
+            case AcceptedSubscription:
+                System.err.println("Accept 2(in) " + message.acceptor.getID() + " @" + node.getID());
+                this.addToInView(message.acceptor);
+                break;
             case ForwardSubscription:
                 ScampNoHandshake.doSubscribe(node, message);
                 break;
@@ -58,7 +65,7 @@ public class ScampNoHandshake extends Scamp {
             throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
         } else {
             System.err.println("Accept 1(out) " + subscriber.getID() + " @" + acceptor.getID());
-            ScampMessage m = ScampMessage.acceptMessage(acceptor, subscriber, acceptor);
+            ScampMessageOld m = ScampMessageOld.acceptMessage(acceptor, subscriber, acceptor);
             this.send(acceptor, subscriber, m);
             this.addNeighbor(subscriber);
         }
@@ -77,7 +84,7 @@ public class ScampNoHandshake extends Scamp {
      * @param n       the node which receives the given subscription
      * @param forward the subscribing message
      */
-    private static void doSubscribe(final Node n, ScampMessage forward) {
+    private static void doSubscribe(final Node n, ScampMessageOld forward) {
         if (forward.ttl > 0) {
             Node s = forward.subscriber;
             System.err.println("subscribe fwd " + s.getID() + " to " + n.getID() + " ttl:" + forward.ttl);
@@ -87,7 +94,7 @@ public class ScampNoHandshake extends Scamp {
                 pp.acceptSubscription(n, s);
             } else if (pp.degree() > 0) {
                 Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
-                forward = ScampMessage.forward(n, forward); // we update the TTL of the message
+                forward = ScampMessageOld.forward(n, forward); // we update the TTL of the message
                 pp.send(n, forwardTarget, forward);
             }
         }
@@ -158,7 +165,7 @@ public class ScampNoHandshake extends Scamp {
         contact.addToInView(s);
         subscriber.addNeighbor(n);
 
-        ScampMessage forward = ScampMessage.createForwardSubscription(n, s);
+        ScampMessageOld forward = ScampMessageOld.createForwardSubscription(n, s);
 
         if (contact.degree() == 0) {
             System.err.println("SCAMP: zero degree contact node " + s.getID() + " -> " + n.getID());

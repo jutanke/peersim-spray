@@ -5,7 +5,7 @@ import peersim.core.Node;
 /**
  * Created by julian on 29/01/15.
  */
-public class ScampMessage {
+public class ScampMessageOld {
 
     public enum Type {
         Subscribe,
@@ -29,7 +29,7 @@ public class ScampMessage {
     public Node acceptor;
     public final Node replacer;
 
-    protected ScampMessage(Node n, Type t, Node s) {
+    protected ScampMessageOld(Node n, Type t, Node s) {
         this.ttl = 100;
         this.type = t;
         this.weight = -1.0;
@@ -39,7 +39,7 @@ public class ScampMessage {
         this.replacer = null;
     }
 
-    protected ScampMessage(Node newsender, ScampMessage m) {
+    protected ScampMessageOld(Node newsender, ScampMessageOld m) {
         this.ttl = m.ttl;
         this.type = m.type;
         this.subscriber = m.subscriber;
@@ -51,7 +51,7 @@ public class ScampMessage {
         this.sender = newsender;
     }
 
-    private ScampMessage(Node n, double weight, boolean updateInView) {
+    private ScampMessageOld(Node n, double weight, boolean updateInView) {
         this.weight = weight;
         this.sender = n;
         this.subscriber = null;
@@ -60,7 +60,7 @@ public class ScampMessage {
         this.replacer = null;
     }
 
-    private ScampMessage(Node sender, Node replacer, Type t) {
+    private ScampMessageOld(Node sender, Node replacer, Type t) {
         this.replacer = replacer;
         this.sender = sender;
         this.type = t;
@@ -69,45 +69,45 @@ public class ScampMessage {
         this.subscriber = null;
     }
 
-    public static ScampMessage forward(Node sender, ScampMessage m) {
-        ScampMessage message = new ScampMessage(sender, m);
+    public static ScampMessageOld forward(Node sender, ScampMessageOld m) {
+        ScampMessageOld message = new ScampMessageOld(sender, m);
         message.reduceTTL();
         return message;
     }
 
-    public static ScampMessage acceptMessage(Node sender, Node subscriber, Node acceptor) {
-        ScampMessage m = new ScampMessage(sender, Type.AcceptedSubscription, subscriber);
+    public static ScampMessageOld acceptMessage(Node sender, Node subscriber, Node acceptor) {
+        ScampMessageOld m = new ScampMessageOld(sender, Type.AcceptedSubscription, subscriber);
         m.acceptor = acceptor;
         return m;
     }
 
-    public static ScampMessage updateInViewAfterUnsubscribe(Node sender, Node replacer) {
-        return new ScampMessage(sender, replacer, Type.HandleUnsubscribeIn);
+    public static ScampMessageOld updateInViewAfterUnsubscribe(Node sender, Node replacer) {
+        return new ScampMessageOld(sender, replacer, Type.HandleUnsubscribeIn);
     }
 
-    public static ScampMessage updateWeightMessageInView(Node sender, double weight) {
-        return new ScampMessage(sender, weight, true);
+    public static ScampMessageOld updateWeightMessageInView(Node sender, double weight) {
+        return new ScampMessageOld(sender, weight, true);
     }
 
-    public static ScampMessage updateWeightMessagePartialView(Node sender, double weight) {
-        return new ScampMessage(sender, weight, false);
+    public static ScampMessageOld updateWeightMessagePartialView(Node sender, double weight) {
+        return new ScampMessageOld(sender, weight, false);
     }
 
-    public static ScampMessage requestContact(Node sender, Node subscriber, int hop) {
-        ScampMessage m = new ScampMessage(sender, Type.RequestContact, subscriber);
+    public static ScampMessageOld requestContact(Node sender, Node subscriber, int hop) {
+        ScampMessageOld m = new ScampMessageOld(sender, Type.RequestContact, subscriber);
         m.hop = hop;
         return m;
     }
 
-    public static ScampMessage giveContact(Node sender, Node subscriber, Node contact) {
-        ScampMessage m = new ScampMessage(sender, Type.GiveContact, subscriber);
+    public static ScampMessageOld giveContact(Node sender, Node subscriber, Node contact) {
+        ScampMessageOld m = new ScampMessageOld(sender, Type.GiveContact, subscriber);
         m.contact = contact;
         return m;
     }
 
 
-    public static ScampMessage createForwardSubscription(Node sender, Node subscriber) {
-        return new ScampMessage(sender, Type.ForwardSubscription, subscriber);
+    public static ScampMessageOld createForwardSubscription(Node sender, Node subscriber) {
+        return new ScampMessageOld(sender, Type.ForwardSubscription, subscriber);
     }
 
     public boolean isValid() {

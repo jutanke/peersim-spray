@@ -98,6 +98,9 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
         birthDate = CommonState.getTime();
         this.randomLeaseTimeout = CDState.r.nextLong(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
         System.out.println("Lease:" + this.randomLeaseTimeout);
+
+
+        System.out.println("indirTTL:" + indirTTL);
     }
 
     public Object clone() {
@@ -176,12 +179,8 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
 
     @Override
     public void processEvent(Node node, int pid, Object event) {
-        ScampMessage message = (ScampMessage) event;
+        ScampMessageOld message = (ScampMessageOld) event;
         switch (message.type) {
-            case AcceptedSubscription:
-                System.err.println("Accept 2(in) " + message.acceptor.getID() + " @" + node.getID());
-                this.addToInView(message.acceptor);
-                break;
             default:
                 subProcessEvent(node, pid, message);
                 break;
@@ -190,7 +189,7 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
 
     protected abstract void subNextCycle(Node node, int protocolID);
 
-    protected abstract void subProcessEvent(Node node, int pid, ScampMessage message);
+    protected abstract void subProcessEvent(Node node, int pid, ScampMessageOld message);
 
     public abstract void acceptSubscription(Node acceptor, Node subscriber);
 
@@ -218,7 +217,7 @@ public abstract class Scamp implements Linkable, EDProtocol, CDProtocol, example
         return CDState.r.nextDouble() < 1.0 / (1.0 + this.degree());
     }
 
-    public void send(Node me, Node destination, ScampMessage m) {
+    public void send(Node me, Node destination, ScampMessageOld m) {
         Transport tr = (Transport) me.getProtocol(tid);
         tr.send(me, destination, m, pid);
     }
