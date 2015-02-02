@@ -1,7 +1,7 @@
 SIZE 1000
 
 # parameters of periodic execution
-CYCLES 50
+CYCLES 2500
 CYCLE SIZE*10000
 
 
@@ -9,8 +9,6 @@ CYCLE SIZE*10000
 network.size SIZE
 simulation.endtime CYCLES
 simulation.logtime 1
-#simulation.cycles CYCLES
-#network.node GeneralNode
 
 
 # parameters of message transfer
@@ -23,7 +21,7 @@ DROP 0
 
 random.seed 1234569890
 
-overlay.size SIZE
+#overlay.size SIZE
 
 protocol.link peersim.core.IdleProtocol
 
@@ -51,20 +49,6 @@ init.sch CDScheduler
 init.sch.protocol 0
 init.sch.randstart
 
-#control.dynadd DynamicNetwork
-#control.dynadd.init.rand RandNI
-#control.dynadd.init.rand.k 1
-#control.dynadd.add 1
-#control.dynadd.maxsize 3
-#control.dynadd.init.rand.protocol 0
-#control.dynadd.step 2
-
-#control.d0 DynamicNetwork
-#control.d0.add 1
-#control.d0.step 1
-#control.d0.maxsize 3
-#control.d0.init.0 example.scamp.Subscribe
-#control.d0.init.0.protocol 0
 
 control.o0 example.PeerSamplingServiceObserver
 control.o0.protocol 0

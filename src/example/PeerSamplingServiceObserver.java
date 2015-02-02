@@ -55,6 +55,8 @@ public class PeerSamplingServiceObserver implements Control {
         DictGraph observer = DictGraph.getSingleton(Network.size());
         observer.reset();
 
+        double avgDegree = 0;
+
         for (int i = 0; i < Network.size(); i++) {
 
             GeneralNode n = (GeneralNode) Network.get(i);
@@ -62,6 +64,8 @@ public class PeerSamplingServiceObserver implements Control {
                     Network.get(i).getProtocol(pid);
 
             observer.add(n, pss);
+
+            avgDegree += pss.getPeers().size();
 
             System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
@@ -72,7 +76,11 @@ public class PeerSamplingServiceObserver implements Control {
 
         }
 
+        avgDegree /= Network.size();
+
         boolean histo = false;
+
+        System.err.println("avg node degree:" + avgDegree);
 
         //System.err.println(observer);
 
@@ -121,15 +129,15 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
-        System.err.println("avg: " + avg);
+        //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+        //System.err.println("avg: " + avg);
         //System.out.println(avg.reachQuota);
 
-        //double cluster = observer.meanClusterCoefficient();
-        //System.err.println("mean cluster:" + cluster);
-        //System.out.println(cluster);
+        double cluster = observer.meanClusterCoefficient();
+        System.err.println("mean cluster:" + cluster);
+        System.out.println(cluster);
 
-        if (step == 50 && true) {
+        if (step == 50 && false) {
             PeerSamplingService pss = (PeerSamplingService)
                     Network.get(0).getProtocol(pid);
             System.err.println(observer);

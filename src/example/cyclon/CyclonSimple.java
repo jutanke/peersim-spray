@@ -335,6 +335,13 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
 
     @Override
     public String debug() {
-        return this.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (CyclonEntry e : this.cache) {
+            sb.append(" ");
+            sb.append(e.n.getID());
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
