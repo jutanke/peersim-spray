@@ -1,5 +1,6 @@
 package example.scamp;
 
+import example.scamp.messaging.*;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -114,6 +115,13 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
     }
 
+    public static void doSubscribe(final Node n, ScampMessage forward) {
+        ScampProtocol pp = (ScampProtocol) n.getProtocol(pid);
+        pp.handleSubscription(n, forward);
+    }
+
+    public abstract void handleSubscription(Node n, ScampMessage m);
+
     public void send(Node sender, Node destination, example.scamp.messaging.ScampMessage m) {
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, destination, m, pid);
@@ -123,7 +131,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         ((ScampProtocol) n.getProtocol(pid)).join(n, s);
     }
 
-    public abstract void acceptSubscription(Node acceptor, Node subscriber);
+    public abstract void subDoSubscribe(Node acceptor, Node subscriber);
 
     public abstract void join(Node me, Node subscriber);
 

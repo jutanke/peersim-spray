@@ -1,4 +1,4 @@
-set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 1024, 768
+set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 1500, 768
 set output 'simple.1.png'
 # put it to eps (vectors)
 # change to black and white
@@ -6,4 +6,9 @@ set key inside left top vertical Right noreverse enhanced autotitles box linetyp
 
 set pointintervalbox 1
 
-plot [0:1000] "avg.txt" using ($0+1):1
+plot [0:3000] "avg_deg_scamp_c0.txt" using ($0+1):1 title "c=0", \
+    "avg_deg_scamp_c2.txt" using ($0+1):1 title "c=2", \
+    "avg_deg_scamp_c5.txt" using ($0+1):1 title "c=5", \
+    "avg_deg_scamp_c10.txt" using ($0+1):1 title "c=10", \
+    "avg_deg_scamp_c20.txt" using ($0+1):1 title "c=20", \
+    "avg_deg_scamp_c40.txt" using ($0+1):1 title "c=40"

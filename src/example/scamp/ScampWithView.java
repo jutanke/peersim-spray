@@ -1,6 +1,5 @@
 package example.scamp;
 
-import example.scamp.simple.*;
 import peersim.cdsim.CDState;
 import peersim.core.CommonState;
 import peersim.core.Network;
@@ -105,6 +104,26 @@ public abstract class ScampWithView extends ScampProtocol {
         }
 
     }
+
+    @Override
+    public void processEvent(Node node, int pid, Object event) {
+
+        example.scamp.messaging.ScampMessage message = (example.scamp.messaging.ScampMessage) event;
+
+        switch (message.type) {
+            case AcceptSubscription:
+                print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
+                Node acceptor = message.payload;
+                this.addToInView(acceptor);
+                break;
+            default:
+                subProcessEvent(node, message);
+                break;
+        }
+
+    }
+
+    public abstract void subProcessEvent(Node node, example.scamp.messaging.ScampMessage message);
 
     public abstract void subNextCycle(Node node);
 

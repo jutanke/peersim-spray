@@ -67,7 +67,7 @@ public class PeerSamplingServiceObserver implements Control {
 
             avgDegree += pss.getPeers().size();
 
-            System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
@@ -81,6 +81,7 @@ public class PeerSamplingServiceObserver implements Control {
         boolean histo = false;
 
         System.err.println("avg node degree:" + avgDegree);
+        //System.out.println(avgDegree);
 
         //System.err.println(observer);
 
@@ -133,11 +134,11 @@ public class PeerSamplingServiceObserver implements Control {
         //System.err.println("avg: " + avg);
         //System.out.println(avg.reachQuota);
 
-        double cluster = observer.meanClusterCoefficient();
-        System.err.println("mean cluster:" + cluster);
-        System.out.println(cluster);
+        //double cluster = observer.meanClusterCoefficient();
+        //System.err.println("mean cluster:" + cluster);
+        //System.out.println(cluster);
 
-        if (step == 50 && false) {
+        if (step == 1000 && true) {
             PeerSamplingService pss = (PeerSamplingService)
                     Network.get(0).getProtocol(pid);
             System.err.println(observer);

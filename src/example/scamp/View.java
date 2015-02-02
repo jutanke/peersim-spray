@@ -88,9 +88,9 @@ public class View {
         ScampWithView pp = (ScampWithView)
                 n.getProtocol(ScampWithView.pid);
         ViewEntry e = this.array.get(findPosition(n));
-        System.err.println("update birthday from node " + n.getID() + " -> " + e.birthDate);
+        //System.err.println("update birthday from node " + n.getID() + " -> " + e.birthDate);
         e.birthDate = pp.birthDate;
-        System.err.println("updated birthday from node " + n.getID() + " -> " + e.birthDate);
+        //System.err.println("updated birthday from node " + n.getID() + " -> " + e.birthDate);
     }
 
     public ViewEntry get(int i) {

@@ -6,7 +6,6 @@ import example.scamp.messaging.ScampMessage;
 import peersim.cdsim.CDState;
 import peersim.core.Network;
 import peersim.core.Node;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Created by julian on 01/02/15.
@@ -74,16 +73,11 @@ public class Scamp extends ScampWithView {
         unsubscribeNode(me);
     }
 
-    @Override
-    public void processEvent(Node node, int pid, Object event) {
 
-        ScampMessage message = (ScampMessage) event;
+    @Override
+    public void subProcessEvent(Node node, ScampMessage message) {
+
         switch (message.type) {
-            case AcceptSubscription:
-                print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
-                Node acceptor = message.payload;
-                this.addToInView(acceptor);
-                break;
             case ForwardSubscription:
                 Scamp.doSubscribe(node, message);
                 break;
@@ -97,11 +91,10 @@ public class Scamp extends ScampWithView {
 
                 break;
         }
-
     }
 
     @Override
-    public void acceptSubscription(Node acceptor, Node subscriber) {
+    public void subDoSubscribe(Node acceptor, Node subscriber) {
         if (acceptor.getID() == subscriber.getID()) {
             throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
         } else {
@@ -117,6 +110,11 @@ public class Scamp extends ScampWithView {
 
             this.addNeighbor(subscriber);
         }
+    }
+
+    @Override
+    public void handleSubscription(Node n, example.scamp.ScampMessage m) {
+        Scamp.doSubscribe(n, m);
     }
 
     // ===================================================
@@ -202,7 +200,7 @@ public class Scamp extends ScampWithView {
             if (pp.p() && !pp.contains(s) && n.getID() != s.getID()) {
                 //pp.addNeighbor(s);
                 print("@" + n.getID() + " keep subscriber " + s.getID());
-                pp.acceptSubscription(n, s);
+                pp.subDoSubscribe(n, s);
             } else if (pp.degree() > 0) {
                 Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
                 forward = ScampMessage.updateForwardSubscription(n, forward); // we update the TTL of the message
@@ -234,11 +232,9 @@ public class Scamp extends ScampWithView {
             return; // quietly returning, no feedback
         }
 
+        //TODO MAKE THIS ASYNC
         Scamp contact = (Scamp) n.getProtocol(pid);
         Scamp subscriber = (Scamp) s.getProtocol(pid);
-
-        //TODO MAKE THIS ASYNC
-
         contact.addToInView(s);
         subscriber.addNeighbor(n);
 
