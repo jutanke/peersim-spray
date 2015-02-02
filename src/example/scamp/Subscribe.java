@@ -67,6 +67,9 @@ public class Subscribe implements NodeInitializer, Control {
             ScampWithView c = (ScampWithView) contact.getProtocol(pid);
             ScampWithView m = (ScampWithView) me.getProtocol(pid);
 
+            c.addToOutView(me);
+            m.addToInView(contact);
+
             c.addToInView(me);
             m.addToOutView(contact);
 
