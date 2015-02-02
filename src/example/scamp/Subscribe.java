@@ -1,5 +1,6 @@
 package example.scamp;
 
+import example.scamp.orig.*;
 import peersim.config.Configuration;
 import peersim.core.Control;
 import peersim.core.Network;
@@ -18,21 +19,24 @@ public class Subscribe implements NodeInitializer, Control {
      * @config
      */
     private static final String PAR_PROT = "protocol";
+    private static final String SCAMP_PROT = "0";
 
     /**
      * The protocol we want to wire
      */
     private final int protocolID;
+    public static int pid;
 
     public Subscribe(String prefix) {
         protocolID = Configuration.getInt(prefix + "." + PAR_PROT);
+        pid = Configuration.lookupPid(SCAMP_PROT);
     }
 
 
     @Override
     public boolean execute() {
 
-        line();
+        forcedLine();
 
         return false;
     }
@@ -51,5 +55,23 @@ public class Subscribe implements NodeInitializer, Control {
             ScampProtocol.subscribe(contact, me);
             contact = me;
         }
+    }
+
+    private void forcedLine() {
+        System.err.println("++++++++++++++ interconnect nodes as forced LINE! ++++++++++++++");
+
+        Node contact = Network.get(0);
+        for (int i = 1; i < Network.size(); i++) {
+            Node me = Network.get(i);
+
+            ScampWithView c = (ScampWithView) contact.getProtocol(pid);
+            ScampWithView m = (ScampWithView) me.getProtocol(pid);
+
+            c.addToInView(me);
+            m.addToOutView(contact);
+
+            contact = me;
+        }
+
     }
 }

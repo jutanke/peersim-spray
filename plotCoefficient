@@ -6,4 +6,4 @@ set key inside left top vertical Right noreverse enhanced autotitles box linetyp
 
 set pointintervalbox 1
 
-plot [0:500] "avg.txt" using ($0+1):1, "avg2.txt" ....
+plot [0:1000] "avg.txt" using ($0+1):1

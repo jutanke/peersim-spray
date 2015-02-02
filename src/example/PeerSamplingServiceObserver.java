@@ -63,7 +63,7 @@ public class PeerSamplingServiceObserver implements Control {
 
             observer.add(n, pss);
 
-            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
@@ -123,7 +123,7 @@ public class PeerSamplingServiceObserver implements Control {
 
         DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
         System.err.println("avg: " + avg);
-        System.out.println(avg.avg);
+        System.out.println(avg.reachQuota);
 
         if (step == 100 && false) {
             PeerSamplingService pss = (PeerSamplingService)

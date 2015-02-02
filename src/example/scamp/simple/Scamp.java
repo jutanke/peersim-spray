@@ -13,6 +13,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class Scamp extends ScampWithView {
 
+
+    public static final boolean ____C_H_E_A_T_I_N_G____ = false;
+
     // ===================================================
     // E N T I T Y
     // ===================================================
@@ -53,7 +56,7 @@ public class Scamp extends ScampWithView {
 
 
         // CHEATING!
-        if (this.inView.length() == 0 && this.partialView.length() == 0) {
+        if (____C_H_E_A_T_I_N_G____ && this.inView.length() == 0 && this.partialView.length() == 0) {
             System.err.println("============ CHEATING =========== @" + node.getID());
             Node contact = Network.get(CDState.r.nextInt(Network.size()));
             ScampProtocol.subscribe(contact, node);
