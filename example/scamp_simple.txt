@@ -1,7 +1,7 @@
-SIZE 100
+SIZE 1000
 
 # parameters of periodic execution
-CYCLES 500
+CYCLES 50
 CYCLE SIZE*10000
 
 
@@ -28,7 +28,7 @@ overlay.size SIZE
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 example.scamp.simple.Scamp
-protocol.0.c 0
+protocol.0.c 40
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link

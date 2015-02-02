@@ -123,16 +123,23 @@ public class PeerSamplingServiceObserver implements Control {
 
         DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
         System.err.println("avg: " + avg);
-        System.out.println(avg.reachQuota);
+        //System.out.println(avg.reachQuota);
 
         //double cluster = observer.meanClusterCoefficient();
         //System.err.println("mean cluster:" + cluster);
         //System.out.println(cluster);
 
-        if (step == 100 && true) {
+        if (step == 50 && true) {
             PeerSamplingService pss = (PeerSamplingService)
                     Network.get(0).getProtocol(pid);
             System.err.println(observer);
+
+            System.err.println("HISTO: " );
+            int[] h = observer.inDegreeAsHistogram();
+            for (int i = 0; i < h.length; i++) {
+                System.err.println(i + ":" + h[i]);
+                System.out.println(h[i]);
+            }
 
             //System.err.println("mean cluster:" + cluster);
         }

@@ -1,6 +1,7 @@
 package example.scamp;
 
 import example.scamp.orig.*;
+import peersim.cdsim.CDState;
 import peersim.config.Configuration;
 import peersim.core.Control;
 import peersim.core.Network;
@@ -36,7 +37,7 @@ public class Subscribe implements NodeInitializer, Control {
     @Override
     public boolean execute() {
 
-        forcedLine();
+        random();
 
         return false;
     }
@@ -74,6 +75,24 @@ public class Subscribe implements NodeInitializer, Control {
             m.addToOutView(contact);
 
             contact = me;
+        }
+
+    }
+
+    private void random() {
+        System.err.println("++++++++++++++ interconnect nodes as randomly! ++++++++++++++");
+
+        Node n0 = Network.get(0);
+        Node n1 = Network.get(1);
+        ScampProtocol.subscribe(n0, n1);
+
+        for (int i = 2; i < Network.size(); i++) {
+            Node me = Network.get(i);
+            int o = CDState.r.nextInt(i-1);
+            Node other = Network.get(o);
+
+            ScampProtocol.subscribe(other, me);
+
         }
 
     }
