@@ -9,12 +9,23 @@ public class ScampMessage {
 
     public enum Type {
         ForwardSubscription,
-        AcceptSubscription
+        AcceptSubscription,
+        KeepAlive
     }
 
     // ==================================================
     // E X T E R N A L  I N T E R F A C E
     // ==================================================
+
+    /**
+     * Tell everybody the new age!
+     * @param sender
+     * @return
+     */
+    public static ScampMessage createKeepAlive(Node sender, long newBirthDate) {
+        ScampMessage message = new ScampMessage(sender, newBirthDate);
+        return message;
+    }
 
     public static ScampMessage createAccept(Node sender, Node subscriber, Node acceptor) {
         ScampMessage message = new ScampMessage(sender, Type.AcceptSubscription);
@@ -56,6 +67,7 @@ public class ScampMessage {
     // ==================================================
 
     public final Type type;
+    public final long newBirthDate;
     public final Node sender;
     public Node payload, payload2;
     private final int ttl;
@@ -67,12 +79,21 @@ public class ScampMessage {
         this.sender = sender;
         this.ttl = ttl;
         this.type = type;
+        this.newBirthDate = -1;
     }
 
     private ScampMessage(Node sender, Type type) {
         this.sender = sender;
         this.ttl = START_TTL;
         this.type = type;
+        this.newBirthDate = -1;
+    }
+
+    private ScampMessage(Node sender, long birthDate) {
+        this.newBirthDate = birthDate;
+        this.sender = sender;
+        this.ttl = START_TTL;
+        this.type = Type.KeepAlive;
     }
 
 

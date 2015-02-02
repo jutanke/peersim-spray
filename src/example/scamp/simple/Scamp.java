@@ -40,10 +40,15 @@ public class Scamp extends ScampWithView {
     }
 
     @Override
-    public void subRejoin(Node me) {
-        print("Rejoin: " + me.getID());
+    public void subRejoin(Node me, long newBirthDate) {
+        print("Rejoin: " + me.getID() + " -> " + this.debug());
         //this.unsubscribe(me);
         this.inView.clear();
+
+        ScampMessage message = ScampMessage.createKeepAlive(me, birthDate);
+        for (Node n : this.partialView.list()) {
+            send(me, n, message);
+        }
         Node contact = getRandomNode(me);
         if (contact.getID() != me.getID()) {
             Scamp contactPP = (Scamp) contact.getProtocol(pid);
@@ -81,6 +86,15 @@ public class Scamp extends ScampWithView {
                 break;
             case ForwardSubscription:
                 Scamp.doSubscribe(node, message);
+                break;
+            case KeepAlive:
+                print("@" + node.getID() + " keep alive from " + message.sender.getID() + "(" + this.debug() + ")");
+                if (this.inView.contains(message.sender)) {
+                    this.inView.updateBirthdate(message.sender);
+                } else {
+                    this.inView.add(message.sender);
+                }
+
                 break;
         }
 

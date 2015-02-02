@@ -1,7 +1,7 @@
 SIZE 10
 
 # parameters of periodic execution
-CYCLES 30
+CYCLES 300
 CYCLE SIZE*10000
 
 

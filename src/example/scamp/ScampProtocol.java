@@ -80,8 +80,6 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         System.err.println("min:" + leaseTimeoutMin + "  max:" + leaseTimeoutMax);
 
         this.randomLeaseTimeout = CDState.r.nextLong(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
-        System.out.println("Lease:" + this.randomLeaseTimeout);
-        System.out.println("indirTTL:" + indirTTL);
     }
 
     public Object clone() {
@@ -92,7 +90,6 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
 
         }
         p.randomLeaseTimeout = CDState.r.nextLong(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
-        System.out.println("Lease:" + p.randomLeaseTimeout);
         return p;
     }
 
@@ -102,7 +99,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      * @param s
      */
     protected static void print(Object s) {
-        if (false) {
+        if (true) {
             System.out.println(s);
         }
     }

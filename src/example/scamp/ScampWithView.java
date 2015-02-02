@@ -1,5 +1,6 @@
 package example.scamp;
 
+import example.scamp.simple.*;
 import peersim.cdsim.CDState;
 import peersim.core.CommonState;
 import peersim.core.Node;
@@ -79,10 +80,10 @@ public abstract class ScampWithView extends ScampProtocol {
     @Override
     public void rejoin(Node me) {
         this.birthDate = CommonState.getTime();
-        this.subRejoin(me);
+        this.subRejoin(me, this.birthDate);
     }
 
-    public abstract void subRejoin(Node me);
+    public abstract void subRejoin(Node me, long newBirthDate);
 
     @Override
     public void nextCycle(Node node, int protocolID) {
@@ -152,23 +153,28 @@ public abstract class ScampWithView extends ScampProtocol {
      */
     protected static Node getRandomNode(Node n) {
 
-        double ttl = indirTTL;
-        ScampWithView l = (ScampWithView) n.getProtocol(pid);
-        ttl -= 1.0 / l.degree();
-
-        while (n.isUp() && ttl > 0.0) {
-            if (l.degree() + l.inView.length() > 0) {
-                int id = CDState.r.nextInt(
-                        l.degree() + l.inView.length());
-                if (id < l.degree()) n = l.getNeighbor(id);
-                else n = l.inView.get(id - l.degree()).node;
-            } else break;
-
-            l = (ScampWithView) n.getProtocol(pid);
+        ScampWithView pp = (ScampWithView) n.getProtocol(pid);
+        if (false && pp.partialView.length() > 0) {
+            return pp.partialView.get(CDState.r.nextInt(pp.degree())).node;
+        } else {
+            double ttl = indirTTL;
+            ScampWithView l = (ScampWithView) n.getProtocol(pid);
             ttl -= 1.0 / l.degree();
-        }
 
-        if (ttl > 0.0) System.err.println("Scamp: getRandomNode returned with ttl=" + ttl);
-        return n;
+            while (n.isUp() && ttl > 0.0) {
+                if (l.degree() + l.inView.length() > 0) {
+                    int id = CDState.r.nextInt(
+                            l.degree() + l.inView.length());
+                    if (id < l.degree()) n = l.getNeighbor(id);
+                    else n = l.inView.get(id - l.degree()).node;
+                } else break;
+
+                l = (ScampWithView) n.getProtocol(pid);
+                ttl -= 1.0 / l.degree();
+            }
+
+            if (ttl > 0.0) System.err.println("Scamp: getRandomNode returned with ttl=" + ttl);
+            return n;
+        }
     }
 }
