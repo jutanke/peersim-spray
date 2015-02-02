@@ -106,13 +106,18 @@ public abstract class ScampWithView extends ScampProtocol {
 
     public abstract void subNextCycle(Node node);
 
+    @Override
+    public String toString(){
+        return this.debug();
+    }
+
     // ===================================================
     // I N T E R N A L  I N T E R F A C E
     // ===================================================
 
     public boolean isExpired() {
         long currentTime = CommonState.getTime();
-        return (currentTime - this.birthDate) > this.randomLeaseTimeout;
+        return (currentTime - this.birthDate) >= this.randomLeaseTimeout;
     }
 
     protected boolean addToOutView(Node n) {

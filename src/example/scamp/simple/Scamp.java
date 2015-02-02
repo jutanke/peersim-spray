@@ -1,8 +1,10 @@
 package example.scamp.simple;
 
+import example.scamp.ScampProtocol;
 import example.scamp.ScampWithView;
 import example.scamp.messaging.ScampMessage;
 import peersim.cdsim.CDState;
+import peersim.core.Network;
 import peersim.core.Node;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -37,7 +39,7 @@ public class Scamp extends ScampWithView {
     @Override
     public void subRejoin(Node me) {
         print("Rejoin: " + me.getID());
-        this.unsubscribe(me);
+        //this.unsubscribe(me);
         this.inView.clear();
         Node contact = getRandomNode(me);
         if (contact.getID() != me.getID()) {
@@ -50,12 +52,17 @@ public class Scamp extends ScampWithView {
     public void subNextCycle(Node node) {
 
 
+        // CHEATING!
+        if (this.inView.length() == 0 && this.partialView.length() == 0) {
+            System.err.println("============ CHEATING =========== @" + node.getID());
+            Node contact = Network.get(CDState.r.nextInt(Network.size()));
+            ScampProtocol.subscribe(contact, node);
+        }
+
     }
 
     @Override
     public void unsubscribe(Node me) {
-
-        //Scamp pp = (Scamp) n.getPro
         unsubscribeNode(me);
     }
 
@@ -116,10 +123,14 @@ public class Scamp extends ScampWithView {
             for (; i < ll - c - 1; ++i) {
                 Node from = pp.inView.get(i).node;
                 if (from.isUp()) {
-                    ((Scamp) from.getProtocol(pid)).replace(
+                    Scamp other = (Scamp) from.getProtocol(pid);
+                    Node neighbor = pp.getNeighbor(i % l);
+                    print("++++ REPLACE @" + from.getID() + " currently: " + other + "  put : " + neighbor.getID() + " for " + n.getID());
+                    other.replace(
                             n,
-                            pp.getNeighbor(i % l)
+                            neighbor
                     );
+                    print("++++ REPLACE @" + from.getID() + " after: " + other);
                 }
             }
         }
@@ -128,7 +139,10 @@ public class Scamp extends ScampWithView {
         for (; i < ll; ++i) {
             Node from = pp.inView.get(i).node;
             if (from.isUp()) {
-                ((Scamp) from.getProtocol(pid)).replace(n, null);
+                Scamp other = (Scamp) from.getProtocol(pid);
+                print("================================================ REPLACE @" + from.getID() + " currently: " + other);
+                other.replace(n, null);
+                print("================================================ REPLACE @" + from.getID() + " after: " + other);
             }
         }
 
@@ -190,13 +204,13 @@ public class Scamp extends ScampWithView {
      */
     public static void subscribe(Node n, Node s) {
 
-        System.err.println("Start subscribe (I):" + s.getID() + " to " + n.getID());
+        print("Start subscribe (I):" + s.getID() + " to " + n.getID());
 
         if (indirTTL > 0.0) {
             n = getRandomNode(n);
         }
 
-        System.err.println("Start subscribe (II):" + s.getID() + " to " + n.getID());
+        print("Start subscribe (II):" + s.getID() + " to " + n.getID());
 
         if (!n.isUp()) {
             return; // quietly returning, no feedback

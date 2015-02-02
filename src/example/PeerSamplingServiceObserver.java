@@ -63,7 +63,7 @@ public class PeerSamplingServiceObserver implements Control {
 
             observer.add(n, pss);
 
-            System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
