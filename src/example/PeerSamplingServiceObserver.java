@@ -138,7 +138,7 @@ public class PeerSamplingServiceObserver implements Control {
         //System.err.println("mean cluster:" + cluster);
         //System.out.println(cluster);
 
-        if (step == 1000 && true) {
+        if (step == 500 && false) {
             PeerSamplingService pss = (PeerSamplingService)
                     Network.get(0).getProtocol(pid);
             System.err.println(observer);
@@ -153,9 +153,9 @@ public class PeerSamplingServiceObserver implements Control {
             //System.err.println("mean cluster:" + cluster);
         }
 
-        //double cluster = observer.meanClusterCoefficient();
-        //System.err.println("mean cluster:" + cluster);
-        //System.out.println(cluster);
+        double cluster = observer.meanClusterCoefficient();
+        System.err.println("mean cluster:" + cluster);
+        System.out.println(cluster);
 
         //if (step == )
 
