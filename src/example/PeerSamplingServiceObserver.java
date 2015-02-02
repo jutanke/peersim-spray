@@ -87,7 +87,6 @@ public class PeerSamplingServiceObserver implements Control {
 
         //DictGraph.MeanPathLength mean = observer.meanPathLength();
 
-
         if (histo) {
             if (step == -1) {
                 System.out.println("============== BABY ==============");
@@ -130,9 +129,9 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
-        //System.err.println("avg: " + avg);
-        //System.out.println(avg.reachQuota);
+        DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+        System.err.println("avg: " + avg);
+        System.out.println(avg.avg);
 
         //double cluster = observer.meanClusterCoefficient();
         //System.err.println("mean cluster:" + cluster);
@@ -153,9 +152,9 @@ public class PeerSamplingServiceObserver implements Control {
             //System.err.println("mean cluster:" + cluster);
         }
 
-        double cluster = observer.meanClusterCoefficient();
-        System.err.println("mean cluster:" + cluster);
-        System.out.println(cluster);
+        //double cluster = observer.meanClusterCoefficient();
+        //System.err.println("mean cluster:" + cluster);
+        //System.out.println(cluster);
 
         //if (step == )
 

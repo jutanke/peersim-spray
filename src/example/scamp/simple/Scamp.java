@@ -81,15 +81,8 @@ public class Scamp extends ScampWithView {
             case ForwardSubscription:
                 Scamp.doSubscribe(node, message);
                 break;
-            case KeepAlive:
-                print("@" + node.getID() + " keep alive from " + message.sender.getID() + " (" + this.debug() + ")");
-                if (this.inView.contains(message.sender)) {
-                    this.inView.updateBirthdate(message.sender);
-                } else {
-                    this.inView.add(message.sender);
-                }
-
-                break;
+            default:
+                throw new RuntimeException("NOTHING HANDLED!");
         }
     }
 

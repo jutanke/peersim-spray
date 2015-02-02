@@ -116,6 +116,14 @@ public abstract class ScampWithView extends ScampProtocol {
                 Node acceptor = message.payload;
                 this.addToInView(acceptor);
                 break;
+            case KeepAlive:
+                print("@" + node.getID() + " keep alive from " + message.sender.getID() + " (" + this.debug() + ")");
+                if (this.inView.contains(message.sender)) {
+                    this.inView.updateBirthdate(message.sender);
+                } else {
+                    this.inView.add(message.sender);
+                }
+                break;
             default:
                 subProcessEvent(node, message);
                 break;
