@@ -97,6 +97,16 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     }
 
 
+    /**
+     * for debugging
+     * @param s
+     */
+    protected static void print(Object s) {
+        if (true) {
+            System.out.println(s);
+        }
+    }
+
     @Override
     public void pack() {
 

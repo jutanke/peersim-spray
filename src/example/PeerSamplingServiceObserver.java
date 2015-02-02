@@ -125,7 +125,7 @@ public class PeerSamplingServiceObserver implements Control {
         System.err.println("avg: " + avg);
         System.out.println(avg.avg);
 
-        if (step == 100) {
+        if (step == 100 && false) {
             PeerSamplingService pss = (PeerSamplingService)
                     Network.get(0).getProtocol(pid);
             System.err.println(observer);

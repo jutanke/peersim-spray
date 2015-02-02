@@ -93,6 +93,15 @@ public abstract class ScampWithView extends ScampProtocol {
 
         this.subNextCycle(node);
 
+        for (Node expired : this.inView.leaseTimeout()) {
+            this.inView.del(expired);
+            print("@" + node.getID() + " remove from inView: " + expired.getID());
+        }
+        for (Node expired : this.partialView.leaseTimeout()) {
+            this.partialView.del(expired);
+            print("@" + node.getID() + " remove from partialView: " + expired.getID());
+        }
+
     }
 
     public abstract void subNextCycle(Node node);

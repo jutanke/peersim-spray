@@ -37,18 +37,26 @@ public class Scamp extends ScampWithView {
     @Override
     public void subRejoin(Node me) {
         print("Rejoin: " + me.getID());
+        this.unsubscribe(me);
+        this.inView.clear();
+        Node contact = getRandomNode(me);
+        if (contact.getID() != me.getID()) {
+            Scamp contactPP = (Scamp) contact.getProtocol(pid);
+            contactPP.join(contact, me);
+        }
     }
 
     @Override
     public void subNextCycle(Node node) {
 
 
-
     }
 
     @Override
     public void unsubscribe(Node me) {
-        throw new NotImplementedException();
+
+        //Scamp pp = (Scamp) n.getPro
+        unsubscribeNode(me);
     }
 
     @Override
@@ -75,7 +83,14 @@ public class Scamp extends ScampWithView {
         } else {
             print("Accept [OUT] " + subscriber.getID() + " -> " + acceptor.getID());
             ScampMessage m = ScampMessage.createAccept(acceptor, subscriber, acceptor);
-            this.send(acceptor, subscriber, m);
+
+            if (true) {
+                this.send(acceptor, subscriber, m);
+            } else {
+                Scamp pp = (Scamp) subscriber.getProtocol(pid);
+                pp.addToInView(acceptor);
+            }
+
             this.addNeighbor(subscriber);
         }
     }
@@ -85,12 +100,57 @@ public class Scamp extends ScampWithView {
     // ===================================================
 
     /**
-     * for debugging
-     * @param s
+     * Run the unsubscribe protocol for the given node.
+     *
+     * @param n not to unsubscribe
      */
-    private static void print(Object s) {
-        if (true) {
-            System.out.println(s);
+    public static void unsubscribeNode(Node n) {
+
+        Scamp pp = (Scamp) n.getProtocol(pid);
+        final int l = pp.degree();
+        final int ll = pp.inView.length();
+        int i = 0;
+
+        // replace ll-(c+1) links to pp
+        if (l > 0) {
+            for (; i < ll - c - 1; ++i) {
+                Node from = pp.inView.get(i).node;
+                if (from.isUp()) {
+                    ((Scamp) from.getProtocol(pid)).replace(
+                            n,
+                            pp.getNeighbor(i % l)
+                    );
+                }
+            }
+        }
+
+        // remove the remaining c+1 links to pp
+        for (; i < ll; ++i) {
+            Node from = pp.inView.get(i).node;
+            if (from.isUp()) {
+                ((Scamp) from.getProtocol(pid)).replace(n, null);
+            }
+        }
+
+    }
+
+    /**
+     * Replace n1 with n2 in the partial view. Helper method to unsubscribe.
+     * This is done taking care of
+     * the consistency of the data structure and dates. If n1 is not known,
+     * prints a warning and exits doing nothing.
+     *
+     * @param n1 the node to replace
+     * @param n2 the new node. If null, n1 is simply removed.
+     */
+// XXX could be optimized if turned out to be a performance problem
+    private void replace(Node n1, Node n2) {
+        if (this.partialView.contains(n1)) {
+            this.partialView.del(n1);
+
+            if (n2 != null) {
+                this.addToOutView(n2);
+            }
         }
     }
 
@@ -130,11 +190,13 @@ public class Scamp extends ScampWithView {
      */
     public static void subscribe(Node n, Node s) {
 
+        System.err.println("Start subscribe (I):" + s.getID() + " to " + n.getID());
+
         if (indirTTL > 0.0) {
             n = getRandomNode(n);
         }
 
-        System.err.println("Start subscribe " + s.getID() + " to " + n.getID());
+        System.err.println("Start subscribe (II):" + s.getID() + " to " + n.getID());
 
         if (!n.isUp()) {
             return; // quietly returning, no feedback

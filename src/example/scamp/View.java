@@ -1,5 +1,7 @@
 package example.scamp;
 
+import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.text.DecimalFormat;
@@ -173,11 +175,16 @@ public class View {
 
     public List<Node> leaseTimeout() {
         this.exportFiltered.clear();
+        long now = CommonState.getTime();
         for(ViewEntry e : this.array) {
-            ScampWithView pp = (ScampWithView) e.node.getProtocol(
+            /*ScampWithView pp = (ScampWithView) e.node.getProtocol(
                     ScampWithView.pid
             );
+            //System.err.println("test lease:" + e.node.getID() + )
             if (pp.isExpired()) {
+                this.exportFiltered.add(e.node);
+            }*/
+            if ((now - e.birthDate) > e.leaseTimeout) {
                 this.exportFiltered.add(e.node);
             }
         }

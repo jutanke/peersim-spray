@@ -61,7 +61,7 @@ public class ScampMessage {
     private final int ttl;
 
 
-    public static final int START_TTL = 100;
+    public static final int START_TTL = 20;
 
     private ScampMessage(Node sender, int ttl, Type type) {
         this.sender = sender;
