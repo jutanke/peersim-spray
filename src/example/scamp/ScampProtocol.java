@@ -100,7 +100,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      */
     protected static void print(Object s) {
         if (true) {
-            System.out.println(s);
+            System.err.println(s);
         }
     }
 

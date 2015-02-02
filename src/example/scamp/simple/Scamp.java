@@ -14,7 +14,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class Scamp extends ScampWithView {
 
 
-    public static final boolean ____C_H_E_A_T_I_N_G____ = false;
+    public static final boolean ____C_H_E_A_T_I_N_G____ = true;
 
     // ===================================================
     // E N T I T Y
@@ -88,7 +88,7 @@ public class Scamp extends ScampWithView {
                 Scamp.doSubscribe(node, message);
                 break;
             case KeepAlive:
-                print("@" + node.getID() + " keep alive from " + message.sender.getID() + "(" + this.debug() + ")");
+                print("@" + node.getID() + " keep alive from " + message.sender.getID() + " (" + this.debug() + ")");
                 if (this.inView.contains(message.sender)) {
                     this.inView.updateBirthdate(message.sender);
                 } else {
@@ -201,6 +201,7 @@ public class Scamp extends ScampWithView {
             Scamp pp = (Scamp) n.getProtocol(example.scamp.Scamp.pid);
             if (pp.p() && !pp.contains(s) && n.getID() != s.getID()) {
                 //pp.addNeighbor(s);
+                print("@" + n.getID() + " keep subscriber " + s.getID());
                 pp.acceptSubscription(n, s);
             } else if (pp.degree() > 0) {
                 Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));

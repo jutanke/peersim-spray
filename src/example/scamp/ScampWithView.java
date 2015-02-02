@@ -3,6 +3,7 @@ package example.scamp;
 import example.scamp.simple.*;
 import peersim.cdsim.CDState;
 import peersim.core.CommonState;
+import peersim.core.Network;
 import peersim.core.Node;
 
 import java.util.List;
@@ -152,6 +153,10 @@ public abstract class ScampWithView extends ScampProtocol {
      * protocol in fact nothing is returned.
      */
     protected static Node getRandomNode(Node n) {
+
+        if (true) {
+            return Network.get(CommonState.r.nextInt(Network.size()));
+        }
 
         ScampWithView pp = (ScampWithView) n.getProtocol(pid);
         if (false && pp.partialView.length() > 0) {
