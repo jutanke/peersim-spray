@@ -14,7 +14,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class Scamp extends ScampWithView {
 
 
-    public static final boolean ____C_H_E_A_T_I_N_G____ = true;
+    public static final boolean ____C_H_E_A_T_I_N_G____ = false;
 
     // ===================================================
     // E N T I T Y
