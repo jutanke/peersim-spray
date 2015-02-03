@@ -1,6 +1,7 @@
 package test;
 
 import example.PeerSamplingService;
+import example.scampXcyclon.PartialViewEntry;
 import peersim.core.Node;
 import peersim.core.Protocol;
 
@@ -12,6 +13,12 @@ import java.util.List;
  */
 public final class HelperForTest {
     private HelperForTest() {
+    }
+
+    public static final PartialViewEntry createPartialViewEntry(long id, int age) {
+        PartialViewEntry e = new PartialViewEntry(createNode(id));
+        e.age = age;
+        return e;
     }
 
     public static final String print(int[] l) {
