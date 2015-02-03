@@ -40,7 +40,7 @@ public class ScampMessage {
     public static ScampMessage smallLoop(Node sender, LoopTopic t, Node destination) {
         ScampMessage message = new ScampMessage(sender, Type.Loop);
         message.loopCounter = (int)Math.max(Math.log(Network.size()), 1);
-        message.loopCounter = 0;
+        //message.loopCounter = 0;
         message.payload = destination;
         message.topic = t;
         return message;
@@ -214,7 +214,7 @@ public class ScampMessage {
     public final long newBirthDate;
     public final Node sender;
     public Node payload, payload2;
-    private final int ttl;
+    public final int ttl;
     public Stack<Node> route;
     public Stack<Node> route2;
     public int loopCounter;
@@ -224,10 +224,11 @@ public class ScampMessage {
      */
     public boolean refreshLoopCounter() {
         this.loopCounter -= 1;
-        if (this.loopCounter <= 0) {
-            return true;
-        }
-        return false;
+        return this.loopCounter == 0;
+    }
+
+    public boolean keepLooping() {
+        return this.loopCounter >= 0;
     }
 
     public static final int START_TTL = 150;
@@ -260,6 +261,10 @@ public class ScampMessage {
                 ((payload == null) ? "<null>" : payload.getID()) + " payload2" +
                 ((payload2 == null) ? "<null>" : payload2.getID()) + " ttl:" + ttl +
                 ((route == null) ? "" : " route:" + routeToString(route));
+    }
+
+    public String debugLoop() {
+        return "counter:" + this.loopCounter + " for " + this.topic + " from " + this.sender.getID();
     }
 
     public boolean isExpired() {

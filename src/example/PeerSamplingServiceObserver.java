@@ -57,6 +57,7 @@ public class PeerSamplingServiceObserver implements Control {
         observer.reset();
 
         double avgDegree = 0;
+        int minDegree = 0, maxDegree = 0;
 
         for (int i = 0; i < Network.size(); i++) {
 
@@ -67,6 +68,11 @@ public class PeerSamplingServiceObserver implements Control {
             observer.add(n, pss);
 
             avgDegree += pss.getPeers().size();
+            if (pss.getPeers().size() > maxDegree) {
+                maxDegree = pss.getPeers().size();
+            } else if (pss.getPeers().size() < minDegree) {
+                minDegree = pss.getPeers().size();
+            }
 
             System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
@@ -81,7 +87,7 @@ public class PeerSamplingServiceObserver implements Control {
 
         boolean histo = false;
 
-        System.err.println("avg node degree:" + avgDegree);
+        System.err.println("avg node degree:" + avgDegree + "(" + minDegree + "|" + maxDegree + ")");
         //System.out.println(avgDegree);
 
         //System.err.println(observer);

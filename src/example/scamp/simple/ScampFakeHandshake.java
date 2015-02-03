@@ -5,6 +5,7 @@ import example.scamp.ScampWithView;
 import example.scamp.messaging.*;
 import example.scamp.messaging.ScampMessage;
 import peersim.cdsim.CDState;
+import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
 import sun.org.mozilla.javascript.ast.Loop;
@@ -62,7 +63,7 @@ public class ScampFakeHandshake extends ScampWithView {
                                 contact = Network.get(CDState.r.nextInt(Network.size()));
                             }
                             print("Indirection done => connect subscription " + subscriber.getID() +
-                                " to contact " + contact.getID());
+                                    " to contact " + contact.getID());
                             ScampMessage backtracking = ScampMessage.smallLoop(
                                     contact, ScampMessage.LoopTopic.BacktrackConnection, subscriber);
                             this.send(node, node, backtracking);
@@ -77,6 +78,7 @@ public class ScampFakeHandshake extends ScampWithView {
                         case AcceptSubscription:
                             subscriber = message.payload;
                             contact = message.sender;
+                            print("ACCEPT: s:" + subscriber.getID() + " @" + contact.getID());
                             ppS = (ScampFakeHandshake) subscriber.getProtocol(pid);
                             ppC = (ScampFakeHandshake) contact.getProtocol(pid);
                             ppS.addToInView(contact);
@@ -87,7 +89,8 @@ public class ScampFakeHandshake extends ScampWithView {
                     }
                 } else {
                     // KEEP LOOPING
-                    this.send(node, node, message);
+                    print("pending message: " + message.debugLoop());
+                    if (message.keepLooping()) this.send(node, node, message);
                 }
                 break;
             default:
@@ -98,8 +101,10 @@ public class ScampFakeHandshake extends ScampWithView {
 
     @Override
     public void subNextCycle(Node node) {
-// CHEATING!
-        if (____C_H_E_A_T_I_N_G____ && this.inView.length() == 0 && this.partialView.length() == 0) {
+        // CHEATING!
+
+        long now = CommonState.getTime();
+        if (now > 20 && ____C_H_E_A_T_I_N_G____ && this.inView.length() == 0 && this.partialView.length() == 0) {
             System.err.println("============ CHEATING =========== @" + node.getID());
             Node contact = Network.get(CDState.r.nextInt(Network.size()));
             ScampProtocol.subscribe(contact, node);
@@ -138,7 +143,7 @@ public class ScampFakeHandshake extends ScampWithView {
     }
 
     private void indirection(Node n, Node s) {
-        print("Indirection s:" +s.getID() + " -> " + n.getID() );
+        print("Indirection s:" + s.getID() + " -> " + n.getID());
         ScampFakeHandshake contact = (ScampFakeHandshake) n.getProtocol(pid);
         ScampFakeHandshake subscriber = (ScampFakeHandshake) s.getProtocol(pid);
         ScampMessage loop = ScampMessage.smallLoop(n, ScampMessage.LoopTopic.Indirection, s);
@@ -146,12 +151,14 @@ public class ScampFakeHandshake extends ScampWithView {
     }
 
     public static void subscribe(Node n, Node s) {
-        print("Subscribe s:" +s.getID() + " -> " + n.getID() );
+        print("Subscribe s:" + s.getID() + " -> " + n.getID());
         ScampFakeHandshake subscriber, contact;
+
         subscriber = (ScampFakeHandshake) s.getProtocol(pid);
         contact = (ScampFakeHandshake) n.getProtocol(pid);
         contact.addToInView(s);
         subscriber.addNeighbor(n);
+        print("s:" + s.getID() + " -> " + n.getID());
 
         ScampMessage forward = ScampMessage.createForwardSubscription(n, s);
 
@@ -159,7 +166,7 @@ public class ScampFakeHandshake extends ScampWithView {
             System.err.println("SCAMP: zero degree contact node " + s.getID() + " -> " + n.getID());
             doSubscribe(n, forward);
         } else {
-            for (int i = 0; i  < contact.partialView.length(); ++i) {
+            for (int i = 0; i < contact.partialView.length(); ++i) {
                 doSubscribe(contact.getNeighbor(i), forward);
             }
             for (int i = 0; i < c; ++i) {
@@ -170,16 +177,20 @@ public class ScampFakeHandshake extends ScampWithView {
 
 
     private static void doSubscribe(final Node n, ScampMessage forward) {
-        if (forward.isExpired()) {
-            Node s= forward.payload;
+        if (!forward.isExpired()) {
+            Node s = forward.payload;
             ScampFakeHandshake pp = (ScampFakeHandshake) n.getProtocol(pid);
+            if (forward.ttl > 100) print("DoSub: @" + n.getID() + " s:" + s.getID() + " @" + pp.debug());
             if (pp.p() && !pp.contains(s) && n.getID() != s.getID()) {
+                //throw new NotImplementedException();
                 pp.acceptSubscription(n, s);
-            } else if (pp.degree()>0) {
+            } else if (pp.degree() > 0) {
                 Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
-                print("Forward s:" +s.getID() + " from " + n.getID() + " to " + forwardTarget.getID());
+                if (forward.ttl > 100) print("Forward s:" + s.getID() + " from " + n.getID() + " to " + forwardTarget.getID() + " ttl:" + forward.ttl);
                 forward = ScampMessage.updateForwardSubscription(n, forward);
                 pp.send(n, forwardTarget, forward);
+            } else {
+                //..
             }
         }
     }
