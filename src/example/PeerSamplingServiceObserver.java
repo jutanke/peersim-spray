@@ -1,5 +1,6 @@
 package example;
 
+import example.scamp.ScampProtocol;
 import example.webrtc.data.DictGraph;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
@@ -67,7 +68,7 @@ public class PeerSamplingServiceObserver implements Control {
 
             avgDegree += pss.getPeers().size();
 
-            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
@@ -158,7 +159,8 @@ public class PeerSamplingServiceObserver implements Control {
 
         //if (step == )
 
-        System.err.println("step " + step + " => count:" + Network.size() + " orphans:" + peersWithEmptyCache.size());
+        System.err.println("step " + step + " => count:" + Network.size() +
+                " orphans:" + peersWithEmptyCache.size() + " Cheating:" + ScampProtocol.CHEAT_COUNT);
 
 
 

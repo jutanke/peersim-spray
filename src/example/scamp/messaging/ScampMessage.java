@@ -1,6 +1,8 @@
 package example.scamp.messaging;
 
 import example.cyclon.PeerSamplingService;
+import example.scamp.ScampProtocol;
+import peersim.core.Network;
 import peersim.core.Node;
 
 import java.util.LinkedList;
@@ -18,12 +20,38 @@ public class ScampMessage {
         KeepAlive,
         IndirectionHandshake,
         Answer,
-        Handshake
+        Handshake,
+        Connect,
+        Loop
+    }
+
+    public enum LoopTopic {
+        Nothing,
+        Indirection,
+        BacktrackConnection,
+        forwardSubscription,
+        AcceptSubscription
     }
 
     // ==================================================
     // E X T E R N A L  I N T E R F A C E
     // ==================================================
+
+    public static ScampMessage smallLoop(Node sender, LoopTopic t, Node destination) {
+        ScampMessage message = new ScampMessage(sender, Type.Loop);
+        message.loopCounter = (int)Math.max(Math.log(Network.size()), 1);
+        message.loopCounter = 0;
+        message.payload = destination;
+        message.topic = t;
+        return message;
+    }
+
+    @Deprecated
+    public static ScampMessage bigLoop(Node sender) {
+        ScampMessage message = new ScampMessage(sender, Type.Loop);
+        message.loopCounter = (int)Math.max(Math.log(Network.size()), 1) + ScampProtocol.c;
+        return message;
+    }
 
     public static ScampMessage createIndirectionAnswer(Node sender, Node subscriber, Node contact) {
         ScampMessage message = new ScampMessage(sender, Type.IndirectionHandshake);
@@ -86,6 +114,7 @@ public class ScampMessage {
         ScampMessage message = new ScampMessage(sender, Type.ForwardSubscriptionHandshake);
         message.payload = subscriber;
         message.route = new Stack<Node>();
+        message.route.push(subscriber);
         message.route.push(sender);
         return message;
     }
@@ -102,24 +131,85 @@ public class ScampMessage {
         return message;
     }
 
-
+    /**
+     *
+     * @param sender
+     * @param offer
+     * @return
+     */
     public static ScampMessage createAnswer(Node sender, ScampMessage offer) {
         if (offer.type != Type.ForwardSubscriptionHandshake) {
             throw new RuntimeException("wrong message type:" + offer.type);
         }
         ScampMessage message = new ScampMessage(sender, Type.Answer);
-
         message.route = offer.route;        // the route back to the offerer!
         message.route2 = new Stack<Node>(); // the route back to me!
         message.route2.push(sender);
+        message.payload = offer.payload;    // the subscriber
+        message.payload2 = sender;           // define "me"
 
         return message;
+    }
+
+    public static ScampMessage updateAnswer(Node sender, ScampMessage answer) {
+        if (answer.type != Type.Answer) {
+            throw new RuntimeException("wrong message type2:" + answer.type);
+        }
+        ScampMessage message = new ScampMessage(sender,(answer.ttl - 1), Type.Answer);
+        message.route = answer.route;
+        message.route2 = answer.route2;
+        message.route2.push(sender);
+        message.payload2 = answer.payload2;
+        message.payload = answer.payload;
+        return message;
+    }
+
+    /**
+     *
+     * @param sender
+     * @param answer
+     * @return
+     */
+    public static ScampMessage createHandshake(Node sender, ScampMessage answer) {
+        if (answer.type != Type.Answer) {
+            throw new RuntimeException("wrong message type:" + answer.type);
+        }
+        ScampMessage message = new ScampMessage(sender, Type.Handshake);
+        message.route = answer.route2;      // the route back
+        message.payload = answer.payload2;  // the target
+        message.payload2 = answer.payload;  // the subscriber
+        return message;
+    }
+
+    public static ScampMessage updateHandshake(Node sender, ScampMessage handshake) {
+        if (handshake.type != Type.Answer) {
+            throw new RuntimeException("wrong message type3:" + handshake.type);
+        }
+        ScampMessage message = new ScampMessage(sender,(handshake.ttl - 1), handshake.type);
+        message.route = handshake.route;
+        message.payload = handshake.payload;
+        message.payload2 = handshake.payload2;
+        return message;
+    }
+
+    /**
+     *
+     * @param sender
+     * @param handshake
+     * @return
+     */
+    public static ScampMessage createConnect(Node sender, ScampMessage handshake) {
+        if (handshake.type != Type.Handshake) {
+            throw new RuntimeException("wrong message type:" + handshake.type);
+        }
+        return new ScampMessage(sender, Type.Connect);
     }
 
     // ==================================================
     // I N T E R N A L  I N T E R F A C E
     // ==================================================
 
+    public LoopTopic topic = LoopTopic.Nothing;
     public final Type type;
     public final long newBirthDate;
     public final Node sender;
@@ -127,7 +217,18 @@ public class ScampMessage {
     private final int ttl;
     public Stack<Node> route;
     public Stack<Node> route2;
+    public int loopCounter;
 
+    /**
+     * @return True-> exit, otherwise false
+     */
+    public boolean refreshLoopCounter() {
+        this.loopCounter -= 1;
+        if (this.loopCounter <= 0) {
+            return true;
+        }
+        return false;
+    }
 
     public static final int START_TTL = 150;
 
@@ -157,10 +258,23 @@ public class ScampMessage {
     public String toString(){
         return "msg: " + type + " sender:" + this.sender.getID() + " payload1:" +
                 ((payload == null) ? "<null>" : payload.getID()) + " payload2" +
-                ((payload2 == null) ? "<null>" : payload2.getID()) + " ttl:" + ttl;
+                ((payload2 == null) ? "<null>" : payload2.getID()) + " ttl:" + ttl +
+                ((route == null) ? "" : " route:" + routeToString(route));
     }
 
     public boolean isExpired() {
         return this.ttl <= 0;
+    }
+
+    private String routeToString (Stack<Node> stack) {
+        Stack<Node> copy = (Stack)stack.clone();
+        StringBuilder sb = new StringBuilder();
+        sb.append("--> [");
+        while (!copy.empty()) {
+            sb.append(" ");
+            sb.append(copy.pop().getID());
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

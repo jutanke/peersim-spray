@@ -18,6 +18,8 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     // =================== static fields ==================================
     // ====================================================================
 
+    public static final boolean ____C_H_E_A_T_I_N_G____ = true;
+    public static int CHEAT_COUNT = 0;
 
     /**
      * Parameter "c" of Scamp . Defaults to 0.
@@ -49,7 +51,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
     /**
      * c
      */
-    protected static int c;
+    public static int c;
 
     /**
      * indirection TTL
@@ -100,7 +102,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
      * @param s
      */
     protected static void print(Object s) {
-        if (false) {
+        if (true) {
             System.err.println(s);
         }
     }
@@ -131,7 +133,7 @@ public abstract class ScampProtocol implements Linkable, EDProtocol, CDProtocol,
         ((ScampProtocol) n.getProtocol(pid)).join(n, s);
     }
 
-    public abstract void subDoSubscribe(Node acceptor, Node subscriber);
+    //public abstract void subDoSubscribe(Node acceptor, Node subscriber);
 
     public abstract void join(Node me, Node subscriber);
 

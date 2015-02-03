@@ -12,9 +12,6 @@ import peersim.core.Node;
  */
 public class Scamp extends ScampWithView {
 
-
-    public static final boolean ____C_H_E_A_T_I_N_G____ = true;
-
     // ===================================================
     // E N T I T Y
     // ===================================================
@@ -64,6 +61,7 @@ public class Scamp extends ScampWithView {
             System.err.println("============ CHEATING =========== @" + node.getID());
             Node contact = Network.get(CDState.r.nextInt(Network.size()));
             ScampProtocol.subscribe(contact, node);
+            CHEAT_COUNT += 1;
         }
 
     }
@@ -86,7 +84,6 @@ public class Scamp extends ScampWithView {
         }
     }
 
-    @Override
     public void subDoSubscribe(Node acceptor, Node subscriber) {
         if (acceptor.getID() == subscriber.getID()) {
             throw new RuntimeException("@" + acceptor.getID() + "Try to accept myself as subscription");
