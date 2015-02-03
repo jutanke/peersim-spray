@@ -1,7 +1,7 @@
 SIZE 1000
 
 # parameters of periodic execution
-CYCLES 150
+CYCLES 150000
 CYCLE SIZE*10000
 
 
@@ -26,13 +26,13 @@ random.seed 1234569890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 example.scamp.simple.Scamp
-protocol.0.c 10
+protocol.0.c 2
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
-protocol.0.leaseTimeoutMin 51
-protocol.0.leaseTimeoutMax 83
+protocol.0.leaseTimeoutMin 5051
+protocol.0.leaseTimeoutMax 20000
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay (CYCLE*MINDELAY)/100

@@ -65,7 +65,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
     public void nextCycle(Node node, int protocolID) {
 
         // START SHUFFLE
-        if (this.cache.size() > 0) {
+        if (this.cache.size() > 0 && CommonState.getTime() % 5 == 0) {
 
             increaseAge();
 

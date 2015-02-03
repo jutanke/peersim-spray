@@ -6,6 +6,7 @@ import example.scamp.messaging.ScampMessage;
 import peersim.cdsim.CDState;
 import peersim.core.Network;
 import peersim.core.Node;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Created by julian on 01/02/15.
@@ -30,9 +31,13 @@ public class Scamp extends ScampWithView {
     // P U B L I C  I N T E R F A C E
     // ===================================================
 
+    private void join(Node me, Node subscriber, boolean isLease) {
+        Scamp.subscribe(me, subscriber, isLease);
+    }
+
     @Override
     public void join(Node me, Node subscriber) {
-        Scamp.subscribe(me, subscriber);
+        join(me, subscriber, false);
     }
 
     @Override
@@ -45,11 +50,16 @@ public class Scamp extends ScampWithView {
         for (Node n : this.partialView.list()) {
             send(me, n, message);
         }
-        Node contact = getRandomNode(me);
-        if (contact.getID() != me.getID()) {
+        //Node contact = getRandomNode(me);
+        //while (contact.getID() == )
+        if (this.degree() > 0) {
+            Node contact = this.partialView.get(CDState.r.nextInt(this.degree())).node;
             Scamp contactPP = (Scamp) contact.getProtocol(pid);
-            contactPP.join(contact, me);
+            contactPP.join(contact, me, true);
+        } else {
+            //
         }
+
     }
 
     @Override
@@ -208,7 +218,7 @@ public class Scamp extends ScampWithView {
      * @param n the contact node
      * @param s the subscribing node
      */
-    public static void subscribe(Node n, Node s) {
+    public static void subscribe(Node n, Node s, boolean isLease) {
 
         print("Start subscribe (I):" + s.getID() + " to " + n.getID());
 
@@ -239,7 +249,7 @@ public class Scamp extends ScampWithView {
                 Scamp.doSubscribe(contact.getNeighbor(i), forward);
             }
 
-            if (indirTTL > 0.0) {
+            if (!isLease) {
                 for (int i = 0; i < c; ++i) {
                     Scamp.doSubscribe(
                             contact.getNeighbor(CDState.r.nextInt(contact.degree())),

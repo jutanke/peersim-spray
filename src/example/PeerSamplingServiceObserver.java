@@ -74,7 +74,7 @@ public class PeerSamplingServiceObserver implements Control {
                 minDegree = pss.getPeers().size();
             }
 
-            System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
@@ -136,9 +136,14 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
-        System.err.println("avg: " + avg);
-        System.out.println(avg.avg);
+        if ((step % 500) == 0) {
+            double cluster = observer.meanClusterCoefficient();
+            System.out.println(cluster);
+        }
+
+        //DictGraph.AvgReachablePaths avg = observer.avgReachablePaths(0);
+        //System.err.println("avg: " + avg);
+        //System.out.println(avg.avg);
 
         //double cluster = observer.meanClusterCoefficient();
         //System.err.println("mean cluster:" + cluster);
