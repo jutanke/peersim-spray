@@ -60,8 +60,15 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
         if (this.degree() > 0) {
 
             // cycle..
+            this.view.incrementAge();
 
+            Node q = this.view.oldest().node;
 
+            List<PartialViewEntry> nodesToSend = this.view.subsetMinus1(q);
+            nodesToSend.add(new PartialViewEntry(node)); // age = 0
+
+            ScampMessage m = ScampMessage.createShuffle(node, nodesToSend);
+            this.send(node, q, m);
         }
 
     }
@@ -108,6 +115,11 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
             case AcceptSubscription:
                 Node acceptor = message.payload;
                 this.view.addToIn(acceptor);
+                break;
+            case Shuffle:
+
+                break;
+            case ShuffleResponse:
                 break;
             default:
                 throw new NotImplementedException();

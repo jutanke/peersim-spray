@@ -2,10 +2,13 @@ package example.scamp.messaging;
 
 import example.cyclon.PeerSamplingService;
 import example.scamp.ScampProtocol;
+import example.scampXcyclon.PartialViewEntry;
 import peersim.core.Network;
 import peersim.core.Node;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -22,7 +25,13 @@ public class ScampMessage {
         Answer,
         Handshake,
         Connect,
-        Loop
+        Loop,
+
+
+        // ====
+
+        Shuffle,
+        ShuffleResponse
     }
 
     public enum LoopTopic {
@@ -212,6 +221,20 @@ public class ScampMessage {
         return result;
     }
 
+    public static ScampMessage createShuffle(Node sender, List<PartialViewEntry> list) {
+        ScampMessage m = new ScampMessage(sender, Type.Shuffle);
+        m.list = list;
+        return m;
+    }
+
+    public static ScampMessage createShuffleResponse(Node sender,  List<PartialViewEntry> list, ScampMessage shuffle) {
+        if (shuffle.type != Type.Shuffle) throw new NotImplementedException();
+        ScampMessage m = new ScampMessage(sender, Type.ShuffleResponse);
+        m.list2 = shuffle.list;
+        m.list = list;
+        return m;
+    }
+
     // ==================================================
     // I N T E R N A L  I N T E R F A C E
     // ==================================================
@@ -225,6 +248,9 @@ public class ScampMessage {
     public Stack<Node> route;
     public Stack<Node> route2;
     public int loopCounter;
+
+    public List<PartialViewEntry> list;
+    public List<PartialViewEntry> list2;
 
     /**
      * @return True-> exit, otherwise false
