@@ -111,8 +111,8 @@ public class ScamplonView {
 
     public void merge(Node me, PartialViewEntry oldest, List<PartialViewEntry> sent, List<PartialViewEntry> received, int factor) {
         final int maxLength = this.out.size() + factor;
-        System.err.println("++++++++++++++ MERGE");
-        System.err.println("@" + me.getID() + " oldest:" + oldest + " sent:" + sent + " received:" + received);
+        //System.err.println("++++++++++++++ MERGE");
+        //System.err.println("@" + me.getID() + " oldest:" + oldest + " sent:" + sent + " received:" + received);
         sent = filter(sent, me);
         if (oldest != null) sent.add(oldest);
         received = cut(clone(received), clone(sent));
@@ -150,9 +150,10 @@ public class ScamplonView {
         }
 
         if (out.size() != maxLength) {
-            System.err.println("@" + me.getID() + " -> " + this.toString() + " vs " + maxLength + " -> " + out);
-            System.err.println("oldest:" + oldest + " sent:" + sent + " received:" + received);
-            throw new RuntimeException("SIZE NOT COMPATIBLE! (CYCLON)");
+            System.err.println("@" + me.getID() + " SIZE NOT COMPATIBLE!");
+            //System.err.println("@" + me.getID() + " -> " + this.toString() + " vs " + maxLength + " -> " + out);
+            //System.err.println("oldest:" + oldest + " sent:" + sent + " received:" + received);
+            //throw new RuntimeException("SIZE NOT COMPATIBLE! (CYCLON)");
         }
 
         this.out.clear();

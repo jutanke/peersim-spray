@@ -1,7 +1,7 @@
-SIZE 10
+SIZE 10000
 
 # parameters of periodic execution
-CYCLES 100
+CYCLES 500
 CYCLE SIZE*10000
 
 
@@ -26,7 +26,7 @@ random.seed 1234569890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 example.scampXcyclon.Scamplon
-protocol.0.c 2
+protocol.0.c 5
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link

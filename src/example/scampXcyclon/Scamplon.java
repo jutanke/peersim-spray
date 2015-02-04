@@ -1,6 +1,7 @@
 package example.scampXcyclon;
 
 import example.scamp.messaging.ScampMessage;
+import example.scamp.orig.Scamp;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -70,6 +71,11 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
 
             ScampMessage m = ScampMessage.createShuffle(node, nodesToSend, this.view.oldest(), this.degree());
             this.send(node, q, m);
+        } else if (this.view.in.size() == 0) {
+
+            // C H E A T ! !
+            Scamplon.subscribe(node);
+
         }
 
     }
@@ -257,7 +263,7 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
      * @param o
      */
     private static void print(Object o) {
-        if (true) System.out.println(o);
+        if (false) System.out.println(o);
     }
 
     /**
