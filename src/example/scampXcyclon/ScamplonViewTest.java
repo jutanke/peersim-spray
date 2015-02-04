@@ -18,7 +18,7 @@ public class ScamplonViewTest {
         view.addToOut(HelperForTest.createNode(0));
         view.addToOut(HelperForTest.createNode(1));
         view.addToOut(two);
-        assertTrue(view.oldContains(two));
+        assertTrue(view.outContains(two));
     }
 
     @Test

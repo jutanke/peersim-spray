@@ -205,6 +205,13 @@ public class ScampMessage {
         return new ScampMessage(sender, Type.Connect);
     }
 
+    public static ScampMessage copy(ScampMessage m) {
+        ScampMessage result = new ScampMessage(m.sender, m.ttl, m.type);
+        result.payload = m.payload;
+        result.payload2 = m.payload2;
+        return result;
+    }
+
     // ==================================================
     // I N T E R N A L  I N T E R F A C E
     // ==================================================

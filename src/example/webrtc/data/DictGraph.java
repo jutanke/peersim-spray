@@ -232,6 +232,40 @@ public class DictGraph {
         return result;
     }
 
+    public int[] outDegreeAsHistogram() {
+        // ====== #1 Count the in-degree of all peers ======
+        Map<Long, Integer> lookup = new HashMap<Long, Integer>(this.nodes.size());
+        for (DictNode e : this.nodes.values()) {
+            lookup.put(e.id, 0);
+        }
+        for (DictNode e : this.nodes.values()) {
+            for (long n : e.neighbors) {
+                lookup.put(n, lookup.get(n) + 1);
+            }
+        }
+
+        // ====== #3 create histogram for the counts ======
+        Map<Integer, Integer> histogram = new HashMap<Integer, Integer>();
+        for (int inDegree : lookup.values()) {
+            if (histogram.containsKey(inDegree)) {
+                histogram.put(inDegree, histogram.get(inDegree) + 1);
+            } else {
+                histogram.put(inDegree, 1);
+            }
+        }
+
+        // ====== #3 turn the lookup into an array ======
+        int max = 0;
+        for (int deg : histogram.keySet()) {
+            if (deg > max) max = deg;
+        }
+        int[] result = new int[max + 1];
+        for (int deg : histogram.keySet()) {
+            result[deg] = histogram.get(deg);
+        }
+        return result;
+    }
+
     /**
      * @return index of array = number of in-degree
      */

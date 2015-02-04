@@ -3,7 +3,6 @@ package example.scampXcyclon;
 import peersim.cdsim.CDState;
 import peersim.core.CommonState;
 import peersim.core.Node;
-import peersim.edsim.CDScheduler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,19 +37,23 @@ public class ScamplonView {
     // P U B L I C
     // ============================================
 
-    public void addToOut(Node n) {
-        if (!oldContains(n)) {
+    public boolean addToOut(Node n) {
+        if (!outContains(n)) {
             this.out.add(new PartialViewEntry(n));
+            return true;
         }
+        return false;
     }
 
-    public void addToIn(Node n) {
+    public boolean addToIn(Node n) {
         if (!inContains(n)) {
             this.in.add(n);
+            return true;
         }
+        return false;
     }
 
-    public boolean oldContains(Node n) {
+    public boolean outContains(Node n) {
         for (PartialViewEntry e : this.out) {
             if (e.node.getID() == n.getID()) {
                 return true;
@@ -141,6 +144,9 @@ public class ScamplonView {
         }
     }
 
+    public boolean p() {
+        return CDState.r.nextDouble() < 1.0 / (1.0 + this.out.size());
+    }
 
     // ============================================
     // P R I V A T E
