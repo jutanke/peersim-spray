@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class ScampHandshake extends ScampWithView {
 
+    private final int CHEAT_TIMEOUT = 5000;
+    private int cheatTimeout = 0;
     public static final boolean ____C_H_E_A_T_I_N_G____ = true;
 
     // ===================================================
@@ -70,9 +72,14 @@ public class ScampHandshake extends ScampWithView {
 
         // CHEATING!
         if (____C_H_E_A_T_I_N_G____ && this.inView.length() == 0 && this.partialView.length() == 0) {
-            System.err.println("============ CHEATING =========== @" + node.getID());
-            Node contact = Network.get(CDState.r.nextInt(Network.size()));
-            ScampHandshake.indirection(contact, node);
+            //System.err.println("============ CHEATING =========== @" + node.getID());
+            if (this.cheatTimeout > CHEAT_TIMEOUT) {
+                Node contact = Network.get(CDState.r.nextInt(Network.size()));
+                ScampHandshake.indirection(contact, node);
+                this.cheatTimeout = 0;
+            } else {
+                this.cheatTimeout += 1;
+            }
         }
 
     }

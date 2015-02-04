@@ -1,14 +1,16 @@
-set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 1500, 768
+set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 1000, 768
 set output 'simple.1.png'
 # put it to eps (vectors)
 # change to black and white
 set key inside left top vertical Right noreverse enhanced autotitles box linetype -1 linewidth 1.000
 
-set pointintervalbox 1
+#set pointintervalbox 1
 
-plot [0:3000] "avg_deg_scamp_c0.txt" using ($0+1):1 title "c=0", \
-    "avg_deg_scamp_c2.txt" using ($0+1):1 title "c=2", \
-    "avg_deg_scamp_c5.txt" using ($0+1):1 title "c=5", \
-    "avg_deg_scamp_c10.txt" using ($0+1):1 title "c=10", \
-    "avg_deg_scamp_c20.txt" using ($0+1):1 title "c=20", \
-    "avg_deg_scamp_c40.txt" using ($0+1):1 title "c=40"
+set xlabel "(* 100)"
+
+set style line 1 lc rgb 'blue' lt 1 lw 2 pt 3
+set style line 2 lc rgb 'black' lt 4 lw 2 pt 3
+set style line 3 lc rgb 'red' lt 4 lw 2 pt 3
+
+plot [0:950] "clusterScampSimple.txt" using ($0+1):1 title "SCAMP no Handshake" w l ls 1, \
+    "clusterScampHs.txt" using ($0+1):1 title "SCAMP with Handshake" w l ls 2

@@ -13,6 +13,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class Scamp extends ScampWithView {
 
+    private final int CHEAT_TIMEOUT = 500;
+    private int cheatTimeout = 0;
+
     // ===================================================
     // E N T I T Y
     // ===================================================
@@ -68,10 +71,15 @@ public class Scamp extends ScampWithView {
 
         // CHEATING!
         if (____C_H_E_A_T_I_N_G____ && this.inView.length() == 0 && this.partialView.length() == 0) {
-            System.err.println("============ CHEATING =========== @" + node.getID());
-            Node contact = Network.get(CDState.r.nextInt(Network.size()));
-            ScampProtocol.subscribe(contact, node);
-            CHEAT_COUNT += 1;
+            //System.err.println("============ CHEATING =========== @" + node.getID());
+            if (this.cheatTimeout > CHEAT_TIMEOUT) {
+                Node contact = Network.get(CDState.r.nextInt(Network.size()));
+                ScampProtocol.subscribe(contact, node);
+                CHEAT_COUNT += 1;
+                this.cheatTimeout = 0;
+            } else {
+                this.cheatTimeout += 1;
+            }
         }
 
     }
