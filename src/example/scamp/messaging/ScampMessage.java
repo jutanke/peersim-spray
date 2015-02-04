@@ -221,17 +221,21 @@ public class ScampMessage {
         return result;
     }
 
-    public static ScampMessage createShuffle(Node sender, List<PartialViewEntry> list) {
+    public static ScampMessage createShuffle(Node sender, List<PartialViewEntry> list, PartialViewEntry oldest, int c) {
         ScampMessage m = new ScampMessage(sender, Type.Shuffle);
         m.list = list;
+        m.oldest = oldest;
+        m.c = c;
         return m;
     }
 
-    public static ScampMessage createShuffleResponse(Node sender,  List<PartialViewEntry> list, ScampMessage shuffle) {
+    public static ScampMessage createShuffleResponse(Node sender,  List<PartialViewEntry> list, ScampMessage shuffle, int diff) {
         if (shuffle.type != Type.Shuffle) throw new NotImplementedException();
         ScampMessage m = new ScampMessage(sender, Type.ShuffleResponse);
         m.list2 = shuffle.list;
+        m.oldest = shuffle.oldest;
         m.list = list;
+        m.factor = diff;
         return m;
     }
 
@@ -248,6 +252,9 @@ public class ScampMessage {
     public Stack<Node> route;
     public Stack<Node> route2;
     public int loopCounter;
+    public PartialViewEntry oldest;
+    public int factor;
+    public int c;
 
     public List<PartialViewEntry> list;
     public List<PartialViewEntry> list2;

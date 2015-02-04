@@ -105,27 +105,42 @@ public class ScamplonView {
         }
     }
 
-    public void merge(Node me, List<PartialViewEntry> sent, List<PartialViewEntry> received) {
-        merge(me, null, sent, received);
+    public void merge(Node me, List<PartialViewEntry> sent, List<PartialViewEntry> received, int factor) {
+        merge(me, null, sent, received, factor);
     }
 
-    public void merge(Node me, PartialViewEntry oldest, List<PartialViewEntry> sent, List<PartialViewEntry> received) {
-        final int maxLength = this.out.size();
+    public void merge(Node me, PartialViewEntry oldest, List<PartialViewEntry> sent, List<PartialViewEntry> received, int factor) {
+        final int maxLength = this.out.size() + factor;
+        System.err.println("++++++++++++++ MERGE");
+        System.err.println("@" + me.getID() + " oldest:" + oldest + " sent:" + sent + " received:" + received);
         sent = filter(sent, me);
         if (oldest != null) sent.add(oldest);
-        received = cut(received, sent);
-        received = filter(received, me);
-        received = cut(received, this.out);
-        ArrayList<PartialViewEntry> out = (ArrayList<PartialViewEntry>)this.cut(this.out, sent);
+        received = cut(clone(received), clone(sent));
+        received = filter(clone(received), me);
+        ArrayList<PartialViewEntry> out = (ArrayList<PartialViewEntry>)this.cut(this.out, clone(sent));
+        received = cut(received, out);
         if (sent.size() == 0 && maxLength > 0) {
             // we must remove some elements..
             int l = Math.min(l(), received.size());
             out = (ArrayList<PartialViewEntry>) removeN(out, l);
         }
+
+        while (out.size() > maxLength) {
+            out.remove(0);
+        }
+
         Stack<PartialViewEntry> receivedStack = new Stack<PartialViewEntry> ();
         receivedStack.addAll(received);
+        boolean someNewNodes = false;
         while (out.size() < maxLength && !receivedStack.isEmpty()) {
             out.add(receivedStack.pop());
+            someNewNodes = true;
+        }
+
+        if (!someNewNodes && received.size() > 0 && out.size() > 0) {
+            // enforce exchange!
+            out.remove(0); // TODO make this better!
+            out.add(youngest(received));
         }
 
         Stack<PartialViewEntry> sentStack = new Stack<PartialViewEntry> ();
@@ -135,6 +150,8 @@ public class ScamplonView {
         }
 
         if (out.size() != maxLength) {
+            System.err.println("@" + me.getID() + " -> " + this.toString() + " vs " + maxLength + " -> " + out);
+            System.err.println("oldest:" + oldest + " sent:" + sent + " received:" + received);
             throw new RuntimeException("SIZE NOT COMPATIBLE! (CYCLON)");
         }
 
@@ -151,6 +168,20 @@ public class ScamplonView {
     // ============================================
     // P R I V A T E
     // ============================================
+
+    private List<PartialViewEntry> clone(List<PartialViewEntry> list) {
+        return new ArrayList<PartialViewEntry>(list);
+    }
+
+    private PartialViewEntry youngest(List<PartialViewEntry> list) {
+        PartialViewEntry y = list.get(0);
+        for (PartialViewEntry e : list) {
+            if (e.age < y.age) {
+                y = e;
+            }
+        }
+        return y;
+    }
 
     public List<PartialViewEntry> removeN(ArrayList<PartialViewEntry> list, int n) {
         if (n >= list.size()) {
@@ -182,7 +213,7 @@ public class ScamplonView {
 
     private List<PartialViewEntry> subset(List<Node> filters, int l) {
         final List<PartialViewEntry> result = new ArrayList<PartialViewEntry>();
-        if (this.out.size() > 0) {
+        if (this.out.size() > 0 && l > 0) {
             List<PartialViewEntry> out = filter(this.out, filters);
             int L = Math.min(l, out.size());
             if (L > 0) {
@@ -193,7 +224,7 @@ public class ScamplonView {
                     singleFilter.add(next.node);
                     out = filter(out, singleFilter);
                     L = Math.min(l, out.size());
-                } while (L-- >= 0);
+                } while (L-- > 0);
             }
         }
         return result;

@@ -66,8 +66,9 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
 
             List<PartialViewEntry> nodesToSend = this.view.subsetMinus1(q);
             nodesToSend.add(new PartialViewEntry(node)); // age = 0
+            print("@" + node.getID() + " -> " + q.getID() + " -> " + nodesToSend + " db:" + this.debug());
 
-            ScampMessage m = ScampMessage.createShuffle(node, nodesToSend);
+            ScampMessage m = ScampMessage.createShuffle(node, nodesToSend, this.view.oldest(), this.degree());
             this.send(node, q, m);
         }
 
@@ -108,6 +109,9 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
 
         ScampMessage message = (ScampMessage) event;
 
+        List<PartialViewEntry> received = null;
+        List<PartialViewEntry> nodesToSend = null;
+        int factor = 0;
         switch (message.type) {
             case ForwardSubscription:
                 doSubscribe(node, message);
@@ -118,8 +122,37 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
                 break;
             case Shuffle:
 
+                Node p = message.sender;
+
+                received = message.list;
+                nodesToSend = this.view.subset();
+
+                int otherDegree = message.c;
+                factor = 0;
+                if (Math.abs(otherDegree - this.degree()) > 1) {
+                    if (otherDegree > this.degree()) {
+                        factor = 1;
+                    } else {
+                        factor = -1;
+                    }
+                }
+
+                this.view.merge(node, clone(nodesToSend), clone(received), factor);
+
+                ScampMessage m = ScampMessage.createShuffleResponse(node, nodesToSend, message, -factor);
+                this.send(node, p, m);
+
                 break;
             case ShuffleResponse:
+
+                received = message.list;
+                nodesToSend = message.list2;
+                Node q = message.sender;
+                PartialViewEntry oldest = message.oldest;
+                factor = message.factor;
+
+                this.view.merge(node, oldest, clone(nodesToSend), clone(received), factor);
+
                 break;
             default:
                 throw new NotImplementedException();
@@ -153,6 +186,10 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
     public void send(Node sender, Node destination, example.scamp.messaging.ScampMessage m) {
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, destination, m, pid);
+    }
+
+    public List<PartialViewEntry> clone(List<PartialViewEntry> list) {
+        return new ArrayList<PartialViewEntry>(list);
     }
 
     /**
