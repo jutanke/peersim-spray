@@ -1,6 +1,7 @@
 package test;
 
 import example.PeerSamplingService;
+import example.Scamplon.PartialView;
 import example.scampXcyclon.PartialViewEntry;
 import peersim.core.Node;
 import peersim.core.Protocol;
@@ -32,6 +33,12 @@ public final class HelperForTest {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    public static final PartialView.Entry entry(long id, int age) {
+        PartialView.Entry e = new PartialView.Entry(createNode(id));
+        e.age = age;
+        return e;
     }
 
     /**

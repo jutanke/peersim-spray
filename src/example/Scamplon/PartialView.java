@@ -1,5 +1,6 @@
 package example.Scamplon;
 
+import peersim.cdsim.CDState;
 import peersim.core.Node;
 
 import java.util.*;
@@ -18,7 +19,7 @@ public class PartialView {
 
     // pointer to the own node
     private final Node self;
-    private final List<Entry> out;
+    private List<Entry> out;
 
     public PartialView(Node self) {
         this.self = self;
@@ -31,7 +32,6 @@ public class PartialView {
     // ============================================
 
     /**
-     *
      * @param n
      * @return
      */
@@ -44,7 +44,6 @@ public class PartialView {
     }
 
     /**
-     *
      * @param n
      * @return
      */
@@ -55,12 +54,13 @@ public class PartialView {
     /**
      * @return size of the partial view
      */
-    public int degree(){
+    public int degree() {
         return this.out.size();
     }
 
     /**
      * Needed for the interface
+     *
      * @param i
      * @return
      */
@@ -70,6 +70,7 @@ public class PartialView {
 
     /**
      * might be needed internally
+     *
      * @param n
      * @return
      */
@@ -90,7 +91,44 @@ public class PartialView {
      * @return subset-size
      */
     public int l() {
-        return (int) Math.max(1, Math.ceil(this.degree()/2.0));
+        return (int) Math.max(1, Math.ceil(this.degree() / 2.0));
+    }
+
+    /**
+     * should be used in the shuffle-response part
+     *
+     * @return
+     */
+    public List<Entry> subset() {
+        return subset(this.out, this.l());
+    }
+
+    /**
+     * Should be used in the shuffle code
+     *
+     * @param oldest
+     * @return
+     */
+    public List<Entry> subsetMinus1(Node oldest) {
+        return subset(this.out, oldest, this.l() - 1);
+    }
+
+    /**
+     * @return oldest element
+     */
+    public Entry oldest() {
+        Entry oldest = this.out.get(0);
+        for (Entry e : this.out) {
+            if (oldest.age > e.age) {
+                oldest = e;
+            }
+        }
+        oldest.isVolatile = true;
+        return oldest;
+    }
+
+    public void merge(Node oldest, List<Entry> received, int otherSize) {
+        this.out = merge(this.self, oldest, this.out, received, otherSize);
     }
 
 
@@ -99,16 +137,107 @@ public class PartialView {
     // ============================================
 
 
-
     // ============================================
     // L I S T  H E L P E R
     // ============================================
 
 
+    public static List<Entry> merge(Node me, Node other, List<Entry> list, List<Entry> received, int otherSize) {
+        int newSize = (list.size() % 2 == 0) ?
+                (int) Math.ceil((list.size() + otherSize) / 2) :
+                (int) Math.floor((list.size() + otherSize) / 2);
+
+        RemoveVolatileResult rem = removeVolatileResults(list);
+        list = rem.rest;
+
+        if (contains(received, me)) {
+            List<Entry> sent = remove(rem.volatiles, me);
+            received = remove(received, me);
+            if (sent.size() > 0) {
+                received.add(youngest(sent));
+            } else {
+                received.add(new Entry(other)); // introduce a new arc!
+            }
+        }
+
+        if (newSize != (list.size() + received.size())) {
+            throw new RuntimeException("LOSING ARCS! MUST NOT HAPPEN!");
+        }
+
+        list.addAll(received);
+        return list;
+    }
 
 
     /**
+     * Select a random integer between max and 0
+     *
+     * @param max
+     * @return
+     */
+    private static int nextInt(int max) {
+        if (!TEST_ENV) {
+            return CDState.r.nextInt(max);
+        } else {
+            return r.nextInt(max);
+        }
+    }
+
+    private static Entry youngest(List<Entry> list) {
+        Entry youngest = list.get(0);
+        for (Entry e : list) {
+            if (e.age < youngest.age) {
+                youngest = e;
+            }
+        }
+        return youngest;
+    }
+
+    /**
+     * @param list
+     * @param l
+     * @return
+     */
+    public static List<Entry> subset(List<Entry> list, int l) {
+        return subset(list, null, l);
+    }
+
+    /**
+     * @param list
+     * @param filter
+     * @param l
+     * @return
+     */
+    public static List<Entry> subset(List<Entry> list, Node filter, int l) {
+        List<Entry> res = clone(list);
+        if (filter != null) {
+            res = remove(res, filter);
+        }
+        if (l >= res.size()) {
+            return res;
+        } else {
+            HashSet<Integer> pos = new HashSet<Integer>();
+            for (int i = 0; i < l; i++) {
+                int p = nextInt(res.size());
+                while (pos.contains(p)) {
+                    p = nextInt(res.size()); // resolves eventually
+                }
+                pos.add(p);
+            }
+            List<Entry> result = new ArrayList<Entry>();
+            for (int i : pos) {
+                Entry current = res.get(i);
+                current.isVolatile = false; // make sure we do not send "volatile" elements
+                result.add(current.clone());
+                current.isVolatile = true;
+            }
+            return result;
+        }
+    }
+
+    /**
      * Checks if the list contains an entry with said node
+     *
      * @param list
      * @param n
      * @return
@@ -124,6 +253,7 @@ public class PartialView {
 
     /**
      * Delivers the node or null
+     *
      * @param list
      * @param n
      * @return
@@ -139,11 +269,12 @@ public class PartialView {
 
     /**
      * Remove an element
+     *
      * @param list
      * @param n
      * @return
      */
-    public static List<Entry> remove(List<Entry> list, Node n){
+    public static List<Entry> remove(List<Entry> list, Node n) {
         Entry del = get(list, n);
         if (del != null) {
             list.remove(del);
@@ -153,6 +284,7 @@ public class PartialView {
 
     /**
      * Clones a list
+     *
      * @param list
      * @return
      */
@@ -165,7 +297,6 @@ public class PartialView {
     }
 
     /**
-     *
      * @param list
      * @return
      */
@@ -174,22 +305,83 @@ public class PartialView {
         return list;
     }
 
+    /**
+     * Splits up the view
+     *
+     * @param list
+     * @return
+     */
+    /*public static List<Entry> removeVolatileResults(List<Entry> list) {
+        List<Entry> rest = clone(list);
+        for (Entry e : list) {
+            if (e.isVolatile) {
+                e.isVolatile = false;
+                rest.remove(e);
+            }
+        }
+        return rest;
+    }*/
+
+    /**
+     * Splits up the view
+     *
+     * @return
+     */
+    private static RemoveVolatileResult removeVolatileResults(List<Entry> list) {
+        List<Entry> rest = clone(list);
+        List<Entry> volatiles = new ArrayList<Entry>();
+        for (Entry e : list) {
+            if (e.isVolatile) {
+                volatiles.add(e);
+                e.isVolatile = false;
+                rest.remove(e);
+            }
+        }
+        return new RemoveVolatileResult(volatiles, rest);
+    }
+
+    @Override
+    public String toString() {
+        return "@" + this.self.getID() + " -> " + this.out.toString();
+    }
+
+    // ============================================
+    // R E M O V E _ V O L A T I L E
+    // ============================================
+    private static final class RemoveVolatileResult {
+        public final List<Entry> volatiles;
+        public final List<Entry> rest;
+
+        public RemoveVolatileResult(List<Entry> v, List<Entry> r) {
+            this.volatiles = v;
+            this.rest = r;
+        }
+    }
+
     // ============================================
     // E N T R Y
     // ============================================
-    public static final class Entry implements Comparable<Entry>, Comparator<Entry>{
+    public static final class Entry implements Comparable<Entry>, Comparator<Entry> {
         public final Node node;
         public int age;
         public boolean isVolatile;
+
         public Entry(Node n) {
             this.node = n;
             this.age = 0;
             this.isVolatile = false;
         }
+
         public final Entry clone() {
             Entry result = new Entry(this.node);
             result.age = this.age;
+            result.isVolatile = this.isVolatile;
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "{" + node.getID() + "|" + age + "|" + (isVolatile ? "y" : "n") + "}";
         }
 
         @Override
@@ -199,7 +391,7 @@ public class PartialView {
 
         @Override
         public int compareTo(Entry entry) {
-            return ((Integer)this.age).compareTo(entry.age);
+            return ((Integer) this.age).compareTo(entry.age);
         }
     }
 
