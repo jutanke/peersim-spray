@@ -1,5 +1,6 @@
 package example.scamp.messaging;
 
+import example.Scamplon.PartialView;
 import example.cyclon.PeerSamplingService;
 import example.scamp.ScampProtocol;
 import example.scampXcyclon.PartialViewEntry;
@@ -31,7 +32,14 @@ public class ScampMessage {
         // ====
 
         Shuffle,
-        ShuffleResponse
+        ShuffleResponse,
+
+        // =====
+
+        ScamplonShuffle,
+        ScamplonShuffleResponse
+
+
     }
 
     public enum LoopTopic {
@@ -239,6 +247,20 @@ public class ScampMessage {
         return m;
     }
 
+    public static ScampMessage scamplonShuffle(Node sender, List<PartialView.Entry> nodesToSend, int partialViewSize) {
+        ScampMessage m = new ScampMessage(sender, Type.ScamplonShuffle);
+        m.nodesToSend = nodesToSend;
+        m.partialViewSize = partialViewSize;
+        return m;
+    }
+
+    public static ScampMessage scamplonResponse(Node sender, List<PartialView.Entry> nodesToSend, int partialViewSize) {
+        ScampMessage m = new ScampMessage(sender, Type.ScamplonShuffleResponse);
+        m.nodesToSend = nodesToSend;
+        m.partialViewSize = partialViewSize;
+        return m;
+    }
+
     // ==================================================
     // I N T E R N A L  I N T E R F A C E
     // ==================================================
@@ -255,6 +277,8 @@ public class ScampMessage {
     public PartialViewEntry oldest;
     public int factor;
     public int c;
+    public int partialViewSize;
+    public List<PartialView.Entry> nodesToSend;
 
     public List<PartialViewEntry> list;
     public List<PartialViewEntry> list2;

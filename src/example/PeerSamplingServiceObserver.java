@@ -74,7 +74,7 @@ public class PeerSamplingServiceObserver implements Control {
                 minDegree = pss.getPeers().size();
             }
 
-            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
@@ -136,7 +136,7 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        if (step % 1 == 0) {
+        if (step % 1 == 0 && false) {
             //double cluster = observer.meanClusterCoefficient();
             //System.out.println(cluster);
 

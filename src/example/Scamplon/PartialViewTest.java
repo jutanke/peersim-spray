@@ -17,7 +17,7 @@ public class PartialViewTest {
         Node a = HelperForTest.createNode(0);
         Node b = HelperForTest.createNode(1);
         Node c = HelperForTest.createNode(2);
-        PartialView view = new PartialView(a);
+        PartialView view = new PartialView();
         view.add(b);
         view.add(c);
         assertEquals(2, view.degree());
@@ -29,7 +29,7 @@ public class PartialViewTest {
         Node a = HelperForTest.createNode(0);
         Node b = HelperForTest.createNode(1);
         Node c = HelperForTest.createNode(2);
-        PartialView view = new PartialView(a);
+        PartialView view = new PartialView();
         view.add(b);
         view.add(c);
         view.incrementAge();
@@ -42,7 +42,7 @@ public class PartialViewTest {
         Node a = HelperForTest.createNode(0);
         Node b = HelperForTest.createNode(1);
         Node c = HelperForTest.createNode(2);
-        PartialView view = new PartialView(a);
+        PartialView view = new PartialView();
         view.add(b);
         view.add(c);
         assertEquals(1, view.l());
@@ -60,7 +60,7 @@ public class PartialViewTest {
         Node a = HelperForTest.createNode(0);
         Node b = HelperForTest.createNode(1);
         Node c = HelperForTest.createNode(2);
-        PartialView view = new PartialView(a);
+        PartialView view = new PartialView();
         view.add(b);
         view.add(c);
         Node d = HelperForTest.createNode(3);
@@ -77,7 +77,7 @@ public class PartialViewTest {
         Node a = HelperForTest.createNode(0);
         Node b = HelperForTest.createNode(1);
         Node c = HelperForTest.createNode(2);
-        PartialView view = new PartialView(a);
+        PartialView view = new PartialView();
         view.add(b);
         view.add(c);
         Node d = HelperForTest.createNode(3);
@@ -96,7 +96,7 @@ public class PartialViewTest {
         Node a = HelperForTest.createNode(0);
         Node b = HelperForTest.createNode(1);
         Node c = HelperForTest.createNode(2);
-        PartialView view = new PartialView(a);
+        PartialView view = new PartialView();
         view.add(b);
         view.add(c);
         Node d = HelperForTest.createNode(3);
@@ -111,7 +111,7 @@ public class PartialViewTest {
         int otherViewSize = 2;
 
         view.subsetMinus1(oldest.node);
-        view.merge(oldest.node, received, otherViewSize);
+        view.merge(a, oldest.node, received, otherViewSize);
 
         assertFalse(view.contains(oldest.node));
         assertEquals(3, view.degree());

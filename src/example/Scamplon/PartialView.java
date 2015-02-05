@@ -18,11 +18,13 @@ public class PartialView {
     // ============================================
 
     // pointer to the own node
-    private final Node self;
+    //private final Node self;
     private List<Entry> out;
+    private List<Node> list;
 
-    public PartialView(Node self) {
-        this.self = self;
+    public PartialView() {
+        //this.self = self;
+        this.list = new ArrayList<Node>();
         this.out = new ArrayList<Entry>();
     }
 
@@ -30,6 +32,17 @@ public class PartialView {
     // ============================================
     // P U B L I C
     // ============================================
+
+    /**
+     * @return
+     */
+    public List<Node> list() {
+        this.list.clear();
+        for (Entry e : this.out) {
+            this.list.add(e.node);
+        }
+        return this.list;
+    }
 
     /**
      * @param n
@@ -127,10 +140,13 @@ public class PartialView {
         return oldest;
     }
 
-    public void merge(Node oldest, List<Entry> received, int otherSize) {
-        this.out = merge(this.self, oldest, this.out, received, otherSize);
+    public void merge(Node self, Node oldest, List<Entry> received, int otherSize) {
+        this.out = merge(self, oldest, this.out, received, otherSize);
     }
 
+    public boolean p() {
+        return CDState.r.nextDouble() < 1.0 / (1.0 + this.out.size());
+    }
 
     // ============================================
     // P R I V A T E
@@ -342,7 +358,7 @@ public class PartialView {
 
     @Override
     public String toString() {
-        return "@" + this.self.getID() + " -> " + this.out.toString();
+        return  " -> " + this.out.toString();
     }
 
     // ============================================
