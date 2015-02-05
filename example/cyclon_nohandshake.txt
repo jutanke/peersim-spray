@@ -3,7 +3,7 @@ SIZE 1000
 DEGREE 20
 
 # parameters of periodic execution
-CYCLES 3000
+CYCLES 1000
 CYCLE SIZE*10000
 
 # parameters of message transfer
@@ -12,7 +12,7 @@ CYCLE SIZE*10000
 MINDELAY 0
 MAXDELAY 0
 # drop is a probability, 0<=DROP<=1
-DROP 0.4
+DROP 0
 
 random.seed 1237567890
 network.size SIZE
@@ -24,7 +24,7 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.lnk example.cyclon.CyclonSimple
 protocol.lnk.cache DEGREE
-protocol.lnk.l 5
+protocol.lnk.l 8
 protocol.lnk.step 1
 protocol.lnk.transport tr
 protocol.lnk.linkable link

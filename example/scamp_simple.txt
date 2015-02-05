@@ -17,7 +17,7 @@ simulation.logtime 1
 MINDELAY 0
 MAXDELAY 0
 # drop is a probability, 0<=DROP<=1
-DROP 0.1
+DROP 0
 
 random.seed 1234539890
 
@@ -31,7 +31,7 @@ protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
-protocol.0.leaseTimeoutMin 5085
+protocol.0.leaseTimeoutMin 1028
 protocol.0.leaseTimeoutMax 20000
 
 protocol.urt UniformRandomTransport

@@ -12,7 +12,7 @@ CYCLE SIZE*10000
 MINDELAY 0
 MAXDELAY 0
 # drop is a probability, 0<=DROP<=1
-DROP 0.4
+DROP 0
 
 random.seed 1237567890
 network.size SIZE
