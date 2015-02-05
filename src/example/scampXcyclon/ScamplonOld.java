@@ -1,7 +1,6 @@
 package example.scampXcyclon;
 
 import example.scamp.messaging.ScampMessage;
-import example.scamp.orig.Scamp;
 import peersim.cdsim.CDProtocol;
 import peersim.cdsim.CDState;
 import peersim.config.Configuration;
@@ -18,7 +17,7 @@ import java.util.List;
 /**
  * Created by julian on 2/3/15.
  */
-public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
+public class ScamplonOld implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
 
     public static int c, tid, pid;
 
@@ -32,7 +31,7 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
 
     private ScamplonView view;
 
-    public Scamplon(String n) {
+    public ScamplonOld(String n) {
         c = Configuration.getInt(n + "." + PAR_C, 0);
         tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         pid = Configuration.lookupPid(SCAMPLON_PROT);
@@ -41,9 +40,9 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
 
     @Override
     public Object clone() {
-        Scamplon s = null;
+        ScamplonOld s = null;
         try {
-            s = (Scamplon) super.clone();
+            s = (ScamplonOld) super.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -74,7 +73,7 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
         } else if (this.view.in.size() == 0) {
 
             // C H E A T ! !
-            Scamplon.subscribe(node);
+            ScamplonOld.subscribe(node);
 
         }
 
@@ -205,7 +204,7 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
     public static void doSubscribe(final Node n, ScampMessage forward) {
         if (!forward.isExpired()) {
             Node s = forward.payload;
-            Scamplon pp = get(n);
+            ScamplonOld pp = get(n);
             if (pp.view.p() && !pp.contains(s) && n.getID() != s.getID()) {
                 if (n.getID() == s.getID()) {
                     throw new RuntimeException("@" + n.getID() + "Try to accept myself as subscription");
@@ -231,8 +230,8 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
             n = Network.get(CDState.r.nextInt(Network.size()));
         }
 
-        Scamplon contact = get(n);
-        Scamplon subscriber = get(s);
+        ScamplonOld contact = get(n);
+        ScamplonOld subscriber = get(s);
         contact.view.addToIn(s);
         subscriber.addNeighbor(n);
 
@@ -270,8 +269,8 @@ public class Scamplon implements Linkable, EDProtocol, CDProtocol, example.PeerS
      * @param n
      * @return
      */
-    private static Scamplon get(Node n) {
-        return (Scamplon) n.getProtocol(pid);
+    private static ScamplonOld get(Node n) {
+        return (ScamplonOld) n.getProtocol(pid);
     }
 
 }

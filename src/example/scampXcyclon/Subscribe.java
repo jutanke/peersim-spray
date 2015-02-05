@@ -26,7 +26,7 @@ public class Subscribe implements Control {
 
         for (int i = 1; i < Network.size(); i++) {
             Node n = Network.get(i);
-            Scamplon.subscribe(n);
+            ScamplonOld.subscribe(n);
         }
 
         return false;
