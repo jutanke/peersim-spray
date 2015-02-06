@@ -1,6 +1,7 @@
 package example.scamp.messaging;
 
 import example.Scamplon.PartialView;
+import example.cyclon.CyclonMessage;
 import example.cyclon.PeerSamplingService;
 import example.scamp.ScampProtocol;
 import example.scampXcyclon.PartialViewEntry;
@@ -37,7 +38,8 @@ public class ScampMessage {
         // =====
 
         ScamplonShuffle,
-        ScamplonShuffleResponse
+        ScamplonShuffleResponse,
+        Rollback
 
 
     }
@@ -53,6 +55,10 @@ public class ScampMessage {
     // ==================================================
     // E X T E R N A L  I N T E R F A C E
     // ==================================================
+
+    public static ScampMessage rollback(Node sender) {
+        return new ScampMessage(sender, Type.Rollback);
+    }
 
     public static ScampMessage smallLoop(Node sender, LoopTopic t, Node destination) {
         ScampMessage message = new ScampMessage(sender, Type.Loop);

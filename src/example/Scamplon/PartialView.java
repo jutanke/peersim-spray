@@ -20,7 +20,7 @@ public class PartialView {
 
     // pointer to the own node
     //private final Node self;
-    private List<Entry> out;
+    public List<Entry> out;
     private List<Node> list;
 
     public PartialView() {
@@ -88,7 +88,7 @@ public class PartialView {
      * @param n
      * @return
      */
-    public Entry get(Node n) {
+    public List<Entry> get(Node n) {
         return get(this.out, n);
     }
 
@@ -123,7 +123,7 @@ public class PartialView {
      * @param oldest
      * @return
      */
-    public List<Entry> subsetMinus1(Node oldest) {
+    public List<Entry> subsetMinus1(Entry oldest) {
         return subset(this.out, oldest, this.l() - 1);
     }
 
@@ -133,12 +133,18 @@ public class PartialView {
     public Entry oldest() {
         Entry oldest = this.out.get(0);
         for (Entry e : this.out) {
-            if (oldest.age > e.age) {
+            if (oldest.age < e.age) {
                 oldest = e;
             }
         }
         oldest.isVolatile = true;
         return oldest;
+    }
+
+    public void freeze() {
+        for (Entry e : this.out) {
+            e.isVolatile = false;
+        }
     }
 
     public void merge(Node self, Node oldest, List<Entry> received, int otherSize) {
@@ -167,29 +173,34 @@ public class PartialView {
 
     public static List<Entry> merge(Node me, Node other, List<Entry> list, List<Entry> received, int otherSize) {
 
-        System.err.println("@" + me.getID() + " <- " + other.getID() + " pv:" + list + " rec:" + received + " othersize:" + otherSize);
+        //System.err.println("@" + me.getID() + " <- " + other.getID() + " pv:" + list + " rec:" + received + " othersize:" + otherSize);
 
         Scamplon culprit = (Scamplon) other.getProtocol(Scamplon.pid);
-        System.err.println("culprit " +other.getID()+ " :" + culprit);
+        //System.err.println("culprit " +other.getID()+ " :" + culprit);
 
 
         int newSize = (list.size() % 2 == 0) ?
                 (int) Math.ceil((list.size() + otherSize) / 2.0) :
                 (int) Math.floor((list.size() + otherSize) / 2.0);
 
-        System.err.println("(" + list.size() + " + " + otherSize + ")/ 2 = " + newSize);
+        //System.err.println("(" + list.size() + " + " + otherSize + ")/ 2 = " + newSize);
 
         RemoveVolatileResult rem = removeVolatileResults(list);
         list = rem.rest;
 
         if (contains(received, me)) {
-            System.err.println("FUUUUUUUUUUUUCK");
-            List<Entry> sent = remove(rem.volatiles, me);
-            received = remove(received, me);
-            if (sent.size() > 0) {
-                received.add(youngest(sent));
-            } else {
-                received.add(new Entry(other)); // introduce a new arc!
+            List<Entry> sent = removeAll(rem.volatiles, me); // here will never remove any element!
+            sent = removeAll(sent, other);
+            int itemsRemoved = 0;
+            int sizeBefore = received.size();
+            received = removeAll(received, me); // here we might remove possibly more elements..
+            itemsRemoved += (sizeBefore - received.size());
+            for (int i = 0; i < itemsRemoved; i++) {
+                if (sent.size() > 0) {
+                    received.add(popYoungest(sent));
+                } else {
+                    received.add(new Entry(other)); // introduce a new arc! Because we removed one arc before!
+                }
             }
         }
 
@@ -220,6 +231,16 @@ public class PartialView {
         }
     }
 
+    private static Entry popYoungest(List<Entry> list) {
+        if (list.size() == 0) {
+            return null;
+        }
+
+        Entry youngest = youngest(list);
+        list.remove(youngest);
+        return youngest;
+    }
+
     private static Entry youngest(List<Entry> list) {
         Entry youngest = list.get(0);
         for (Entry e : list) {
@@ -236,7 +257,6 @@ public class PartialView {
      * @return
      */
     public static List<Entry> subset(List<Entry> list, int l) {
-        System.out.println("Stage2 :" + l + " list: " + list);
         return subset(list, null, l);
     }
 
@@ -246,8 +266,7 @@ public class PartialView {
      * @param l
      * @return
      */
-    public static List<Entry> subset(List<Entry> list, Node filter, int l) {
-        System.out.println("Stage3 :" + l + " list: " + list);
+    public static List<Entry> subset(List<Entry> list, Entry filter, int l) {
         List<Entry> res = clone(list);
         if (filter != null) {
             res = remove(res, filter);
@@ -269,7 +288,6 @@ public class PartialView {
                 }
                 pos.add(p);
             }
-            System.err.println("Pos: " + pos + " : l:" + l);
             List<Entry> result = new ArrayList<Entry>();
             for (int i : pos) {
                 Entry current = res.get(i);
@@ -303,13 +321,23 @@ public class PartialView {
      * @param n
      * @return
      */
-    public static Entry get(List<Entry> list, Node n) {
+    public static List<Entry> get(List<Entry> list, Node n) {
+        List<Entry> result = new ArrayList<Entry>();
         for (Entry e : list) {
             if (n.getID() == e.node.getID()) {
-                return e;
+                result.add(e);
             }
         }
-        return null;
+        return result;
+    }
+
+
+    public static List<Entry> removeAll(List<Entry> list, Node n) {
+        List<Entry> del = get(list, n);
+        for (Entry e : del) {
+            list.remove(e);
+        }
+        return list;
     }
 
     /**
@@ -319,11 +347,19 @@ public class PartialView {
      * @param n
      * @return
      */
-    public static List<Entry> remove(List<Entry> list, Node n) {
-        Entry del = get(list, n);
+    public static List<Entry> remove(List<Entry> list, Entry n) {
+        List<Entry> del = get(list, n.node);
+        for (Entry e : del) {
+            if (e.age == n.age) {
+                list.remove(e);
+                break;
+            }
+        }
+        /*
         if (del != null) {
             list.remove(del);
         }
+        */
         return list;
     }
 

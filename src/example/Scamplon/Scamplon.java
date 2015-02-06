@@ -6,9 +6,9 @@ import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.transport.Transport;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Created by julian on 2/5/15.
@@ -20,51 +20,77 @@ public class Scamplon extends ScamplonProtocol {
     // ============================================
 
     private PartialView partialView;
+    public boolean isBlocked = false;
+    private Stack<ScampMessage> blockedShuffles;
+    private static final int DELTA_T = 5;
+
+    private int myStep;
 
     public Scamplon(String s) {
         super(s);
         this.partialView = new PartialView();
+        this.blockedShuffles = new Stack<ScampMessage>();
+        this.myStep = createRandomStep();
     }
 
     @Override
     public Object clone() {
         Scamplon s = (Scamplon) super.clone();
         s.partialView = new PartialView();
+        s.blockedShuffles = new Stack<ScampMessage>();
+        s.myStep = createRandomStep();
         return s;
     }
+
+    private static int createRandomStep() {
+        return CDState.r.nextInt(DELTA_T-1);
+    }
+
+    //List<>
 
     // ============================================
     // P U B L I C
     // ============================================
 
+
     @Override
     public void nextCycle(Node node, int protocolID) {
 
-        if (this.degree() > 0 && CommonState.getTime() % 5 == 0) {
-            //this.partialView.unhassle();
-            this.partialView.incrementAge();
-            Node q = this.partialView.oldest().node;
-
-            print("BEFORE:" + this.partialView);
-
-            List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
-
-            print("AFTER:" + this.partialView);
-
-            nodesToSend.add(new PartialView.Entry(node));
-
-            print("SHUFFLE (" + node.getID() + "->" + q.getID() + " send:" + nodesToSend + " pv:" + this.partialView);
-
-            print("CLONE:" + PartialView.clone(nodesToSend));
-
-            ScampMessage m = ScampMessage.scamplonShuffle(
-                    node,
-                    PartialView.clone(nodesToSend),
-                    this.partialView.degree());
-            send(node, q, m);
+        if (CommonState.getTime() > 0
+                && this.degree() > 0
+                && (CommonState.getTime() % DELTA_T) == this.myStep
+                && !this.isBlocked) {
+            this.initShuffle(node);
+        } else {
+            System.out.println("_________________________T___________________");
         }
 
 
+    }
+
+    /**
+     * Execute the beginning of the shuffle!
+     * @param node
+     */
+    private void initShuffle(Node node) {
+        this.partialView.incrementAge();
+
+        PartialView.Entry q = this.partialView.oldest();
+
+        List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
+
+
+        nodesToSend.add(new PartialView.Entry(node));
+
+        //print("SHUFFLE (" + node.getID() + "->" + q.node.getID() + " send:" + nodesToSend + " pv:" + this.partialView);
+
+        ScampMessage m = ScampMessage.scamplonShuffle(
+                node,
+                PartialView.clone(nodesToSend),
+                this.partialView.degree());
+        print("@" + node.getID() + " init shuffle with " + q.node.getID() + " pv:" + this.partialView + " sent:" + nodesToSend);
+        send(node, q.node, m);
+        this.isBlocked = true;
     }
 
     @Override
@@ -80,37 +106,44 @@ public class Scamplon extends ScamplonProtocol {
             case ForwardSubscription:
                 doSubscribe(node, message);
                 break;
+            case Rollback:
+                this.partialView.freeze();
+                this.isBlocked = false;
+                break;
             case AcceptSubscription:
-                print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
+                //print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
                 break;
             case ScamplonShuffle:
                 //this.partialView.unhassle();
-
-                print("Bef subset:" + this.partialView + " l:" + this.partialView.l());
-                nodesToSend = this.partialView.subset();
-                print("Aft subset:" + this.partialView + " => " + nodesToSend);
-
-                Node p = message.sender;
-                received = message.nodesToSend;
-                otherViewSize = message.partialViewSize;
-
-                ScampMessage m = ScampMessage.scamplonResponse(
-                        node,
-                        PartialView.clone(nodesToSend),
-                        this.partialView.degree());
-                send(node, p, m);
-
-                print("A");
-                this.partialView.merge(node, p /*not sure if p is correct here..*/, received, otherViewSize);
+                if (isBlocked) {
+                    //throw new RuntimeException("BLOCKED");
+                    //this.blockedShuffles.push(message);
+                    ScampMessage m = ScampMessage.rollback(node);
+                    send(node, message.sender, m);
+                } else {
+                    this.shuffle(node, message);
+                }
                 break;
             case ScamplonShuffleResponse:
+                if (!isBlocked) {
+                    throw new RuntimeException("SHOULD BE BLOCKED");
+                }
+                //print("HANDLE RESPONSE @" + node.getID() + " node: " +message.sender.getID()+" view:" +
+                //        message.partialViewSize + "|" + message.nodesToSend + " pv:" + this.partialView);
+                this.isBlocked = false;
 
                 received = message.nodesToSend;
                 otherViewSize = message.partialViewSize;
                 Node q = message.sender;
 
-                print("B");
+                //print("B");
                 this.partialView.merge(node, q, received, otherViewSize);
+
+                // RECALCULATE ALL STASHED SHUFFLES!
+                while (!this.blockedShuffles.empty()) {
+                    System.err.println("*************************** REINVOKE SHUFFLE " + this.blockedShuffles);
+                    this.shuffle(node, this.blockedShuffles.pop());
+                }
 
                 break;
             default:
@@ -151,13 +184,34 @@ public class Scamplon extends ScamplonProtocol {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return this.debug();
     }
 
     // ============================================
     // P R I V A T E
     // ============================================
+
+    private void shuffle(Node node, ScampMessage message) {
+        print("HANDLE SHUFFLE @" + node.getID() + " node: " +message.sender.getID()+" view:" +
+                message.partialViewSize + "|" + message.nodesToSend + " pv:" + this.partialView);
+
+        //print("Bef subset:" + this.partialView + " l:" + this.partialView.l());
+        List<PartialView.Entry> nodesToSend = this.partialView.subset();
+        //print("Aft subset:" + this.partialView + " => " + nodesToSend);
+
+        Node p = message.sender;
+        List<PartialView.Entry> received = message.nodesToSend;
+        int otherViewSize = message.partialViewSize;
+
+        ScampMessage m = ScampMessage.scamplonResponse(
+                node,
+                PartialView.clone(nodesToSend),
+                this.partialView.degree());
+        send(node, p, m);
+
+        this.partialView.merge(node, p /*not sure if p is correct here..*/, received, otherViewSize);
+    }
 
     public static void send(Node sender, Node destination, example.scamp.messaging.ScampMessage m) {
         Transport tr = (Transport) sender.getProtocol(tid);
@@ -176,11 +230,11 @@ public class Scamplon extends ScamplonProtocol {
     public static void doSubscribe(final Node n, ScampMessage forward) {
         if (!forward.isExpired()) {
             Node s = forward.payload;
-            print("subscribe fwd " + s.getID() + " to " + n.getID());
+            //print("subscribe fwd " + s.getID() + " to " + n.getID());
             Scamplon pp = (Scamplon) n.getProtocol(pid);
             if (pp.partialView.p() && !pp.contains(s) && n.getID() != s.getID()) {
                 //pp.addNeighbor(s);
-                print("@" + n.getID() + " keep subscriber " + s.getID());
+                //print("@" + n.getID() + " keep subscriber " + s.getID());
 
                 if (n.getID() == s.getID()) {
                     throw new RuntimeException("@" + n.getID() + " cannot accept myself");
@@ -194,7 +248,7 @@ public class Scamplon extends ScamplonProtocol {
             } else if (pp.degree() > 0) {
                 Node forwardTarget = pp.getNeighbor(CDState.r.nextInt(pp.degree()));
                 forward = ScampMessage.updateForwardSubscription(n, forward); // we update the TTL of the message
-                print("here " + forward);
+                //print("here " + forward);
                 send(n, forwardTarget, forward);
             }
         } else {
