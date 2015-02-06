@@ -7,6 +7,7 @@ import peersim.config.MissingParameterException;
 import peersim.core.Control;
 import peersim.core.GeneralNode;
 import peersim.core.Network;
+import peersim.core.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,7 @@ public class PeerSamplingServiceObserver implements Control {
                 minDegree = pss.getPeers().size();
             }
 
-            System.err.println("{" + n.getID() + "} -> " + pss.debug());
+            //System.err.println("{" + n.getID() + "} -> " + pss.debug());
 
             if (pss.getPeers().size() == 0) {
                 peersWithEmptyCache.add(n.getID());
@@ -89,6 +90,8 @@ public class PeerSamplingServiceObserver implements Control {
 
         System.err.println("avg node degree:" + avgDegree + "(" + minDegree + "|" + maxDegree + ") arcs:" + observer.countArcs());
         //System.out.println(avgDegree);
+
+        //System.out.println(observer.countArcs());
 
         //System.err.println(observer);
 
@@ -136,9 +139,10 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        if (step % 1 == 0 && false) {
+        if (step % 1 == 0) {
             //double cluster = observer.meanClusterCoefficient();
             //System.out.println(cluster);
+
 
             double avg1 = observer.avgReachablePaths(0).reachQuota;
             double avg2 = observer.avgReachablePaths(40).reachQuota;
@@ -154,8 +158,11 @@ public class PeerSamplingServiceObserver implements Control {
             double avg = (avg1+avg2+avg3+avg4+avg5+avg6+avg7+avg8+avg9+avg10) / 10;
 
             System.out.println(avg);
-            System.err.println("reach :" + avg);
+            System.err.println("avg path :" + avg);
+
         }
+
+        //System.err.println("reach :" + observer.avgReachablePaths(0).reachQuota);
 
         //double cluster = observer.meanClusterCoefficient();
         //System.out.println(cluster);
@@ -194,6 +201,9 @@ public class PeerSamplingServiceObserver implements Control {
                 " orphans:" + peersWithEmptyCache.size() + " Cheating:" + ScampProtocol.CHEAT_COUNT);
 
 
+        if (step == 1500) {
+            //printGraph();
+        }
 
         //System.out.println(avg.avg);
 
@@ -212,5 +222,19 @@ public class PeerSamplingServiceObserver implements Control {
             System.err.println(i + ":" + histo[i]);
             System.out.println(histo[i]);
         }
+    }
+
+    private void printGraph() {
+        System.out.println("digraph {");
+        for (int i = 0; i < Network.size(); i++) {
+            GeneralNode n = (GeneralNode) Network.get(i);
+            PeerSamplingService pss = (PeerSamplingService)
+                    Network.get(i).getProtocol(pid);
+
+            for (Node ne : pss.getPeers()) {
+                System.out.println(n.getID() + " -> " + ne.getID() + ";");
+            }
+        }
+        System.out.println("}");
     }
 }

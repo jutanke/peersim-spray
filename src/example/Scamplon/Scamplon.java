@@ -52,6 +52,9 @@ public class Scamplon extends ScamplonProtocol {
     // P U B L I C
     // ============================================
 
+    private final int BLOCK_TIMEOUT = 22;
+    private int blockTimeoutCounter = 0;
+
 
     @Override
     public void nextCycle(Node node, int protocolID) {
@@ -60,9 +63,18 @@ public class Scamplon extends ScamplonProtocol {
                 && this.degree() > 0
                 && (CommonState.getTime() % DELTA_T) == this.myStep
                 && !this.isBlocked) {
+            blockTimeoutCounter = 0; // reset timout
             this.initShuffle(node);
         } else {
-            System.out.println("_________________________T___________________");
+            if (this.isBlocked) {
+                blockTimeoutCounter += 1;
+            }
+
+            if (this.blockTimeoutCounter == BLOCK_TIMEOUT) {
+                this.rollback();
+            }
+
+            //TODO maybe make a faster reentry??
         }
 
 
@@ -88,7 +100,7 @@ public class Scamplon extends ScamplonProtocol {
                 node,
                 PartialView.clone(nodesToSend),
                 this.partialView.degree());
-        print("@" + node.getID() + " init shuffle with " + q.node.getID() + " pv:" + this.partialView + " sent:" + nodesToSend);
+        //print("@" + node.getID() + " init shuffle with " + q.node.getID() + " pv:" + this.partialView + " sent:" + nodesToSend);
         send(node, q.node, m);
         this.isBlocked = true;
     }
@@ -107,8 +119,7 @@ public class Scamplon extends ScamplonProtocol {
                 doSubscribe(node, message);
                 break;
             case Rollback:
-                this.partialView.freeze();
-                this.isBlocked = false;
+                rollback();
                 break;
             case AcceptSubscription:
                 //print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
@@ -152,6 +163,11 @@ public class Scamplon extends ScamplonProtocol {
         }
     }
 
+    private void rollback(){
+        this.partialView.freeze();
+        this.isBlocked = false;
+    }
+
     @Override
     public int degree() {
         return this.partialView.degree();
@@ -193,8 +209,8 @@ public class Scamplon extends ScamplonProtocol {
     // ============================================
 
     private void shuffle(Node node, ScampMessage message) {
-        print("HANDLE SHUFFLE @" + node.getID() + " node: " +message.sender.getID()+" view:" +
-                message.partialViewSize + "|" + message.nodesToSend + " pv:" + this.partialView);
+        //print("HANDLE SHUFFLE @" + node.getID() + " node: " +message.sender.getID()+" view:" +
+        //        message.partialViewSize + "|" + message.nodesToSend + " pv:" + this.partialView);
 
         //print("Bef subset:" + this.partialView + " l:" + this.partialView.l());
         List<PartialView.Entry> nodesToSend = this.partialView.subset();
@@ -261,10 +277,10 @@ public class Scamplon extends ScamplonProtocol {
      *
      * @param s subscriber
      */
-    public static void subscribe(Node s) {
-
+    public static void subscribe(Node s, int max) {
+        if (max == 0) return;
         // indirection
-        Node n = Network.get(CDState.r.nextInt(Network.size()));
+        Node n = Network.get(CDState.r.nextInt(max));
 
         while (n.getID() == s.getID()) {
             n = Network.get(CDState.r.nextInt(Network.size()));

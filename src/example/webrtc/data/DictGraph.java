@@ -59,6 +59,10 @@ public class DictGraph {
         this.nodes.put(n.getID(), node);
     }
 
+    public AvgReachablePaths avgReachablePathsBothDirections(long v) {
+        return null;
+    }
+
     public AvgReachablePaths avgReachablePaths(long v) {
         //Map<Long, Integer> dist = dijkstra(nodes.get(v));
         Map<Long, Integer> dist = dijkstraUndirected(nodes.get(v).id);

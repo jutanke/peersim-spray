@@ -1,6 +1,7 @@
 package example.cyclon;
 
 import peersim.cdsim.CDProtocol;
+import peersim.cdsim.CDState;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Linkable;
@@ -20,6 +21,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
     protected static final String PAR_CACHE = "cache";
     protected static final String PAR_L = "l";
     protected static final String PAR_TRANSPORT = "transport";
+    private static final int DELTA_T = 5;
 
     // ======================================================================
     // P R O P E R T I E S
@@ -28,6 +30,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
     protected final int size;
     protected final int l;
     protected final int tid;
+    private int myStep;
 
     protected List<CyclonEntry> cache = null;
 
@@ -35,7 +38,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
         this.size = size;
         this.l = l;
         this.tid = -1;
-
+        this.myStep = createRandomStep();
     }
 
     public CyclonSimple(String n) {
@@ -53,8 +56,12 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
         } catch (CloneNotSupportedException e) {
         } // never happens
         cyclon.cache = new ArrayList<CyclonEntry>();
-
+        cyclon.myStep = createRandomStep();
         return cyclon;
+    }
+
+    private static int createRandomStep() {
+        return CDState.r.nextInt(DELTA_T-1);
     }
 
     // ======================================================================
@@ -65,7 +72,7 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
     public void nextCycle(Node node, int protocolID) {
 
         // START SHUFFLE
-        if (this.cache.size() > 0 && CommonState.getTime() % 5 == 0) {
+        if (this.cache.size() > 0 && CommonState.getTime() % DELTA_T == this.myStep) {
 
             increaseAge();
 

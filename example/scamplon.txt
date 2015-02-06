@@ -1,7 +1,7 @@
 SIZE 1000
 
 # parameters of periodic execution
-CYCLES 500
+CYCLES 2500
 CYCLE SIZE*10000
 
 
@@ -17,7 +17,7 @@ simulation.logtime 1
 MINDELAY 0
 MAXDELAY 0
 # drop is a probability, 0<=DROP<=1
-DROP 0
+DROP 0.1
 
 random.seed 1234569890
 
@@ -26,7 +26,7 @@ random.seed 1234569890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 example.Scamplon.Scamplon
-protocol.0.c 3
+protocol.0.c 2
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
@@ -43,7 +43,7 @@ protocol.tr.transport urt
 protocol.tr.drop DROP
 
 init.0 example.Scamplon.Subscribe
-init.0.protocol 0
+init.0.protocol 3
 
 init.sch CDScheduler
 init.sch.protocol 0

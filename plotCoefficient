@@ -1,4 +1,4 @@
-set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 1000, 768
+set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 500, 400
 set output 'simple.1.png'
 # put it to eps (vectors)
 # change to black and white
@@ -6,11 +6,11 @@ set key inside left top vertical Right noreverse enhanced autotitles box linetyp
 
 #set pointintervalbox 1
 
-set xlabel "(* 100)"
+set yrange [0:1]
 
 set style line 1 lc rgb 'blue' lt 1 lw 2 pt 3
 set style line 2 lc rgb 'black' lt 4 lw 2 pt 3
 set style line 3 lc rgb 'red' lt 4 lw 2 pt 3
 
-plot [0:3000] "a.txt" using ($0+1):1 title "CYCLON no Handshake" w l ls 1, \
-    "b.txt" using ($0+1):1 title "CYCLON with Handshake" w l ls 2
+plot [0:2500] "a.txt" using ($0+1):1 title "CYCLON" w l ls 1, \
+    "b.txt" using ($0+1):1 title "SCAMPLON" w l ls 2
