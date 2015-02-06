@@ -87,7 +87,7 @@ public class PeerSamplingServiceObserver implements Control {
 
         boolean histo = false;
 
-        System.err.println("avg node degree:" + avgDegree + "(" + minDegree + "|" + maxDegree + ")");
+        System.err.println("avg node degree:" + avgDegree + "(" + minDegree + "|" + maxDegree + ") arcs:" + observer.countArcs());
         //System.out.println(avgDegree);
 
         //System.err.println(observer);

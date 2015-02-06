@@ -2,6 +2,7 @@ package example.Scamplon;
 
 import example.scamp.messaging.ScampMessage;
 import peersim.cdsim.CDState;
+import peersim.core.CommonState;
 import peersim.core.Network;
 import peersim.core.Node;
 import peersim.transport.Transport;
@@ -39,6 +40,29 @@ public class Scamplon extends ScamplonProtocol {
     @Override
     public void nextCycle(Node node, int protocolID) {
 
+        if (this.degree() > 0 && CommonState.getTime() % 5 == 0) {
+            //this.partialView.unhassle();
+            this.partialView.incrementAge();
+            Node q = this.partialView.oldest().node;
+
+            print("BEFORE:" + this.partialView);
+
+            List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
+
+            print("AFTER:" + this.partialView);
+
+            nodesToSend.add(new PartialView.Entry(node));
+
+            print("SHUFFLE (" + node.getID() + "->" + q.getID() + " send:" + nodesToSend + " pv:" + this.partialView);
+
+            print("CLONE:" + PartialView.clone(nodesToSend));
+
+            ScampMessage m = ScampMessage.scamplonShuffle(
+                    node,
+                    PartialView.clone(nodesToSend),
+                    this.partialView.degree());
+            send(node, q, m);
+        }
 
 
     }
@@ -48,6 +72,10 @@ public class Scamplon extends ScamplonProtocol {
 
         ScampMessage message = (ScampMessage) event;
 
+        List<PartialView.Entry> received = null;
+        List<PartialView.Entry> nodesToSend = null;
+        int otherViewSize;
+
         switch (message.type) {
             case ForwardSubscription:
                 doSubscribe(node, message);
@@ -56,11 +84,33 @@ public class Scamplon extends ScamplonProtocol {
                 print("Accept [IN] " + message.payload.getID() + " -> " + node.getID());
                 break;
             case ScamplonShuffle:
+                //this.partialView.unhassle();
 
+                print("Bef subset:" + this.partialView + " l:" + this.partialView.l());
+                nodesToSend = this.partialView.subset();
+                print("Aft subset:" + this.partialView + " => " + nodesToSend);
 
+                Node p = message.sender;
+                received = message.nodesToSend;
+                otherViewSize = message.partialViewSize;
+
+                ScampMessage m = ScampMessage.scamplonResponse(
+                        node,
+                        PartialView.clone(nodesToSend),
+                        this.partialView.degree());
+                send(node, p, m);
+
+                print("A");
+                this.partialView.merge(node, p /*not sure if p is correct here..*/, received, otherViewSize);
                 break;
             case ScamplonShuffleResponse:
 
+                received = message.nodesToSend;
+                otherViewSize = message.partialViewSize;
+                Node q = message.sender;
+
+                print("B");
+                this.partialView.merge(node, q, received, otherViewSize);
 
                 break;
             default:
@@ -98,6 +148,11 @@ public class Scamplon extends ScamplonProtocol {
     @Override
     public String debug() {
         return this.partialView.toString();
+    }
+
+    @Override
+    public String toString(){
+        return this.debug();
     }
 
     // ============================================
@@ -156,6 +211,10 @@ public class Scamplon extends ScamplonProtocol {
 
         // indirection
         Node n = Network.get(CDState.r.nextInt(Network.size()));
+
+        while (n.getID() == s.getID()) {
+            n = Network.get(CDState.r.nextInt(Network.size()));
+        }
 
         Scamplon contact = (Scamplon) n.getProtocol(pid);
         Scamplon subscriber = (Scamplon) s.getProtocol(pid);

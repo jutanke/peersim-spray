@@ -1,6 +1,7 @@
 package example.Scamplon;
 
 import peersim.cdsim.CDState;
+import peersim.core.Network;
 import peersim.core.Node;
 
 import java.util.*;
@@ -148,6 +149,12 @@ public class PartialView {
         return CDState.r.nextDouble() < 1.0 / (1.0 + this.out.size());
     }
 
+    public void unhassle() {
+        for (Entry e : this.out) {
+            e.isVolatile = false;
+        }
+    }
+
     // ============================================
     // P R I V A T E
     // ============================================
@@ -159,14 +166,24 @@ public class PartialView {
 
 
     public static List<Entry> merge(Node me, Node other, List<Entry> list, List<Entry> received, int otherSize) {
+
+        System.err.println("@" + me.getID() + " <- " + other.getID() + " pv:" + list + " rec:" + received + " othersize:" + otherSize);
+
+        Scamplon culprit = (Scamplon) other.getProtocol(Scamplon.pid);
+        System.err.println("culprit " +other.getID()+ " :" + culprit);
+
+
         int newSize = (list.size() % 2 == 0) ?
-                (int) Math.ceil((list.size() + otherSize) / 2) :
-                (int) Math.floor((list.size() + otherSize) / 2);
+                (int) Math.ceil((list.size() + otherSize) / 2.0) :
+                (int) Math.floor((list.size() + otherSize) / 2.0);
+
+        System.err.println("(" + list.size() + " + " + otherSize + ")/ 2 = " + newSize);
 
         RemoveVolatileResult rem = removeVolatileResults(list);
         list = rem.rest;
 
         if (contains(received, me)) {
+            System.err.println("FUUUUUUUUUUUUCK");
             List<Entry> sent = remove(rem.volatiles, me);
             received = remove(received, me);
             if (sent.size() > 0) {
@@ -177,10 +194,14 @@ public class PartialView {
         }
 
         if (newSize != (list.size() + received.size())) {
+            System.err.println(newSize + " vs " + list.size() + " + " + received.size());
             throw new RuntimeException("LOSING ARCS! MUST NOT HAPPEN!");
         }
 
         list.addAll(received);
+        for (Entry e : list) {
+            e.isVolatile = false;
+        }
         return list;
     }
 
@@ -215,6 +236,7 @@ public class PartialView {
      * @return
      */
     public static List<Entry> subset(List<Entry> list, int l) {
+        System.out.println("Stage2 :" + l + " list: " + list);
         return subset(list, null, l);
     }
 
@@ -225,12 +247,19 @@ public class PartialView {
      * @return
      */
     public static List<Entry> subset(List<Entry> list, Node filter, int l) {
+        System.out.println("Stage3 :" + l + " list: " + list);
         List<Entry> res = clone(list);
         if (filter != null) {
             res = remove(res, filter);
         }
         if (l >= res.size()) {
-            return res;
+            List<Entry> result = new ArrayList<Entry>();
+            for (Entry e : res) {
+                Entry newE = e.clone();
+                e.isVolatile = true;
+                result.add(newE);
+            }
+            return result;
         } else {
             HashSet<Integer> pos = new HashSet<Integer>();
             for (int i = 0; i < l; i++) {
@@ -240,10 +269,10 @@ public class PartialView {
                 }
                 pos.add(p);
             }
+            System.err.println("Pos: " + pos + " : l:" + l);
             List<Entry> result = new ArrayList<Entry>();
             for (int i : pos) {
                 Entry current = res.get(i);
-                current.isVolatile = false; // make sure we do not send "volatile" elements
                 result.add(current.clone());
                 current.isVolatile = true;
             }
@@ -391,7 +420,7 @@ public class PartialView {
         public final Entry clone() {
             Entry result = new Entry(this.node);
             result.age = this.age;
-            result.isVolatile = this.isVolatile;
+            result.isVolatile = false;
             return result;
         }
 

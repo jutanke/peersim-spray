@@ -209,6 +209,13 @@ public class DictGraph {
 
     // =========
 
+    public int countArcs() {
+        int count = 0;
+        for (DictNode node : this.nodes.values()) {
+            count += node.neighbors.size();
+        }
+        return count;
+    }
 
     public int[] inDegrees () {
         // ====== #1 Count the in-degree of all peers ======

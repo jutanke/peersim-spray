@@ -33,7 +33,7 @@ public class PartialViewTest {
         view.add(b);
         view.add(c);
         view.incrementAge();
-        assertEquals("@0 -> [{1|1|n}, {2|1|n}]", view.toString());
+        assertEquals(" -> [{1|1|n}, {2|1|n}]", view.toString());
     }
 
     @Test
@@ -115,12 +115,23 @@ public class PartialViewTest {
 
         assertFalse(view.contains(oldest.node));
         assertEquals(3, view.degree());
-        assertEquals("@0 -> [{2|0|n}, {3|0|n}, {7|2|n}]", view.toString());
+        assertEquals(" -> [{2|0|n}, {3|0|n}, {7|2|n}]", view.toString());
     }
 
     @Test
     public void testSubset1() throws Exception {
         PartialView.TEST_ENV = true;
+
+        Node a = HelperForTest.createNode(0);
+        Node b = HelperForTest.createNode(1);
+        Node c = HelperForTest.createNode(2);
+        PartialView view = new PartialView();
+        view.add(a); view.add(b); view.add(c);
+
+        System.out.println("b ===> " +view);
+        List<PartialView.Entry> subset = view.subset();
+        System.out.println("a ===> " +view);
+
     }
 
     @Test
