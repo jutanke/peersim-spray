@@ -149,21 +149,22 @@ public class PeerSamplingServiceObserver implements Control {
             //System.err.println("avg path len:" + mean);
 
 
-            double avg1 = observer.avgReachablePaths(0).reachQuota;
-            double avg2 = observer.avgReachablePaths(40).reachQuota;
-            double avg3 = observer.avgReachablePaths(23).reachQuota;
-            double avg4 = observer.avgReachablePaths(644).reachQuota;
-            double avg5 = observer.avgReachablePaths(233).reachQuota;
-            double avg6 = observer.avgReachablePaths(22).reachQuota;
-            double avg7 = observer.avgReachablePaths(61).reachQuota;
-            double avg8 = observer.avgReachablePaths(721).reachQuota;
-            double avg9 = observer.avgReachablePaths(55).reachQuota;
-            double avg10 = observer.avgReachablePaths(86).reachQuota;
+            double avg1 = observer.avgReachablePaths(0).avg;
+            double avg2 = observer.avgReachablePaths(40).avg;
+            double avg3 = observer.avgReachablePaths(23).avg;
+            double avg4 = observer.avgReachablePaths(644).avg;
+            double avg5 = observer.avgReachablePaths(233).avg;
+            double avg6 = observer.avgReachablePaths(22).avg;
+            double avg7 = observer.avgReachablePaths(61).avg;
+            double avg8 = observer.avgReachablePaths(721).avg;
+            double avg9 = observer.avgReachablePaths(55).avg;
+            double avg10 = observer.avgReachablePaths(86).avg;
 
             double avg = (avg1+avg2+avg3+avg4+avg5+avg6+avg7+avg8+avg9+avg10) / 10;
 
             System.out.println(avg);
             System.err.println("avg path :" + avg);
+
 
         }
 

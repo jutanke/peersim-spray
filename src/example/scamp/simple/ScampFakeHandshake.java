@@ -16,7 +16,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class ScampFakeHandshake extends ScampWithView {
 
-    private final int CHEAT_TIMEOUT = 500;
+    private final int CHEAT_TIMEOUT = 99991500;
     private int cheatTimeout = 0;
 
     // ===================================================
