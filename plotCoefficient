@@ -12,5 +12,5 @@ set style line 1 lc rgb 'blue' lt 1 lw 2 pt 3
 set style line 2 lc rgb 'black' lt 4 lw 2 pt 3
 set style line 3 lc rgb 'red' lt 4 lw 2 pt 3
 
-plot [0:2500] "a.txt" using ($0+1):1 title "CYCLON" w l ls 1, \
-    "b.txt" using ($0+1):1 title "SCAMPLON" w l ls 2
+plot [0:1000] "a.txt" using ($0+1):1 title "CYCLON no Handshake" w l ls 1, \
+    "b.txt" using ($0+1):1 title "CYCLON with Handshake" w l ls 2

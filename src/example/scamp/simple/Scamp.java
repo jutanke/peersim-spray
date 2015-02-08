@@ -13,7 +13,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class Scamp extends ScampWithView {
 
-    private final int CHEAT_TIMEOUT = 500;
+    private final int CHEAT_TIMEOUT = 1500;
     private int cheatTimeout = 0;
 
     // ===================================================

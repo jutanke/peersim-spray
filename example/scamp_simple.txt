@@ -17,7 +17,7 @@ simulation.logtime 1
 MINDELAY 0
 MAXDELAY 0
 # drop is a probability, 0<=DROP<=1
-DROP 0
+DROP 0.1
 
 random.seed 1234539890
 

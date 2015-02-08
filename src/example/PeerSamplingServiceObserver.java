@@ -139,9 +139,14 @@ public class PeerSamplingServiceObserver implements Control {
             }
         }
 
-        if (step % 1 == 0) {
+        if (step % 100 == 0) {
             //double cluster = observer.meanClusterCoefficient();
             //System.out.println(cluster);
+            //System.err.println("cluster: " + cluster);
+
+            //double mean = observer.averagePathLength();
+            //System.out.println(mean);
+            //System.err.println("avg path len:" + mean);
 
 
             double avg1 = observer.avgReachablePaths(0).reachQuota;
