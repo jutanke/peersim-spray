@@ -6,6 +6,7 @@ import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 import peersim.edsim.EDProtocol;
+import peersim.transport.Transport;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,8 +19,10 @@ import java.util.Random;
 public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
 
     private static final String PAR_CACHE = "cache";
+    private static final String PROT = "0";
     private static final String PAR_L = "l";
     private static final String PAR_TRANSPORT = "transport";
+    private static final int DELTA_T = 5; // randomize parameter to spread the shuffle speed
 
     // ===========================================
     // P R O P E R T I E S
@@ -27,10 +30,18 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     private final int size;
     private final int l;
-    private final int tid;
+    private final int tid,pid;
     private final boolean isUnitTest;
+    private int myStep;
+    private boolean isBlocked = false;
+    private List<Node> peers;
+    private int timeoutCounter = 0;
+    private final int MAX_TIMEOUT = 10;
 
     private List<CyclonEntry> cache = null;
+    private List<Event> events;
+
+    private List<CyclonEntry> currentSentSubset;
 
     // ===========================================
     // C T O R
@@ -38,6 +49,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     /**
      * Only used for unit tests!
+     *
      * @param size
      * @param l
      */
@@ -45,20 +57,27 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
         this.size = size;
         this.l = l;
         this.tid = -1;
+        this.pid = -1;
         this.cache = new ArrayList<CyclonEntry>(size);
         this.isUnitTest = true;
+        this.myStep = nextInt(DELTA_T - 1);
     }
 
     /**
      * Called by the simulation
+     *
      * @param n
      */
     public Cyclon(String n) {
         this.size = Configuration.getInt(n + "." + PAR_CACHE);
         this.l = Configuration.getInt(n + "." + PAR_L);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
+        this.pid = Configuration.getPid(n + "." + PROT);
         this.cache = new ArrayList<CyclonEntry>(size);
         this.isUnitTest = false;
+        this.myStep = nextInt(DELTA_T - 1);
+        this.events = new ArrayList<Event>();
+        this.peers = new ArrayList<Node>();
     }
 
     @Override
@@ -67,8 +86,11 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
         try {
             cyclon = (Cyclon) super.clone();
             cyclon.cache = new ArrayList<CyclonEntry>(size);
-        }
-        catch (CloneNotSupportedException e) {} // never happens
+            cyclon.myStep = nextInt(DELTA_T - 1);
+            cyclon.events = new ArrayList<Event>();
+            cyclon.peers = new ArrayList<Node>();
+        } catch (CloneNotSupportedException e) {
+        } // never happens
         // ...
         return cyclon;
     }
@@ -79,7 +101,41 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     @Override
     public void nextCycle(Node node, int protocolID) {
-        //if (this.cache.size() > 0 && CommonState.getTime() % )
+
+        if (!this.isBlocked) {
+            // run stacked events
+            for (Event e : this.events) {
+                this.processEvent(e.node, e.pid, e.message);
+            }
+            this.events.clear();
+        }
+
+        if (!this.isBlocked && this.cache.size() > 0 && CommonState.getTime() % DELTA_T == this.myStep) {
+
+            this.isBlocked = true;
+
+            this.increaseAge();
+
+            Node q = this.popOldest();
+
+            List<CyclonEntry> send = this.popRandomSubset(this.l - 1);
+            this.currentSentSubset = new ArrayList<CyclonEntry>(send);
+            send.add(new CyclonEntry(0, node)); // add own address
+
+            this.send(q, CyclonMessage.shuffle(node, send));
+        } else {
+            // break deadlocks and dead nodes
+            this.timeoutCounter += 1;
+            if (this.timeoutCounter > MAX_TIMEOUT) {
+                // ROLLBACK
+                this.timeoutCounter = 0;
+                this.isBlocked = false;
+                for (CyclonEntry ce : this.currentSentSubset) {
+                    this.insert(ce);
+                }
+            }
+        }
+
     }
 
     @Override
@@ -99,7 +155,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     @Override
     public boolean contains(Node neighbor) {
-        return false;
+        return this.contains(new CyclonEntry(0, neighbor)); // TODO make this better
     }
 
     @Override
@@ -115,11 +171,44 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     @Override
     public void processEvent(Node node, int pid, Object event) {
 
+        CyclonMessage message = (CyclonMessage) event;
+
+        List<CyclonEntry> received = null;
+        List<CyclonEntry> send = null;
+
+        switch (message.type) {
+            case Shuffle:
+                if (this.isBlocked) {
+                    // We are currently initiating a shuffle with someone else
+                    // careful: this might result in a deadlock!
+                    this.events.add(new Event(pid, node, message));
+                } else {
+                    Node p = message.sender;
+                    received = message.send;
+                    send = this.popRandomSubset(this.l);
+                    this.insertReceivedItems(received, send, node.getID());
+                    this.send(p, CyclonMessage.shuffleResponse(node, send, message));
+                }
+                break;
+            case ShuffleResponse:
+                if (!this.isBlocked) {
+                    throw new RuntimeException("must be blocking!");
+                }
+                received = message.send;
+                send = message.received; // the message that we send back then..
+                this.insertReceivedItems(received, send, node.getID());
+                this.isBlocked = false;
+                break;
+        }
     }
 
     @Override
     public List<Node> getPeers() {
-        return null;
+        this.peers.clear();
+        for (CyclonEntry ce : this.cache) {
+            this.peers.add(ce.n);
+        }
+        return this.peers;
     }
 
     @Override
@@ -154,7 +243,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     /**
      * Increment the age of our local cache and sort it
      */
-    public void increaseAgeAndSort() {
+    public void increaseAge() {
         for (CyclonEntry ce : this.cache) {
             ce.age += 1;
         }
@@ -162,6 +251,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     /**
      * Selects the oldest Node and removes it from the list
+     *
      * @return the oldest Node or NULL (if the list is empty)
      */
     public Node popOldest() {
@@ -177,6 +267,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     /**
      * finds the position of the cache entry regarding the node. As the cache
      * can only contain one pointer towards this node this is no problem
+     *
      * @param ce
      * @return
      */
@@ -186,6 +277,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     /**
      * ...
+     *
      * @param n
      * @return
      */
@@ -200,6 +292,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     /**
      * Gets a subset of size "l" and removes it from the local cache
+     *
      * @param l
      * @return subset
      */
@@ -231,6 +324,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
      * merges the sent and received data with the current local cache
      * It first adds the received elements and then the sent ones, if there is still
      * enough space
+     *
      * @param received
      * @param sent
      */
@@ -245,7 +339,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
             }
         }
 
-        Collections.sort(sent, new CyclonEntry());
+        Collections.sort(sent, new CyclonEntry()); // take the youngest first!
 
         for (CyclonEntry ce : sent) {
             if (ce.n.getID() != ownId) {
@@ -257,6 +351,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     /**
      * check
+     *
      * @param ce
      * @return
      */
@@ -266,11 +361,40 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     /**
      * unsorted!
+     *
      * @param ce
      */
     public void insert(CyclonEntry ce) {
         if (!this.contains(ce) && this.cache.size() < this.size) {
             this.cache.add(ce);
+        }
+    }
+
+    /**
+     * send a message to the network
+     * @param destination
+     * @param message
+     */
+    public void send(Node destination, CyclonMessage message) {
+        final Node sender = message.sender;
+        if (sender.getID() == destination.getID()) {
+            throw new RuntimeException("must not send to oneself");
+        }
+        Transport tr = (Transport) sender.getProtocol(this.tid);
+        tr.send(sender, destination, message, pid);
+    }
+
+    /**
+     * to ensure no overlapping
+     */
+    private class Event {
+        public int pid;
+        public Node node;
+        public CyclonMessage message;
+        public Event(int pid, Node node, CyclonMessage message) {
+            this.pid = pid;
+            this.node = node;
+            this.message = message;
         }
     }
 }
