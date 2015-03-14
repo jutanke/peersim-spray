@@ -2,12 +2,15 @@ package example.paper.cyclon;
 
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
+import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by julian on 3/14/15.
@@ -25,6 +28,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     private final int size;
     private final int l;
     private final int tid;
+    private final boolean isUnitTest;
 
     private List<CyclonEntry> cache = null;
 
@@ -32,11 +36,29 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     // C T O R
     // ===========================================
 
+    /**
+     * Only used for unit tests!
+     * @param size
+     * @param l
+     */
+    public Cyclon(int size, int l) {
+        this.size = size;
+        this.l = l;
+        this.tid = -1;
+        this.cache = new ArrayList<CyclonEntry>(size);
+        this.isUnitTest = true;
+    }
+
+    /**
+     * Called by the simulation
+     * @param n
+     */
     public Cyclon(String n) {
         this.size = Configuration.getInt(n + "." + PAR_CACHE);
         this.l = Configuration.getInt(n + "." + PAR_L);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         this.cache = new ArrayList<CyclonEntry>(size);
+        this.isUnitTest = false;
     }
 
     @Override
@@ -57,12 +79,12 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     @Override
     public void nextCycle(Node node, int protocolID) {
-
+        //if (this.cache.size() > 0 && CommonState.getTime() % )
     }
 
     @Override
     public int degree() {
-        return 0;
+        return this.cache.size();
     }
 
     @Override
@@ -102,10 +124,153 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     @Override
     public String debug() {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        Collections.sort(this.cache, new CyclonEntry());
+        for (CyclonEntry ce : this.cache) {
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(ce);
+        }
+        return sb.toString();
     }
 
     // ===========================================
     // P R I V A T E
     // ===========================================
+
+    public String debugIds() {
+        StringBuilder sb = new StringBuilder();
+        Collections.sort(this.cache, new CyclonEntry());
+        for (CyclonEntry ce : this.cache) {
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(ce.n.getID());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Increment the age of our local cache and sort it
+     */
+    public void increaseAgeAndSort() {
+        for (CyclonEntry ce : this.cache) {
+            ce.age += 1;
+        }
+    }
+
+    /**
+     * Selects the oldest Node and removes it from the list
+     * @return the oldest Node or NULL (if the list is empty)
+     */
+    public Node popOldest() {
+        Collections.sort(cache, new CyclonEntry());
+        if (this.cache.size() > 0) {
+            Node result = this.cache.get(this.cache.size() - 1).n;
+            this.cache.remove(this.cache.size() - 1);
+            return result;
+        }
+        return null;
+    }
+
+    /**
+     * finds the position of the cache entry regarding the node. As the cache
+     * can only contain one pointer towards this node this is no problem
+     * @param ce
+     * @return
+     */
+    public int indexOf(CyclonEntry ce) {
+        return this.indexOf(ce.n);
+    }
+
+    /**
+     * ...
+     * @param n
+     * @return
+     */
+    public int indexOf(Node n) {
+        for (int i = 0; i < this.cache.size(); i++) {
+            if (this.cache.get(i).n.getID() == n.getID()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Gets a subset of size "l" and removes it from the local cache
+     * @param l
+     * @return subset
+     */
+    public List<CyclonEntry> popRandomSubset(int l) {
+        List<CyclonEntry> subset;
+        if (l >= this.cache.size()) {
+            subset = new ArrayList<CyclonEntry>(this.cache);
+            this.cache.clear();
+        } else {
+            subset = new ArrayList<CyclonEntry>(l);
+            for (int i = 0; i < l; i++) {
+                int pos = nextInt(this.cache.size() - 1);
+                subset.add(this.cache.get(pos));
+                this.cache.remove(pos);
+            }
+        }
+        return subset;
+    }
+
+    private int nextInt(int n) {
+        if (isUnitTest) {
+            return new Random().nextInt(n);
+        } else {
+            return CommonState.r.nextInt(n);
+        }
+    }
+
+    /**
+     * merges the sent and received data with the current local cache
+     * It first adds the received elements and then the sent ones, if there is still
+     * enough space
+     * @param received
+     * @param sent
+     */
+    public void insertReceivedItems(List<CyclonEntry> received, List<CyclonEntry> sent, long ownId) {
+        if (this.cache.size() + received.size() > this.size) {
+            throw new RuntimeException("Cannot merge all received elements: Overflow");
+        }
+
+        for (CyclonEntry ce : received) {
+            if (ce.n.getID() != ownId) {
+                this.insert(ce);
+            }
+        }
+
+        Collections.sort(sent, new CyclonEntry());
+
+        for (CyclonEntry ce : sent) {
+            if (ce.n.getID() != ownId) {
+                this.insert(ce);
+            }
+        }
+
+    }
+
+    /**
+     * check
+     * @param ce
+     * @return
+     */
+    public boolean contains(CyclonEntry ce) {
+        return this.indexOf(ce) > -1;
+    }
+
+    /**
+     * unsorted!
+     * @param ce
+     */
+    public void insert(CyclonEntry ce) {
+        if (!this.contains(ce) && this.cache.size() < this.size) {
+            this.cache.add(ce);
+        }
+    }
 }

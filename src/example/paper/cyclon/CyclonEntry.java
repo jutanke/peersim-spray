@@ -12,6 +12,8 @@ public class CyclonEntry implements Comparable<CyclonEntry>, Comparator<CyclonEn
     public int age;
     public Node n;
 
+    protected CyclonEntry() {}
+
     public CyclonEntry(int age, Node n) {
         this.age = age;
         this.n = n;
