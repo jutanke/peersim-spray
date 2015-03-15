@@ -26,6 +26,11 @@ public class CyclonMessage {
         this.sender = sender;
     }
 
+    @Override
+    public String toString() {
+        return "{" + this.type.toString() + " | sender:" + this.sender.getID() + "}";
+    }
+
     // ============================================================
 
     public static CyclonMessage shuffle(Node sender, List<CyclonEntry> send) {

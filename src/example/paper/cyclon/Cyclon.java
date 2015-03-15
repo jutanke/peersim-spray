@@ -19,8 +19,8 @@ import java.util.Random;
 public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
 
     private static final String PAR_CACHE = "cache";
-    private static final String PROT = "0";
     private static final String PAR_L = "l";
+    private static final String PAR_PROT = "lnk";
     private static final String PAR_TRANSPORT = "transport";
     private static final int DELTA_T = 5; // randomize parameter to spread the shuffle speed
 
@@ -35,8 +35,8 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     private int myStep;
     private boolean isBlocked = false;
     private List<Node> peers;
-    private int timeoutCounter = 0;
-    private final int MAX_TIMEOUT = 10;
+    private long startTime = 0;   // measures the elapsed time
+    private final long MAX_TIMEOUT = 22;
 
     private List<CyclonEntry> cache = null;
     private List<Event> events;
@@ -72,7 +72,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
         this.size = Configuration.getInt(n + "." + PAR_CACHE);
         this.l = Configuration.getInt(n + "." + PAR_L);
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
-        this.pid = Configuration.getPid(n + "." + PROT);
+        this.pid = Configuration.lookupPid(PAR_PROT);
         this.cache = new ArrayList<CyclonEntry>(size);
         this.isUnitTest = false;
         this.myStep = nextInt(DELTA_T - 1);
@@ -101,7 +101,6 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     @Override
     public void nextCycle(Node node, int protocolID) {
-
         if (!this.isBlocked) {
             // run stacked events
             for (Event e : this.events) {
@@ -113,6 +112,8 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
         if (!this.isBlocked && this.cache.size() > 0 && CommonState.getTime() % DELTA_T == this.myStep) {
 
             this.isBlocked = true;
+            this.startTime = CommonState.getTime();
+
 
             this.increaseAge();
 
@@ -123,19 +124,17 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
             send.add(new CyclonEntry(0, node)); // add own address
 
             this.send(q, CyclonMessage.shuffle(node, send));
-        } else {
+        } else if (this.isBlocked) {
             // break deadlocks and dead nodes
-            this.timeoutCounter += 1;
-            if (this.timeoutCounter > MAX_TIMEOUT) {
+            if ((CommonState.getTime() - this.startTime) > MAX_TIMEOUT) {
                 // ROLLBACK
-                this.timeoutCounter = 0;
                 this.isBlocked = false;
                 for (CyclonEntry ce : this.currentSentSubset) {
                     this.insert(ce);
                 }
+                System.err.println("@" + node.getID() + " rollback");
             }
         }
-
     }
 
     @Override
@@ -150,7 +149,13 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
 
     @Override
     public boolean addNeighbor(Node neighbour) {
-        return false;
+        final CyclonEntry ce = new CyclonEntry(0, neighbour);
+        if (this.contains(ce)) {
+            return false;
+        } else {
+            this.insert(ce);
+            return true;
+        }
     }
 
     @Override
@@ -191,13 +196,18 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
                 }
                 break;
             case ShuffleResponse:
-                if (!this.isBlocked) {
-                    throw new RuntimeException("must be blocking!");
+                if (this.isBlocked) {
+                    received = message.send;
+                    send = message.received; // the message that we send back then..
+                    this.insertReceivedItems(received, send, node.getID());
+                    this.isBlocked = false;
+                    //System.err.println("done: " + message + " @" + node.getID());
+                    //throw new RuntimeException("must be blocking!");
+                } else {
+                    System.err.println("let go: " + message + " @" + node.getID());
+                    //throw new RuntimeException("must be blocking!");
                 }
-                received = message.send;
-                send = message.received; // the message that we send back then..
-                this.insertReceivedItems(received, send, node.getID());
-                this.isBlocked = false;
+
                 break;
         }
     }
