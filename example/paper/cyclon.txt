@@ -1,9 +1,9 @@
 # network size
-SIZE 1000
-DEGREE 20
+SIZE 100
+DEGREE 7
 
 # parameters of periodic execution
-CYCLES 1000
+CYCLES 500
 CYCLE SIZE*10000
 
 # parameters of message transfer
@@ -24,7 +24,7 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.lnk example.paper.cyclon.Cyclon
 protocol.lnk.cache DEGREE
-protocol.lnk.l 8
+protocol.lnk.l 3
 protocol.lnk.step 1
 protocol.lnk.transport tr
 protocol.lnk.linkable link
