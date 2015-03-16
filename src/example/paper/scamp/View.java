@@ -1,5 +1,6 @@
 package example.paper.scamp;
 
+import example.PeerSamplingService;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -25,20 +26,71 @@ public class View {
     // P U B L I C
     // =====================================
 
+    /**
+     * only call this on the outview!
+     */
     public void updateTimeouts() {
         for (ViewEntry e : this.array) {
-
+            if (e.timeout()) {
+                if (!this.delete(e.node)) {
+                    throw new RuntimeException("element must be in list");
+                }
+            }
         }
     }
 
-    public boolean add(Node n) {
-        if (!this.contains(n)) {
-            this.array.add(new ViewEntry(n));
+    /**
+     * @return
+     */
+    public Node getRandom() {
+        if (this.array.size() > 0) {
+            final int pos = CommonState.r.nextInt(this.array.size());
+            return this.array.get(pos).node;
+        }
+        return null;
+    }
+
+    /**
+     * @param n
+     * @return
+     */
+    public boolean delete(Node n) {
+        int i = this.indexOf(n);
+        if (i >= 0) {
+            this.array.remove(i);
             return true;
         }
         return false;
     }
 
+    /**
+     * @param n
+     * @return
+     */
+    public ViewEntry add(Node n) {
+        if (!this.contains(n)) {
+            ViewEntry entry = new ViewEntry(n);
+            this.array.add(entry);
+            return entry;
+        }
+        return null;
+    }
+
+    /**
+     * @param e
+     * @return
+     */
+    public boolean add(ViewEntry e) {
+        if (!this.contains(e.node)) {
+            this.array.add(e);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return
+     */
     public List<Node> list() {
         final List<Node> result = new ArrayList<Node>();
         for (ViewEntry e : this.array) {
@@ -48,7 +100,6 @@ public class View {
     }
 
     /**
-     *
      * @param n
      * @return
      */
@@ -57,7 +108,6 @@ public class View {
     }
 
     /**
-     *
      * @param n
      * @return
      */
@@ -87,7 +137,7 @@ public class View {
             this.leaseTime = CommonState.r.nextLong(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
         }
 
-        public boolean timeout(){
+        public boolean timeout() {
             return ((this.birthdate + this.leaseTime) < CommonState.getTime());
         }
     }

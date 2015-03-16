@@ -42,19 +42,27 @@ public class Observer implements Control {
             observer.add(n, pss);
         }
 
-        double a = observer.avgReachablePaths(randomId()).avg;
-        double b = observer.avgReachablePaths(randomId()).avg;
-        double c = observer.avgReachablePaths(randomId()).avg;
-        double d = observer.avgReachablePaths(randomId()).avg;
-        double e = observer.avgReachablePaths(randomId()).avg;
-        double f = observer.avgReachablePaths(randomId()).avg;
-        double g = observer.avgReachablePaths(randomId()).avg;
-        double h = observer.avgReachablePaths(randomId()).avg;
-        double i = observer.avgReachablePaths(randomId()).avg;
-        double j = observer.avgReachablePaths(randomId()).avg;
+        if (false) {
+            double a = observer.avgReachablePaths(randomId()).avg;
+            double b = observer.avgReachablePaths(randomId()).avg;
+            double c = observer.avgReachablePaths(randomId()).avg;
+            double d = observer.avgReachablePaths(randomId()).avg;
+            double e = observer.avgReachablePaths(randomId()).avg;
+            double f = observer.avgReachablePaths(randomId()).avg;
+            double g = observer.avgReachablePaths(randomId()).avg;
+            double h = observer.avgReachablePaths(randomId()).avg;
+            double i = observer.avgReachablePaths(randomId()).avg;
+            double j = observer.avgReachablePaths(randomId()).avg;
 
-        double avg = (a+b+c+d+e+f+g+h+i+j) / 10;
-        System.out.println(avg);
+            double avg = (a + b + c + d + e + f + g + h + i + j) / 10;
+            System.out.println(avg);
+        } else if (true) {
+
+            if (CommonState.getTime() % 50 == 0) {
+                System.out.println(observer.averagePathLength());
+            }
+
+        }
 
         return false;
     }
