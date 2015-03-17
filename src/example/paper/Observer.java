@@ -3,6 +3,7 @@ package example.paper;
 import example.PeerSamplingService;
 import example.webrtc.data.DictGraph;
 import peersim.config.Configuration;
+import peersim.config.MissingParameterException;
 import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.GeneralNode;
@@ -14,6 +15,7 @@ import peersim.core.Network;
 public class Observer implements Control {
 
     private static final String PROTOCOL = "lnk";
+    private static final String PROTOCOL_0 = "0";
 
     // =============================================
     // C T O R
@@ -22,7 +24,13 @@ public class Observer implements Control {
     private int pid;
 
     public Observer(String name) {
-        this.pid = Configuration.lookupPid(PROTOCOL);
+
+        try {
+            this.pid = Configuration.lookupPid(PROTOCOL);
+        } catch (MissingParameterException e) {
+            this.pid = Configuration.lookupPid(PROTOCOL_0);
+        }
+
     }
 
     // =============================================

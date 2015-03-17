@@ -26,8 +26,8 @@ public final class ScampMessage {
     }
 
     public static final ScampMessage forward(Node me, ScampMessage m) {
-        if (m.type != Type.ForwardSubscription || m.type == Type.Subscribe) {
-            throw new RuntimeException("must be a forwarded subscription or a subscription");
+        if (m.type != Type.ForwardSubscription && m.type != Type.Subscribe) {
+            throw new RuntimeException("must be a forwarded subscription or a subscription, instead:" + m.type);
         }
         return new ScampMessage(me, Type.ForwardSubscription, m.subscriber);
     }

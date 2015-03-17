@@ -167,8 +167,11 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         Scamp prot = (Scamp) me.getProtocol(pid);
         prot.current = View.generate(me);
 
+        Node other = Network.get(0);
         // Indirection
-        Node other = Network.get(CommonState.r.nextInt(max));
+        if (max > 0) {
+            other = Network.get(CommonState.r.nextInt(max));
+        }
         Scamp otherProt = (Scamp) other.getProtocol(pid);
 
         prot.out.add(otherProt.current);
