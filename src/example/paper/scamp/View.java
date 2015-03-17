@@ -39,6 +39,10 @@ public class View {
         }
     }
 
+    public int size() {
+        return this.array.size();
+    }
+
     /**
      * @return
      */
@@ -64,6 +68,7 @@ public class View {
     }
 
     /**
+     * This must only be used for the inviews as, there, we dont care about when the node expires!
      * @param n
      * @return
      */
@@ -120,11 +125,28 @@ public class View {
         return -1;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (ViewEntry e : this.array) {
+            if (sb.length() > 1) {
+                sb.append(",");
+            }
+            sb.append(e);
+        }
+        return sb.toString();
+    }
+
     // =====================================
     // H E L P E R  C L A S S E S
     // =====================================
 
-    public class ViewEntry {
+    public static final ViewEntry generate(Node me) {
+        return new ViewEntry(me);
+    }
+
+    public static class ViewEntry {
         public final long id;
         public final long birthdate;
         public final Node node;
@@ -135,6 +157,11 @@ public class View {
             this.id = n.getID();
             this.birthdate = CommonState.getTime();
             this.leaseTime = CommonState.r.nextLong(leaseTimeoutMax - leaseTimeoutMin) + leaseTimeoutMin;
+        }
+
+        @Override
+        public String toString(){
+            return "{id:" + this.id + ":lifetime:" + ((this.birthdate + this.leaseTime) - this.leaseTime) + "}";
         }
 
         public boolean timeout() {
