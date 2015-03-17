@@ -16,13 +16,16 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
     // P R O P E R T I E S
     // ===========================================
 
+    private View in;
+    public View out;
 
     // ===========================================
     // C T O R
     // ===========================================
 
     public Scamp(String n) {
-
+        this.in = new View();
+        this.out = new View();
     }
 
     @Override
