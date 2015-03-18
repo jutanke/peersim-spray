@@ -124,8 +124,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
 
     @Override
     public List<Node> getPeers() {
-        final List<Node> result = new ArrayList<Node>(this.out.size());
-        return result;
+        return this.out.list();
     }
 
     @Override
@@ -246,6 +245,11 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
             }
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return this.debug();
     }
 
     // ===========================================

@@ -203,6 +203,25 @@ public class DictGraph {
         return sb.toString();
     }
 
+    public String toGraph() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("digraph test {");
+        sb.append("\n");
+        for (DictNode n : this.nodes.values()) {
+            for (long neighbor : n.neighbors) {
+                sb.append(n.id);
+                sb.append(" -> ");
+                sb.append(neighbor);
+                sb.append(";\n");
+            }
+            sb.append("\n");
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     public double meanClusterCoefficient() {
         double sum = 0;
         for (DictNode e : this.nodes.values()) {

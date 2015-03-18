@@ -48,6 +48,9 @@ public class Observer implements Control {
             PeerSamplingService pss = (PeerSamplingService) n.getProtocol(pid);
             //System.out.println(n);
             observer.add(n, pss);
+
+
+            System.err.println(n.getID() + ":" + pss);
         }
 
         if (false) {
@@ -64,12 +67,17 @@ public class Observer implements Control {
 
             double avg = (a + b + c + d + e + f + g + h + i + j) / 10;
             System.out.println(avg);
-        } else if (true) {
+        } else if (false) {
 
             if (CommonState.getTime() % 50 == 0) {
                 System.out.println(observer.averagePathLength());
             }
 
+        }
+
+        if (CommonState.getTime() == 19) {
+
+            System.out.println(observer.toGraph());
         }
 
         return false;
