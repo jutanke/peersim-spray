@@ -1,4 +1,4 @@
-SIZE 1000
+SIZE 20
 
 # parameters of periodic execution
 CYCLES 1000

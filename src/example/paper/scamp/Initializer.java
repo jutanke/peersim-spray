@@ -30,8 +30,8 @@ public class Initializer implements Control {
 
         for(int i = 2; i < Network.size(); i++) {
             Node me = Network.get(i);
-            int o = CDState.r.nextInt(i-1);
-            Scamp.subscribe(me, o);
+            //int o = CDState.r.nextInt(i-1);
+            Scamp.subscribe(me, i-1);
         }
 
         return false;

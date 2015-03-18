@@ -9,6 +9,7 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
+import javax.swing.plaf.synth.SynthEditorPaneUI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,6 +114,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
                 break;
             case Accepted:
                 this.in.add(message.sender); // here we dont care about timeout
+                System.err.println("accept connection:" + message.sender.getID() + " -> " + node.getID());
                 break;
             default:
                 throw new RuntimeException("unhandled event");
@@ -136,10 +138,14 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
      * @param destination
      * @param message
      */
-    public void send(Node destination, ScampMessage message) {
+    public void send(Node me, Node destination, ScampMessage message) {
         final Node sender = message.sender;
         if (sender.getID() == destination.getID()) {
-            throw new RuntimeException("must not send to oneself");
+            System.err.println("@:" + me.getID());
+            System.err.println("in:" + this.in);
+            System.err.println("out:" + this.out);
+            throw new RuntimeException("must not send to oneself -->" +
+                destination.getID() + " | " + message);
         }
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, destination, message, pid);
@@ -174,9 +180,15 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         }
         Scamp otherProt = (Scamp) other.getProtocol(pid);
 
+        if (other.getID() == me.getID()) {
+            throw new RuntimeException("Lol nope!");
+        }
+
+        System.err.println("subscribe " + me.getID() + " to " + other.getID() + " max:" + max);
+
         prot.out.add(otherProt.current);
         ScampMessage subscribe = ScampMessage.subscribe(prot.current);
-        prot.send(other, subscribe);
+        prot.send(me, other, subscribe);
     }
 
     /**
@@ -191,13 +203,13 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
 
         for (Node n : this.out.list()) {
             final ScampMessage forward = ScampMessage.forward(me, subscription);
-            this.send(n, forward);
+            this.send(me, n, forward);
         }
 
-        for (int i = 0; i < c; i++) {
+        for (int i = 0; i < c && this.out.size() > 0; i++) {
             final ScampMessage forward = ScampMessage.forward(me, subscription);
             final Node destination = this.out.getRandom();
-            this.send(destination, forward);
+            this.send(me, destination, forward);
         }
     }
 
@@ -214,11 +226,24 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         if (!this.contains(forwarded.subscriber.node) && p()) {
             this.out.add(forwarded.subscriber);
             final ScampMessage accept = ScampMessage.accepted(me);
-            this.send(forwarded.subscriber.node, accept);
+            this.send(me, forwarded.subscriber.node, accept);
         } else if (forwarded.ttl > 0) {
-            forwarded.ttl -= 1; // subtract from ttl so that messages time out after some time
-            final Node destination = this.out.getRandom();
-            this.send(destination, forwarded);
+            if (this.out.size() > 0) {
+                Node destination = this.out.getRandom();
+
+                if (destination.getID() == forwarded.subscriber.node.getID()) {
+                    if (this.out.size() > 1) {
+                        while (destination.getID() == forwarded.subscriber.node.getID()) {
+                            destination = this.out.getRandom();
+                        }
+                        this.send(me, destination, ScampMessage.forward(me,forwarded));
+                    }
+                } else {
+                    this.send(me, destination, ScampMessage.forward(me,forwarded));
+                }
+            } else {
+                System.err.println("Forwarding is starving..");
+            }
         }
 
     }

@@ -161,7 +161,7 @@ public class View {
 
         @Override
         public String toString(){
-            return "{id:" + this.id + ":lifetime:" + ((this.birthdate + this.leaseTime) - this.leaseTime) + "}";
+            return "{id:" + this.id + ":lifetime:" + ((this.birthdate + this.leaseTime) - CommonState.getTime()) + "}";
         }
 
         public boolean timeout() {
