@@ -40,6 +40,7 @@ public class Observer implements Control {
     @Override
     public boolean execute() {
 
+        final int STEP = 10;
         final DictGraph observer = DictGraph.getSingleton(Network.size());
         observer.reset();
 
@@ -48,12 +49,11 @@ public class Observer implements Control {
             PeerSamplingService pss = (PeerSamplingService) n.getProtocol(pid);
             //System.out.println(n);
             observer.add(n, pss);
-
-
-            System.err.println(n.getID() + ":" + pss);
         }
 
-        if (false) {
+        if (true && CommonState.getTime() % STEP == 0) {
+            System.out.println(observer.meanClusterCoefficient());
+        } else if (false && CommonState.getTime() % STEP == 0) {
             double a = observer.avgReachablePaths(randomId()).avg;
             double b = observer.avgReachablePaths(randomId()).avg;
             double c = observer.avgReachablePaths(randomId()).avg;
@@ -75,10 +75,9 @@ public class Observer implements Control {
 
         }
 
-        if (CommonState.getTime() == 19) {
-
-            System.out.println(observer.toGraph());
-        }
+        //if (CommonState.getTime() == 9999) {
+        //    System.out.println(observer.toGraph());
+        //}
 
         return false;
     }

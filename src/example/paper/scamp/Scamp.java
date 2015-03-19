@@ -21,30 +21,36 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
     private static final String PAR_C = "c";
     private static final String SCAMP_PROT = "0";
     private static final String PAR_TRANSPORT = "transport";
+    private static final String PAR_LEASE_MAX = "leaseTimeoutMax";
+    private static final String PAR_LEASE_MIN = "leaseTimeoutMin";
 
 
     // ===========================================
     // P R O P E R T I E S
     // ===========================================
 
-    private View in;
+    public View in;
     public View out;
     private View.ViewEntry current;
 
     public static int pid;
     public static int tid;
     public static int c;
+    public final int MAX_LEASE;
+    public final int MIN_LEASE;
 
     // ===========================================
     // C T O R
     // ===========================================
 
     public Scamp(String n) {
-        this.in = new View();
-        this.out = new View();
         this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
         this.c = Configuration.getInt(n + "." + PAR_C, 0);
         this.pid = Configuration.lookupPid(SCAMP_PROT);
+        this.MAX_LEASE = Configuration.getInt(n + "." + PAR_LEASE_MAX, 2000);
+        this.MIN_LEASE = Configuration.getInt(n + "." + PAR_LEASE_MIN, 1000);
+        this.in = new View(this.MIN_LEASE, this.MAX_LEASE);
+        this.out = new View(this.MIN_LEASE, this.MAX_LEASE);
     }
 
     @Override
@@ -52,10 +58,10 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         Scamp scamp = null;
         try {
             scamp = (Scamp) super.clone();
-            scamp.in = new View();
-            scamp.out = new View();
-        }
-        catch (CloneNotSupportedException e) {} // never happens
+            scamp.in = new View(this.MIN_LEASE, this.MAX_LEASE);
+            scamp.out = new View(this.MIN_LEASE, this.MAX_LEASE);
+        } catch (CloneNotSupportedException e) {
+        } // never happens
         // ...
         return scamp;
     }
@@ -67,6 +73,11 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
     @Override
     public void nextCycle(Node node, int protocolID) {
 
+        this.out.updateTimeouts();
+
+        if (this.current != null && this.current.timeout()) {
+            this.onRejoin(node);
+        }
     }
 
     @Override
@@ -110,11 +121,11 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
                 this.onForward(node, message);
                 break;
             case Subscribe:
+            case Resubscribe:
                 this.onSubscribe(node, message);
                 break;
             case Accepted:
                 this.in.add(message.sender); // here we dont care about timeout
-                System.err.println("accept connection:" + message.sender.getID() + " -> " + node.getID());
                 break;
             default:
                 throw new RuntimeException("unhandled event");
@@ -134,6 +145,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
 
     /**
      * send a message to the network
+     *
      * @param destination
      * @param message
      */
@@ -144,7 +156,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
             System.err.println("in:" + this.in);
             System.err.println("out:" + this.out);
             throw new RuntimeException("must not send to oneself -->" +
-                destination.getID() + " | " + message);
+                    destination.getID() + " | " + message);
         }
         Transport tr = (Transport) sender.getProtocol(tid);
         tr.send(sender, destination, message, pid);
@@ -156,6 +168,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
 
     /**
      * initializes the very first node
+     *
      * @param me
      */
     public static void initialize(Node me) {
@@ -165,7 +178,8 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
 
     /**
      * Joins the node to the network
-     * @param me the node that is supposed to join
+     *
+     * @param me  the node that is supposed to join
      * @param max the maximum value from which we can select items for indirection
      */
     public static void subscribe(Node me, int max) {
@@ -183,8 +197,6 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
             throw new RuntimeException("Lol nope!");
         }
 
-        System.err.println("subscribe " + me.getID() + " to " + other.getID() + " max:" + max);
-
         prot.out.add(otherProt.current);
         ScampMessage subscribe = ScampMessage.subscribe(prot.current);
         prot.send(me, other, subscribe);
@@ -192,28 +204,36 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
 
     /**
      * get called upon receiving a subscription
+     *
      * @param me
      * @param subscription
      */
     private void onSubscribe(Node me, ScampMessage subscription) {
-        if (subscription.type != ScampMessage.Type.Subscribe) {
+        if (subscription.type != ScampMessage.Type.Subscribe &&
+                subscription.type != ScampMessage.Type.Resubscribe) {
             throw new RuntimeException("wrong message type");
         }
+        this.out.updateTimeouts();
+        final boolean resubscribe = subscription.type == ScampMessage.Type.Resubscribe;
 
         for (Node n : this.out.list()) {
             final ScampMessage forward = ScampMessage.forward(me, subscription);
             this.send(me, n, forward);
         }
 
-        for (int i = 0; i < c && this.out.size() > 0; i++) {
-            final ScampMessage forward = ScampMessage.forward(me, subscription);
-            final Node destination = this.out.getRandom();
-            this.send(me, destination, forward);
+        if (!resubscribe) {
+            // only do this when actually joining the network (otherwise we would introduce too many arcs)
+            for (int i = 0; i < c && this.out.size() > 0; i++) {
+                final ScampMessage forward = ScampMessage.forward(me, subscription);
+                final Node destination = this.out.getRandom();
+                this.send(me, destination, forward);
+            }
         }
     }
 
     /**
      * gets called upon forwarding
+     *
      * @param me
      * @param forwarded
      */
@@ -222,6 +242,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
             throw new RuntimeException("wrong message type");
         }
 
+        this.out.updateTimeouts();
         if (!this.contains(forwarded.subscriber.node) && p()) {
             this.out.add(forwarded.subscriber);
             final ScampMessage accept = ScampMessage.accepted(me);
@@ -235,16 +256,33 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
                         while (destination.getID() == forwarded.subscriber.node.getID()) {
                             destination = this.out.getRandom();
                         }
-                        this.send(me, destination, ScampMessage.forward(me,forwarded));
+                        this.send(me, destination, ScampMessage.forward(me, forwarded));
                     }
                 } else {
-                    this.send(me, destination, ScampMessage.forward(me,forwarded));
+                    this.send(me, destination, ScampMessage.forward(me, forwarded));
                 }
             } else {
                 System.err.println("Forwarding is starving..");
             }
         }
+    }
 
+    /**
+     * LEASE mechanics
+     *
+     * @param me
+     */
+    public void onRejoin(Node me) {
+        // create a new frame
+        this.current = View.generate(me);
+
+        if (this.out.size() > 0) {
+            Node contact = this.out.getRandom();
+            final ScampMessage resubscribe = ScampMessage.resubscribe(this.current);
+            this.send(me, contact, resubscribe);
+        } else { // this only happens when errors are introduced..
+            System.err.println("COULD NOT RESUBSCRIBE");
+        }
     }
 
     @Override

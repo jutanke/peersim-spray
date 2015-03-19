@@ -12,14 +12,19 @@ import java.util.List;
  */
 public class View {
 
-    private static final long leaseTimeoutMin = 1000;
-    private static final long leaseTimeoutMax = 3000;
+    private static long leaseTimeoutMin;
+    private static long leaseTimeoutMax;
 
     // =====================================
     // P R O P E R T I E S
     // =====================================
 
     List<ViewEntry> array = new ArrayList<ViewEntry>();
+
+    public View(int minLease, int maxLease) {
+        leaseTimeoutMax = maxLease;
+        leaseTimeoutMin = minLease;
+    }
 
 
     // =====================================
@@ -30,11 +35,15 @@ public class View {
      * only call this on the outview!
      */
     public void updateTimeouts() {
+        final List<Node> delete = new ArrayList<Node>();
         for (ViewEntry e : this.array) {
             if (e.timeout()) {
-                if (!this.delete(e.node)) {
-                    throw new RuntimeException("element must be in list");
-                }
+                delete.add(e.node);
+            }
+        }
+        for (Node e : delete) {
+            if (!this.delete(e)) {
+                throw new RuntimeException("element must be in list");
             }
         }
     }
