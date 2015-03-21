@@ -114,7 +114,6 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
             this.isBlocked = true;
             this.startTime = CommonState.getTime();
 
-
             this.increaseAge();
 
             Node q = this.popOldest();
@@ -126,7 +125,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
             this.send(q, CyclonMessage.shuffle(node, send));
         } else if (this.isBlocked) {
             // break deadlocks and dead nodes
-            if ((CommonState.getTime() - this.startTime) > MAX_TIMEOUT) {
+            if ((this.startTime + MAX_TIMEOUT) < CommonState.getTime()) {
                 // ROLLBACK
                 this.isBlocked = false;
                 for (CyclonEntry ce : this.currentSentSubset) {

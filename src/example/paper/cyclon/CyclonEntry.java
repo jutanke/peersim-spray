@@ -12,11 +12,17 @@ public class CyclonEntry implements Comparable<CyclonEntry>, Comparator<CyclonEn
     public int age;
     public Node n;
 
+    /**
+     * when true this entry is selected to be sent to a neighbor and might get removed
+     */
+    public boolean selected;
+
     protected CyclonEntry() {}
 
     public CyclonEntry(int age, Node n) {
         this.age = age;
         this.n = n;
+        this.selected = true;
     }
 
     @Override

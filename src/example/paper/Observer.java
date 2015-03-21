@@ -74,12 +74,13 @@ public class Observer implements Control {
             }
 
         } else if (true && CommonState.getTime() > 0 && CommonState.getTime() % 1 == 0) {
-            System.out.println(observer.avgReachablePaths(0).reachQuota);
+            System.out.println(observer.meanClusterCoefficient());
+            //System.out.println(observer.avgReachablePaths(0).reachQuota);
         }
 
-        //if (CommonState.getTime() == 9999) {
-        //    System.out.println(observer.toGraph());
-        //}
+        if (CommonState.getTime() == 9999) {
+            //System.out.println(observer.toGraph());
+        }
 
         return false;
     }
