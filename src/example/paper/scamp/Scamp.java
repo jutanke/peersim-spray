@@ -96,6 +96,9 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         //return false;
     }
 
+    public boolean contains(View.ViewEntry ve) {
+        return this.out.contains(ve);
+    }
 
     @Override
     public boolean contains(Node neighbor) {
@@ -243,7 +246,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         }
 
         this.out.updateTimeouts();
-        if (!this.contains(forwarded.subscriber.node) && p()) {
+        if (!this.contains(forwarded.subscriber) && p() && forwarded.subscriber.node.getID() != me.getID()) {
             this.out.add(forwarded.subscriber);
             final ScampMessage accept = ScampMessage.accepted(me);
             this.send(me, forwarded.subscriber.node, accept);
@@ -277,6 +280,7 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         this.current = View.generate(me);
 
         if (this.out.size() > 0) {
+            //this.in.clear();
             Node contact = this.out.getRandom();
             final ScampMessage resubscribe = ScampMessage.resubscribe(this.current);
             this.send(me, contact, resubscribe);

@@ -121,6 +121,20 @@ public class View {
         return this.indexOf(n) >= 0;
     }
 
+    public boolean contains(ViewEntry ve) {
+        final int i = indexOf(ve.node);
+        if (i >= 0) {
+            final ViewEntry my = this.array.get(i);
+            if (my.birthdate < ve.birthdate) {
+                this.delete(my.node);
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @param n
      * @return

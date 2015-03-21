@@ -51,7 +51,7 @@ public class Observer implements Control {
             observer.add(n, pss);
         }
 
-        if (true && CommonState.getTime() % STEP == 0) {
+        if (false && CommonState.getTime() % STEP == 0) {
             System.out.println(observer.meanClusterCoefficient());
         } else if (false && CommonState.getTime() % STEP == 0) {
             double a = observer.avgReachablePaths(randomId()).avg;
@@ -69,10 +69,12 @@ public class Observer implements Control {
             System.out.println(avg);
         } else if (false) {
 
-            if (CommonState.getTime() % 50 == 0) {
-                System.out.println(observer.averagePathLength());
+            if (CommonState.getTime() == 499) {
+                System.out.println(observer.toGraph());
             }
 
+        } else if (true && CommonState.getTime() > 0 && CommonState.getTime() % 1 == 0) {
+            System.out.println(observer.avgReachablePaths(0).reachQuota);
         }
 
         //if (CommonState.getTime() == 9999) {

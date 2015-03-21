@@ -32,8 +32,15 @@ public class Initializer implements Control {
         for (int i = 2; i < Network.size(); i++) {
             Node me = Network.get(i);
             int o = CDState.r.nextInt(i-1);
-            Cyclon other = (Cyclon) Network.get(o).getProtocol(pid);
-            other.addNeighbor(me);
+
+            Node other = Network.get(o);
+
+            Cyclon pp = (Cyclon) me.getProtocol(pid);
+            pp.addNeighbor(other);
+
+            //System.err.println("init " + o + " -> " + i );
+            //Cyclon other = (Cyclon) Network.get(o).getProtocol(pid);
+            //other.addNeighbor(me);
         }
 
         return false;

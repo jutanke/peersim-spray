@@ -36,7 +36,7 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
     private boolean isBlocked = false;
     private List<Node> peers;
     private long startTime = 0;   // measures the elapsed time
-    private final long MAX_TIMEOUT = 22;
+    private final long MAX_TIMEOUT = 200;
 
     private List<CyclonEntry> cache = null;
     private List<Event> events;
