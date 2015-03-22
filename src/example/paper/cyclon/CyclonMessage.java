@@ -1,5 +1,6 @@
 package example.paper.cyclon;
 
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class CyclonMessage {
 
     public final Type type;
     public final Node sender;
+    public final long creationDate;
 
     public List<CyclonEntry> send;
     public List<CyclonEntry> received;
@@ -24,11 +26,12 @@ public class CyclonMessage {
     public CyclonMessage(Type type, Node sender) {
         this.type = type;
         this.sender = sender;
+        this.creationDate = CommonState.getTime();
     }
 
     @Override
     public String toString() {
-        return "{" + this.type.toString() + " | sender:" + this.sender.getID() + "}";
+        return "{" + this.type.toString() + " | sender:" + this.sender.getID() + " | age:" + (CommonState.getTime() - this.creationDate) +"}";
     }
 
     // ============================================================

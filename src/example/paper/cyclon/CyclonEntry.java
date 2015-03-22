@@ -1,5 +1,6 @@
 package example.paper.cyclon;
 
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.util.Comparator;
