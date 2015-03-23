@@ -166,6 +166,20 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
         return subset;
     }
 
+    protected Node oldest() {
+        if (this.cache.size() > 0) {
+            CyclonEntry oldest = null;
+            for (CyclonEntry ce : this.cache) {
+                if (oldest == null || oldest.age < ce.age) {
+                    oldest = ce;
+                }
+            }
+            return oldest.n;
+        } else {
+            return null;
+        }
+    }
+
     protected void send(Node destination, CyclonMessage message) {
         final Node sender = message.sender;
         if (sender.getID() == destination.getID()) {
