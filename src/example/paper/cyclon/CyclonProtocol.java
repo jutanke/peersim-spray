@@ -171,7 +171,7 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
     }
 
     protected List<CyclonEntry> getSample(int l) {
-        final List<CyclonEntry> subset = null;
+        final List<CyclonEntry> subset = new ArrayList<CyclonEntry>(l);
         final int max = Math.min(l, this.cache.size());
         final LinkedList<CyclonEntry> temp = new LinkedList<CyclonEntry>(this.cache);
         for (int i = 0; i < max; i++) {

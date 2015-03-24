@@ -20,13 +20,13 @@ public class CyclonNonBlocking extends CyclonProtocol {
 
     public CyclonNonBlocking(String prefix) {
         super(prefix);
-        this.step = CommonState.r.nextInt(STEP_RANGE);
+        this.step = CommonState.r.nextInt(STEP_RANGE) + 1;
     }
 
     @Override
     public Object clone() {
         CyclonNonBlocking e = (CyclonNonBlocking) super.clone();
-        e.step = CommonState.r.nextInt(STEP_RANGE);
+        e.step = CommonState.r.nextInt(STEP_RANGE) + 1;
         return e;
     }
 
@@ -37,21 +37,25 @@ public class CyclonNonBlocking extends CyclonProtocol {
     @Override
     public void processMessage(Node me, CyclonMessage message) {
         if (me.isUp()) {
-
+            final Node destination;
+            final List<CyclonEntry> sent, received;
             switch (message.type) {
 
                 case Shuffle:
-                    final List<CyclonEntry> nodesToSend = this.getSample(l);
-                    final CyclonMessage response = CyclonMessage.shuffleResponse(me, nodesToSend, message);
-
-
-
+                    destination = me; // hacky..
+                    sent = this.getSample(l);
+                    received = message.send;
+                    final CyclonMessage response = CyclonMessage.shuffleResponse(me, sent, message);
+                    this.insertLists(me, destination, received, sent);
                     break;
                 case ShuffleResponse:
-
-
-
+                    destination = message.sender;
+                    sent = message.received;
+                    received = message.send;
+                    this.insertLists(me, destination, received, sent);
                     break;
+                default:
+                    throw new RuntimeException("unhandled event");
 
             }
         }
@@ -62,7 +66,10 @@ public class CyclonNonBlocking extends CyclonProtocol {
         if (node.isUp() && (CommonState.getTime() % this.step) == 0) {
             this.increaseAge();
             final Node oldest = this.oldest();
-            if (oldest == null) return;
+            if (oldest == null) {
+                System.err.println("nop");
+                return;
+            }
             final List<CyclonEntry> nodesToSend = this.getSample(l - 1);
             final CyclonMessage message = CyclonMessage.shuffle(node, nodesToSend);
             this.send(oldest, message);

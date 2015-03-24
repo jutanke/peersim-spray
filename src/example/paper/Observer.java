@@ -76,16 +76,17 @@ public class Observer implements Control {
         } else if (true && CommonState.getTime() > 0 && CommonState.getTime() % 1 == 0) {
             //System.out.println(observer.meanClusterCoefficient());
             //System.out.println(observer.avgReachablePaths(0).reachQuota);
-            System.out.println(observer.countArcs());
+            System.out.println(observer.meanClusterCoefficient());
         }
 
-        if (CommonState.getTime() == 9999) {
-            System.out.println("indeg");
-            int[] indegree = observer.inDegreeAsHistogram();
-            for (int i = 0; i < indegree.length; i++) {
-                System.out.println(indegree[i]);
+        if (CommonState.getTime() == 999) {
+            System.out.println(observer.toGraph());
+            //System.out.println("indeg");
+            //int[] indegree = observer.inDegreeAsHistogram();
+            //for (int i = 0; i < indegree.length; i++) {
+                //System.out.println(indegree[i]);
                 //System.out.println(observer.inDegreeAsHistogram());
-            }
+            //}
         }
 
         return false;
