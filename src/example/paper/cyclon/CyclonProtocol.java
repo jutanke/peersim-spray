@@ -24,7 +24,7 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
     // P R O P E R T I E S
     // ===========================================
 
-    protected final int size;
+    public static int size;
     protected final int l;
     protected final int tid,pid;
     protected List<CyclonEntry> cache;
@@ -142,7 +142,21 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
         return result;
     }
 
-    protected static List<CyclonEntry> sieveOut(List<CyclonEntry> list, List<CyclonEntry> sieve) {
+    protected CyclonEntry me(Node me) {
+        return new CyclonEntry(0, me);
+    }
+
+    public static List<CyclonEntry> sieveOut(List<CyclonEntry> list, Node me) {
+        final List<CyclonEntry> result = new ArrayList<CyclonEntry>();
+        for (CyclonEntry ce : list) {
+            if (ce.n.getID() != me.getID()) {
+                result.add(ce);
+            }
+        }
+        return result;
+    }
+
+    public static List<CyclonEntry> sieveOut(List<CyclonEntry> list, List<CyclonEntry> sieve) {
         HashSet<Long> lookup = new HashSet<Long>();
         for (CyclonEntry ce : sieve) {
             lookup.add(ce.n.getID());
@@ -178,6 +192,62 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
         } else {
             return null;
         }
+    }
+
+    /**
+     *
+     * @param me
+     * @param received
+     * @param sent
+     */
+    protected void insertLists(
+            final Node me,
+            final Node destination,
+            List<CyclonEntry> received,
+            List<CyclonEntry> sent) {
+        this.cache = insertIntoPartialView(me, destination, this.cache, received, sent);
+    }
+
+    public static List<CyclonEntry> insertIntoPartialView(
+            final Node me,
+            final Node destination,
+            List<CyclonEntry> partialView,
+            List<CyclonEntry> received,
+            List<CyclonEntry> sent) {
+
+        partialView = sieveOut(partialView, sent);
+        partialView = sieveOut(partialView, destination);
+
+        received = sieveOut(received, partialView);
+        received = sieveOut(received, me);
+
+        partialView = insert(partialView, received);
+
+        sent = sieveOut(sent, partialView);
+        sent = sieveOut(sent, me);
+
+        Collections.sort(sent);
+        Collections.reverse(sent);
+        final Queue<CyclonEntry> sentQueue = new LinkedList<CyclonEntry>(sent);
+
+        while (partialView.size() < size && !sentQueue.isEmpty()) {
+            partialView.add(sentQueue.poll());
+        }
+
+        return partialView;
+    }
+
+    public static List<CyclonEntry> insert(final List<CyclonEntry> main, final List<CyclonEntry> insert) {
+        final HashSet<Long> lookup = new HashSet<Long>(main.size());
+        for (CyclonEntry ce : main) {
+            lookup.add(ce.n.getID());
+        }
+        for (CyclonEntry ce : insert) {
+            if (!lookup.contains(ce.n.getID())) {
+                main.add(ce);
+            }
+        }
+        return main;
     }
 
     protected void send(Node destination, CyclonMessage message) {
