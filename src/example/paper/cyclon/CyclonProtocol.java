@@ -8,6 +8,7 @@ import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
+import javax.swing.text.Style;
 import java.util.*;
 
 /**
@@ -26,7 +27,7 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
 
     public static int size;
     protected final int l;
-    protected final int tid,pid;
+    protected final int tid, pid;
     protected List<CyclonEntry> cache;
 
     // ===========================================
@@ -105,7 +106,7 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
 
     @Override
     public List<Node> getPeers() {
-        final List<Node> peers = new ArrayList<Node>(size);
+        final List<Node> peers = new ArrayList<Node>();
         for (CyclonEntry ce : this.cache) {
             peers.add(ce.n);
         }
@@ -127,7 +128,7 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
     // ===========================================
 
     protected void increaseAge() {
-        for(CyclonEntry ce : this.cache) {
+        for (CyclonEntry ce : this.cache) {
             ce.age += 1;
         }
     }
@@ -180,6 +181,34 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
         return subset;
     }
 
+    /**
+     * filter out the oldest element
+     *
+     * @param l
+     * @param oldest
+     * @return
+     */
+    protected List<CyclonEntry> getSample(int l, Node oldest) {
+        final List<CyclonEntry> subset = new ArrayList<CyclonEntry>(l);
+        final LinkedList<CyclonEntry> temp = new LinkedList<CyclonEntry>(this.cache);
+        //for (int i = 0; i < max; i++) {
+        //    CyclonEntry ce = temp.remove(CommonState.r.nextInt(temp.size())).cyclonCopy();
+        //    if (ce.n.getID() == oldest.getID()) {
+        //        i--;
+        //    } else {
+        //        subset.add(temp.remove(CommonState.r.nextInt(temp.size())).cyclonCopy());
+        //    }
+        //}
+        while (l > 0 && !temp.isEmpty()) {
+            CyclonEntry ce = temp.remove(CommonState.r.nextInt(temp.size())).cyclonCopy();
+            if (ce.n.getID() != oldest.getID()) {
+                subset.add(ce);
+                l--;
+            }
+        }
+        return subset;
+    }
+
     protected Node oldest() {
         if (this.cache.size() > 0) {
             CyclonEntry oldest = null;
@@ -195,7 +224,6 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
     }
 
     /**
-     *
      * @param me
      * @param received
      * @param sent
@@ -203,38 +231,47 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
     protected void insertLists(
             final Node me,
             final Node destination,
-            List<CyclonEntry> received,
-            List<CyclonEntry> sent) {
+            final List<CyclonEntry> received,
+            final List<CyclonEntry> sent) {
         this.cache = insertIntoPartialView(me, destination, this.cache, received, sent);
     }
 
     public static List<CyclonEntry> insertIntoPartialView(
             final Node me,
             final Node destination,
-            List<CyclonEntry> partialView,
-            List<CyclonEntry> received,
-            List<CyclonEntry> sent) {
+            final List<CyclonEntry> partialView,
+            final List<CyclonEntry> received,
+            final List<CyclonEntry> sent) {
 
-        partialView = sieveOut(partialView, sent);
-        partialView = sieveOut(partialView, destination);
+        List<CyclonEntry> pv = sieveOut(partialView, sent);
+        pv = sieveOut(pv, destination);
 
-        received = sieveOut(received, partialView);
-        received = sieveOut(received, me);
+        List<CyclonEntry> rec = sieveOut(received, pv);
+        rec = sieveOut(rec, me);
 
-        partialView = insert(partialView, received);
+        pv = insert(pv, rec);
 
-        sent = sieveOut(sent, partialView);
-        sent = sieveOut(sent, me);
+        List<CyclonEntry> sen = sieveOut(sent, pv);
+        sen = sieveOut(sen, me);
 
-        Collections.sort(sent);
-        Collections.reverse(sent);
-        final Queue<CyclonEntry> sentQueue = new LinkedList<CyclonEntry>(sent);
+        Collections.sort(sen);
+        Collections.reverse(sen);
+        final Queue<CyclonEntry> sentQueue = new LinkedList<CyclonEntry>(sen);
 
-        while (partialView.size() < size && !sentQueue.isEmpty()) {
-            partialView.add(sentQueue.poll());
+        while (pv.size() < size && !sentQueue.isEmpty()) {
+            pv.add(sentQueue.poll());
         }
 
-        return partialView;
+        if (pv.size() > size) {
+            System.err.println("partial view is too big @" + me.getID() + " from " + destination.getID());
+            System.err.println("pv:" + pv);
+            System.err.println("or:" + partialView);
+            System.err.println("re:" + received);
+            System.err.println("se:" + sent);
+            throw new RuntimeException("TOO BIG!");
+        }
+
+        return pv;
     }
 
     public static List<CyclonEntry> insert(final List<CyclonEntry> main, final List<CyclonEntry> insert) {

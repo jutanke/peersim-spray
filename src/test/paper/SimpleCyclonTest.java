@@ -134,6 +134,41 @@ public class SimpleCyclonTest {
         assertEquals("6,5,4,3,2,1", list(partialView));
     }
 
+    @org.junit.Test
+    public void mergeBug1() throws Exception {
+        CyclonProtocol.size = 7;
+        // l = 3
+        Node me = HelperForTest.createNode(50);
+        Node destination = n0;
+        List<CyclonEntry> partialView = new ArrayList<CyclonEntry>();
+        partialView.add(new CyclonEntry(12, n0));
+        partialView.add(new CyclonEntry(11, n1));
+        partialView.add(new CyclonEntry(10, n2));
+        partialView.add(new CyclonEntry(9, n3));
+        partialView.add(new CyclonEntry(8, n4));
+        partialView.add(new CyclonEntry(7, n5));
+        partialView.add(new CyclonEntry(0, n6));
+
+        List<CyclonEntry> received = new ArrayList<CyclonEntry>();
+        received.add(new CyclonEntry(24, n6));
+        received.add(new CyclonEntry(21, n4));
+        received.add(new CyclonEntry(20, n1));
+
+        List<CyclonEntry> sent = new ArrayList<CyclonEntry>();
+        sent.add(new CyclonEntry(0, me));
+        sent.add(new CyclonEntry(11, n1));
+        sent.add(new CyclonEntry(7, n5));
+
+        partialView = CyclonProtocol.insertIntoPartialView(
+                me,
+                destination,
+                partialView,
+                received,
+                sent);
+        assertEquals(6, partialView.size());
+        assertEquals("6,5,4,3,2,1", list(partialView));
+    }
+
     /**
      * make comparable
      * @param list

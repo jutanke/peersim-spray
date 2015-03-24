@@ -44,50 +44,26 @@ public class Observer implements Control {
         final DictGraph observer = DictGraph.getSingleton(Network.size());
         observer.reset();
 
+        int max = Integer.MIN_VALUE;
+        int min = Integer.MAX_VALUE;
+
         for (int i = 0; i < Network.size(); i++) {
             GeneralNode n = (GeneralNode) Network.get(i);
             PeerSamplingService pss = (PeerSamplingService) n.getProtocol(pid);
-            //System.out.println(n);
             observer.add(n, pss);
-        }
-
-        if (false && CommonState.getTime() % STEP == 0) {
-            System.out.println(observer.meanClusterCoefficient());
-        } else if (false && CommonState.getTime() % STEP == 0) {
-            double a = observer.avgReachablePaths(randomId()).avg;
-            double b = observer.avgReachablePaths(randomId()).avg;
-            double c = observer.avgReachablePaths(randomId()).avg;
-            double d = observer.avgReachablePaths(randomId()).avg;
-            double e = observer.avgReachablePaths(randomId()).avg;
-            double f = observer.avgReachablePaths(randomId()).avg;
-            double g = observer.avgReachablePaths(randomId()).avg;
-            double h = observer.avgReachablePaths(randomId()).avg;
-            double i = observer.avgReachablePaths(randomId()).avg;
-            double j = observer.avgReachablePaths(randomId()).avg;
-
-            double avg = (a + b + c + d + e + f + g + h + i + j) / 10;
-            System.out.println(avg);
-        } else if (false) {
-
-            if (CommonState.getTime() == 499) {
-                System.out.println(observer.toGraph());
+            final int size = pss.getPeers().size();
+            if (size < min) {
+                min = size;
             }
-
-        } else if (true && CommonState.getTime() > 0 && CommonState.getTime() % 1 == 0) {
-            //System.out.println(observer.meanClusterCoefficient());
-            //System.out.println(observer.avgReachablePaths(0).reachQuota);
-            System.out.println(observer.meanClusterCoefficient());
+            if (size > max) {
+                max = size;
+            }
         }
+        System.err.println("MIN:" + min + ", MAX:" + max);
 
-        if (CommonState.getTime() == 999) {
-            System.out.println(observer.toGraph());
-            //System.out.println("indeg");
-            //int[] indegree = observer.inDegreeAsHistogram();
-            //for (int i = 0; i < indegree.length; i++) {
-                //System.out.println(indegree[i]);
-                //System.out.println(observer.inDegreeAsHistogram());
-            //}
-        }
+        System.out.println(observer.avgReachablePaths(0).reachQuota);
+
+
 
         return false;
     }

@@ -47,6 +47,7 @@ public class CyclonNonBlocking extends CyclonProtocol {
                     received = message.send;
                     final CyclonMessage response = CyclonMessage.shuffleResponse(me, sent, message);
                     this.insertLists(me, destination, received, sent);
+                    this.send(message.sender, response);
                     break;
                 case ShuffleResponse:
                     destination = message.sender;
