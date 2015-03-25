@@ -61,8 +61,8 @@ public class Observer implements Control {
         }
         System.err.println("MIN:" + min + ", MAX:" + max);
 
-        if (CommonState.getTime() % 500 == 0) {
-            System.out.println(observer.avgReachablePaths(0).reachQuota);
+        if (CommonState.getTime() % 10 == 0) {
+            System.out.println(avgPathLength(observer));
         }
 
 
@@ -70,6 +70,30 @@ public class Observer implements Control {
         return false;
     }
 
+    /**
+     *
+     * @param observer
+     * @return
+     */
+    private double avgPathLength(DictGraph observer) {
+        double total = 0;
+        total += observer.avgReachablePaths(randomId()).total; //  1
+        total += observer.avgReachablePaths(randomId()).total; //  2
+        total += observer.avgReachablePaths(randomId()).total; //  3
+        total += observer.avgReachablePaths(randomId()).total; //  4
+        total += observer.avgReachablePaths(randomId()).total; //  5
+        total += observer.avgReachablePaths(randomId()).total; //  6
+        total += observer.avgReachablePaths(randomId()).total; //  7
+        total += observer.avgReachablePaths(randomId()).total; //  8
+        total += observer.avgReachablePaths(randomId()).total; //  9
+        total += observer.avgReachablePaths(randomId()).total; // 10
+        return total / 10.0;
+    }
+
+    /**
+     *
+     * @return
+     */
     private long randomId() {
         return Network.get(CommonState.r.nextInt(Network.size())).getID();
     }
