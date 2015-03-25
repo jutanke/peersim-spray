@@ -17,22 +17,22 @@ public class CyclonBlocking extends CyclonProtocol {
     // ===========================================
 
     private int step;
-    private final int STEP_RANGE = 10;
+    //private final int STEP_RANGE = 10;
     private boolean isBlocked;
     private int currentSecret = Integer.MIN_VALUE;
     private Queue<Event> events;
-    private final int DELTA_T = 30;
+    private final int DELTA_T = 35;
 
     public CyclonBlocking(String prefix) {
         super(prefix);
-        this.step = CommonState.r.nextInt(STEP_RANGE) + 1;
+        this.step = CommonState.r.nextInt(DELTA_T);
         this.events = new LinkedList<Event>();
     }
 
     @Override
     public Object clone() {
         CyclonBlocking e = (CyclonBlocking) super.clone();
-        e.step = CommonState.r.nextInt(STEP_RANGE) + 1;
+        e.step = CommonState.r.nextInt(DELTA_T);
         e.events = new LinkedList<Event>();
         return e;
     }

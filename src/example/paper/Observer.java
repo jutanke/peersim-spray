@@ -61,7 +61,9 @@ public class Observer implements Control {
         }
         System.err.println("MIN:" + min + ", MAX:" + max);
 
-        System.out.println(observer.avgReachablePaths(0).reachQuota);
+        if (CommonState.getTime() % 500 == 0) {
+            System.out.println(observer.avgReachablePaths(0).reachQuota);
+        }
 
 
 

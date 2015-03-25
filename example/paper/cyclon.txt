@@ -1,9 +1,9 @@
 # network size
-SIZE 100
+SIZE 1000
 DEGREE 7
 
 # parameters of periodic execution
-CYCLES 1000
+CYCLES 2000
 CYCLE SIZE*10000
 
 # parameters of message transfer
