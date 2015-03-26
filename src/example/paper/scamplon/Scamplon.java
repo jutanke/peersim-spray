@@ -1,6 +1,5 @@
 package example.paper.scamplon;
 
-import example.Scamplon.*;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.transport.Transport;
@@ -18,7 +17,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
 
     private PartialView partialView;
     private int step;
-    private boolean isBlocked;
+    private boolean isBlocked = false;
     private int currentSecret = Integer.MIN_VALUE;
     private Queue<Event> events;
     private final int DELTA_T = 35;
@@ -49,25 +48,40 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
 
     @Override
     public void nextCycle(Node node, int protocolID) {
+        if (!this.isBlocked && !this.events.isEmpty()) {
+            final Event ev = this.events.poll();
+            this.processEvent(node, pid, ev.message);
+        }
 
+        if (node.isUp() && (this.step % DELTA_T) == 0) {
+            this.shuffle(node);
+        }
+        this.step += 1;
     }
 
     @Override
     public void processEvent(Node node, int pid, Object event) {
         final ScamplonMessage message = (ScamplonMessage) event;
-        switch (message.type) {
-            case Shuffle:
-                break;
-            case ShuffleResponse:
-                break;
-            case Subscribe:
-                this.onSubscribe(node, message);
-                break;
-            case Forward:
-                this.onForward(node, message);
-                break;
-            default:
-                throw new RuntimeException("unhandled");
+
+        if (this.isBlocked && message.type != ScamplonMessage.Type.ShuffleResponse) {
+            this.events.offer(new Event(node, message));
+        } else {
+            switch (message.type) {
+                case Shuffle:
+                    this.onShuffle(node, message);
+                    break;
+                case ShuffleResponse:
+                    this.onShuffleResponse(node, message);
+                    break;
+                case Subscribe:
+                    this.onSubscribe(node, message);
+                    break;
+                case Forward:
+                    this.onForward(node, message);
+                    break;
+                default:
+                    throw new RuntimeException("unhandled");
+            }
         }
     }
 
@@ -104,6 +118,58 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
     // ============================================
     // C Y C L O N
     // ============================================
+
+
+    public void shuffle(Node me) {
+        this.partialView.incrementAge();
+
+        PartialView.Entry q = this.partialView.oldest();
+
+        List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
+
+        nodesToSend.add(new PartialView.Entry(me));
+
+        ScamplonMessage m = ScamplonMessage.shuffleWithSecret(
+                me, nodesToSend, this.partialView.degree(), nextSecret());
+
+        this.isBlocked = true;
+        send(me, q.node, m);
+
+    }
+
+    public void onShuffle(Node me, ScamplonMessage message) {
+        if (message.type != ScamplonMessage.Type.Shuffle) throw new RuntimeException("nop3");
+        if (this.isBlocked) {
+            throw new RuntimeException("nop");
+            //this.events.offer(new Event(me, message));
+        } else {
+            List<PartialView.Entry> nodesToSend = this.partialView.subset();
+            Node p = message.sender;
+            List<PartialView.Entry> received = message.a;
+            final int otherViewSize = message.partialViewSize;
+
+            ScamplonMessage m = ScamplonMessage.shuffleResponse(
+                    me, PartialView.clone(nodesToSend), message, this.partialView.degree());
+
+            this.partialView.merge(me, p, received, otherViewSize);
+            send(me, p, m);
+        }
+    }
+
+    public void onShuffleResponse(Node me, ScamplonMessage message) {
+        if (message.type != ScamplonMessage.Type.ShuffleResponse) throw new RuntimeException("nop4");
+        if (!this.isBlocked) {
+            throw new RuntimeException("must not happen");
+        }
+
+        this.isBlocked = false;
+
+        final List<PartialView.Entry> received = message.a;
+        final int otherViewSize = message.partialViewSize;
+        Node q = message.sender;
+
+        this.partialView.merge(me, q, received, otherViewSize);
+    }
 
 
     // ============================================
@@ -152,9 +218,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
 
                 //TODO send accept
                 Scamplon s = (Scamplon) subscriber.getProtocol(pid);
-                s.inView.put(subscriber.getID(), subscriber);
-
-                System.err.println("@" + me.getID() + "=" + this);
+                s.inView.put(me.getID(), me);
 
             } else if (this.degree() > 0) {
                 Node forwardTarget = this.getNeighbor(CommonState.r.nextInt(this.degree()));

@@ -1,7 +1,7 @@
-SIZE 100
+SIZE 50000
 
 # parameters of periodic execution
-CYCLES 500
+CYCLES 1000
 CYCLE SIZE*10000
 
 network.size SIZE

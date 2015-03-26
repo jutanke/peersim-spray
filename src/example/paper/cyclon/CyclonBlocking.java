@@ -84,9 +84,9 @@ public class CyclonBlocking extends CyclonProtocol {
         if (!this.isBlocked && !this.events.isEmpty()) {
             while (!this.events.isEmpty()) {
                 final Event ev = this.events.poll();
-                CyclonBlocking other = (CyclonBlocking) ev.node.getProtocol(protocolID);
-                other.processMessage(ev.node, ev.message);
-                //this.processMessage(ev.node, ev.message);
+                //CyclonBlocking other = (CyclonBlocking) ev.node.getProtocol(protocolID);
+                //other.processMessage(ev.node, ev.message);
+                this.processMessage(ev.node, ev.message);
             }
         }
 

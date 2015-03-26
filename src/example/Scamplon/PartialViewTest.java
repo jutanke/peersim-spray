@@ -24,6 +24,42 @@ public class PartialViewTest {
     }
 
     @Test
+    public void testBug() throws Exception {
+        //@21 <- 4
+        // pv:[{4|1|y}, {896|1|y}, {767|1|n}, {456|1|n}, {135|0|n}, {77|0|n}, {238|0|n}]
+        // rec:[{120|0|n}, {134|0|n}]
+        // othersize:4
+
+        PartialView.TEST_ENV = true;
+        Node n4 = HelperForTest.createNode(4);
+        Node n896 = HelperForTest.createNode(896);
+        Node n762 = HelperForTest.createNode(762);
+        Node n135 = HelperForTest.createNode(135);
+        Node n77 = HelperForTest.createNode(77);
+        Node n238 = HelperForTest.createNode(238);
+        Node n120 = HelperForTest.createNode(120);
+        Node n134 = HelperForTest.createNode(134);
+        Node n21 = HelperForTest.createNode(21);
+
+        PartialView view = new PartialView();
+        view.add(n4);
+        view.add(n896);
+        view.add(n762);
+        view.add(n135);
+        view.add(n77);
+        view.add(n238);
+
+        view.get(n4).get(0).isVolatile = true;
+        view.get(n896).get(0).isVolatile = true;
+
+        List<PartialView.Entry> rec = new ArrayList<PartialView.Entry>();
+        rec.add(new PartialView.Entry(n120));
+        rec.add(new PartialView.Entry(n134));
+
+
+    }
+
+    @Test
     public void testIncrementAge() throws Exception {
         PartialView.TEST_ENV = true;
         Node a = HelperForTest.createNode(0);

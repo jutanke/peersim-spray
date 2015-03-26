@@ -1,6 +1,5 @@
 package example.paper.scamplon;
 
-import example.Scamplon.PartialView;
 import peersim.core.Node;
 
 import java.util.List;
@@ -27,6 +26,7 @@ public class ScamplonMessage {
     public List<PartialView.Entry> a;
     public List<PartialView.Entry> b;
     public Node subscriber;
+    public int partialViewSize;
 
     private ScamplonMessage(Type t, Node s, int ttl, int secret) {
         this.type = t;
@@ -71,19 +71,29 @@ public class ScamplonMessage {
         return result;
     }
 
-    public static ScamplonMessage shuffleWithSecret(Node sender, List<PartialView.Entry> send, final int secret) {
+    public static ScamplonMessage shuffleWithSecret(
+            Node sender,
+            List<PartialView.Entry> send,
+            final int partialViewSize,
+            final int secret) {
         ScamplonMessage message = new ScamplonMessage(Type.Shuffle, sender, -1, secret);
         message.a = send;
+        message.partialViewSize = partialViewSize;
         return message;
     }
 
-    public static ScamplonMessage shuffleResponse(Node sender, List<PartialView.Entry> send, ScamplonMessage shuffle) {
+    public static ScamplonMessage shuffleResponse(
+            Node sender,
+            List<PartialView.Entry> send,
+            ScamplonMessage shuffle,
+            final int partialViewSize) {
         if (shuffle.sender.getID() == sender.getID() || shuffle.type != Type.Shuffle) {
             throw new RuntimeException("wrong message");
         }
         ScamplonMessage message = new ScamplonMessage(Type.ShuffleResponse, sender, -1, shuffle.secret);
         message.a = send;
         message.b = shuffle.a;
+        message.partialViewSize = partialViewSize;
         return message;
     }
 
