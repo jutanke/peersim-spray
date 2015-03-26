@@ -13,7 +13,7 @@ public class ScamplonMessage {
     public enum Type {
         Shuffle,
         ShuffleResponse,
-        Rollback,
+        Accept,
         Subscribe,
         Forward
     }
@@ -39,9 +39,18 @@ public class ScamplonMessage {
         return this.ttl < 0;
     }
 
+    @Override
+    public String toString() {
+        return "type:" + this.type + ", sender:" + this.sender.getID();
+    }
+
     // =======================================================
     // F A C T O R Y
     // =======================================================
+
+    public static ScamplonMessage accept(Node sender) {
+        return new ScamplonMessage(Type.Accept, sender, INIT_TTL, -1);
+    }
 
     public static ScamplonMessage subscribe(Node sender) {
         return new ScamplonMessage(Type.Subscribe, sender, INIT_TTL, -1);

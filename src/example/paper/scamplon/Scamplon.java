@@ -5,9 +5,7 @@ import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.transport.Transport;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created by julian on 3/14/15.
@@ -24,6 +22,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
     private int currentSecret = Integer.MIN_VALUE;
     private Queue<Event> events;
     private final int DELTA_T = 35;
+    private HashMap<Long, Node> inView;
 
 
     public Scamplon(String prefix) {
@@ -31,6 +30,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
         this.step = CommonState.r.nextInt(DELTA_T);
         this.events = new LinkedList<Event>();
         this.partialView = new PartialView();
+        this.inView = new HashMap<Long, Node>();
     }
 
     @Override
@@ -39,6 +39,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
         s.events = new LinkedList<Event>();
         s.step = CommonState.r.nextInt(DELTA_T);
         s.partialView = new PartialView();
+        s.inView = new HashMap<Long, Node>();
         return s;
     }
 
@@ -53,7 +54,21 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
 
     @Override
     public void processEvent(Node node, int pid, Object event) {
-
+        final ScamplonMessage message = (ScamplonMessage) event;
+        switch (message.type) {
+            case Shuffle:
+                break;
+            case ShuffleResponse:
+                break;
+            case Subscribe:
+                this.onSubscribe(node, message);
+                break;
+            case Forward:
+                this.onForward(node, message);
+                break;
+            default:
+                throw new RuntimeException("unhandled");
+        }
     }
 
     @Override
@@ -115,24 +130,56 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
             send(me, n, forward);
         }
 
-        for (int i = 0; i < c; i++) {
+        for (int i = 0; i < c && this.degree() > 0; i++) {
             int pos = CommonState.r.nextInt(this.degree());
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
-            send(me, this.partialView.get(i), forward);
+            send(me, this.partialView.get(pos), forward);
         }
     }
 
     private void onForward(Node me, ScamplonMessage forward) {
-        if (forward.type != ScamplonMessage.Type.Subscribe ||
+        if (forward.type != ScamplonMessage.Type.Subscribe &&
                 forward.type != ScamplonMessage.Type.Forward) {
             throw new RuntimeException("nop2");
         }
 
         if (!forward.isDead()) {
             final Node subscriber = forward.subscriber;
-            Scamplon pp = (Scamplon) me.getProtocol(pid);
+
+
+            if (this.partialView.p() && !this.contains(subscriber) && me.getID() != subscriber.getID()) {
+                this.addNeighbor(subscriber);
+
+                //TODO send accept
+                Scamplon s = (Scamplon) subscriber.getProtocol(pid);
+                s.inView.put(subscriber.getID(), subscriber);
+
+                System.err.println("@" + me.getID() + "=" + this);
+
+            } else if (this.degree() > 0) {
+                Node forwardTarget = this.getNeighbor(CommonState.r.nextInt(this.degree()));
+                forward = ScamplonMessage.forward(me, forward);
+                send(me, forwardTarget, forward);
+            } else {
+                throw new RuntimeException("no forwarding target");
+            }
         }
 
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("in:");
+        for (Node n : this.inView.values()) {
+            if (sb.length() > 3) {
+                sb.append(",");
+            }
+            sb.append(n.getID());
+        }
+        sb.append(" out:");
+        sb.append(this.partialView);
+        return sb.toString();
     }
 
     // ===========================================

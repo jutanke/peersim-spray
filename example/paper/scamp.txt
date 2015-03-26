@@ -26,7 +26,7 @@ random.seed 1234539890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 example.paper.scamp.Scamp
-protocol.0.c 2z6
+protocol.0.c 2
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
