@@ -1,6 +1,8 @@
 package example.paper.scamplon;
 
 import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
+import example.Scamplon.*;
+import example.paper.Dynamic;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.transport.Transport;
@@ -10,7 +12,7 @@ import java.util.*;
 /**
  * Created by julian on 3/14/15.
  */
-public class Scamplon extends example.Scamplon.ScamplonProtocol {
+public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynamic {
 
     // ============================================
     // E N T I T Y
@@ -246,6 +248,23 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
             }
         }
 
+    }
+
+
+    private boolean isUp = true;
+    @Override
+    public boolean isUp() {
+        return this.isUp;
+    }
+
+    @Override
+    public void up() {
+        this.isUp = true;
+    }
+
+    @Override
+    public void down() {
+        this.isUp = false;
     }
 
     @Override

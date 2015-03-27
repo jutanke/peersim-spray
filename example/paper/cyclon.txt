@@ -1,5 +1,5 @@
 # network size
-SIZE 10000
+SIZE 1000
 DEGREE 7
 
 # parameters of periodic execution
@@ -37,8 +37,15 @@ protocol.tr UnreliableTransport
 protocol.tr.transport urt
 protocol.tr.drop DROP
 
-init.lnk example.paper.cyclon.Initializer
-init.lnk.protocol lnk
+#init.lnk example.paper.cyclon.Initializer
+#init.lnk.protocol lnk
+
+control.o1 example.paper.cyclon.Churn
+control.o1.protocol lnk
+control.o1.FINAL
+control.o1.step 1
+control.o1.addingPerStep 1
+control.o1.startAdd 0
 
 ################### initialization ======================
 

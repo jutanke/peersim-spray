@@ -11,7 +11,7 @@ import peersim.core.Node;
  */
 public class Initializer implements Control {
 
-    private static final String CYCLON_PROT = "lnk";
+    public static final String CYCLON_PROT = "lnk";
 
     private final int pid;
 

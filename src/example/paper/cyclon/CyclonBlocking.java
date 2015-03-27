@@ -43,7 +43,7 @@ public class CyclonBlocking extends CyclonProtocol {
 
     @Override
     public void processMessage(Node me, CyclonMessage message) {
-        if (me.isUp()) {
+        if (this.isUp()) {
             final Node destination;
             final List<CyclonEntry> sent, received;
             switch (message.type) {
@@ -81,29 +81,31 @@ public class CyclonBlocking extends CyclonProtocol {
     @Override
     public void nextCycle(Node node, int protocolID) {
 
-        if (!this.isBlocked && !this.events.isEmpty()) {
-            while (!this.events.isEmpty()) {
-                final Event ev = this.events.poll();
-                //CyclonBlocking other = (CyclonBlocking) ev.node.getProtocol(protocolID);
-                //other.processMessage(ev.node, ev.message);
-                this.processMessage(ev.node, ev.message);
+        if (this.isUp()) {
+            if (!this.isBlocked && !this.events.isEmpty()) {
+                while (!this.events.isEmpty()) {
+                    final Event ev = this.events.poll();
+                    //CyclonBlocking other = (CyclonBlocking) ev.node.getProtocol(protocolID);
+                    //other.processMessage(ev.node, ev.message);
+                    this.processMessage(ev.node, ev.message);
+                }
             }
-        }
 
-        if (node.isUp() && (this.step % DELTA_T) == 0) {
-            this.increaseAge();
-            final Node oldest = this.oldest();
-            if (oldest == null) {
-                System.err.println("nop");
-                return;
+            if ((this.step % DELTA_T) == 0) {
+                this.increaseAge();
+                final Node oldest = this.oldest();
+                if (oldest == null) {
+                    System.err.println("nop @" + node.getID() + " step:" + this.step);
+                } else {
+                    final List<CyclonEntry> nodesToSend = this.getSample(l - 1, oldest);
+                    nodesToSend.add(me(node));
+                    final CyclonMessage message = CyclonMessage.shuffleWithSecret(node, nodesToSend, nextSecret());
+                    this.send(oldest, message);
+                    this.isBlocked = true;
+                }
             }
-            final List<CyclonEntry> nodesToSend = this.getSample(l - 1, oldest);
-            nodesToSend.add(me(node));
-            final CyclonMessage message = CyclonMessage.shuffleWithSecret(node, nodesToSend, nextSecret());
-            this.send(oldest, message);
-            this.isBlocked = true;
+            this.step += 1;
         }
-        this.step += 1;
     }
 
     // ===========================================

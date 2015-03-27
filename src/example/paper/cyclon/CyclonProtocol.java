@@ -1,5 +1,6 @@
 package example.paper.cyclon;
 
+import example.paper.Dynamic;
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -14,12 +15,12 @@ import java.util.*;
 /**
  * Created by julian on 3/23/15.
  */
-public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
+public abstract class CyclonProtocol implements Dynamic, Linkable, EDProtocol, CDProtocol, example.PeerSamplingService {
 
-    private static final String PAR_CACHE = "cache";
-    private static final String PAR_L = "l";
-    private static final String PAR_PROT = "lnk";
-    private static final String PAR_TRANSPORT = "transport";
+    public static final String PAR_CACHE = "cache";
+    public static final String PAR_L = "l";
+    public static final String PAR_PROT = "lnk";
+    public static final String PAR_TRANSPORT = "transport";
 
     // ===========================================
     // P R O P E R T I E S
@@ -56,8 +57,10 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
 
     @Override
     public void processEvent(Node node, int pid, Object event) {
-        CyclonMessage message = (CyclonMessage) event;
-        this.processMessage(node, message);
+        if (this.isUp()) {
+            CyclonMessage message = (CyclonMessage) event;
+            this.processMessage(node, message);
+        }
     }
 
     public abstract void processMessage(Node me, CyclonMessage message);
@@ -65,6 +68,23 @@ public abstract class CyclonProtocol implements Linkable, EDProtocol, CDProtocol
     // ===========================================
     // P U B L I C
     // ===========================================
+
+    private boolean isUp = true;
+
+    @Override
+    public boolean isUp() {
+        return this.isUp;
+    }
+
+    @Override
+    public void up() {
+        this.isUp = true;
+    }
+
+    @Override
+    public void down() {
+        this.isUp = false;
+    }
 
     @Override
     public int degree() {

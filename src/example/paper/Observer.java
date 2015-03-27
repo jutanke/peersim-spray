@@ -4,10 +4,7 @@ import example.PeerSamplingService;
 import example.webrtc.data.DictGraph;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
-import peersim.core.CommonState;
-import peersim.core.Control;
-import peersim.core.GeneralNode;
-import peersim.core.Network;
+import peersim.core.*;
 
 /**
  * Created by julian on 3/15/15.
@@ -46,25 +43,35 @@ public class Observer implements Control {
 
         int max = Integer.MIN_VALUE;
         int min = Integer.MAX_VALUE;
+        int count = 0;
 
         for (int i = 0; i < Network.size(); i++) {
-            GeneralNode n = (GeneralNode) Network.get(i);
-            PeerSamplingService pss = (PeerSamplingService) n.getProtocol(pid);
-            observer.add(n, pss);
-            final int size = pss.getPeers().size();
-            if (size < min) {
-                min = size;
-            }
-            if (size > max) {
-                max = size;
+            Node n = Network.get(i);
+            Dynamic d = (Dynamic) n.getProtocol(pid);
+            if (d.isUp()) {
+                count += 1;
+                PeerSamplingService pss = (PeerSamplingService) n.getProtocol(pid);
+                observer.add(n, pss);
+                final int size = pss.getPeers().size();
+                if (size < min) {
+                    min = size;
+                }
+                if (size > max) {
+                    max = size;
+                }
             }
         }
-        System.err.println("MIN:" + min + ", MAX:" + max);
+        System.err.println("MIN:" + min + ", MAX:" + max + " count:" + count);
 
-        if (CommonState.getTime() % 25 == 0) {
-            System.out.println(avgPathLength(observer));
-            //System.out.println(observer.meanClusterCoefficient());
-            //System.out.println(observer.avgReachablePaths(0).reachQuota);
+        if (CommonState.getTime() % 1 == 0) {
+            if (count > 0) {
+                System.out.println(observer.avgReachablePaths(0).reachQuota);
+                //System.out.println(avgPathLength(observer));
+                //System.out.println(observer.meanClusterCoefficient());
+                //System.out.println(((double)count) / (double)Network.size());
+            } else {
+                System.out.println(0);
+            }
         }
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 999 == 0) {
