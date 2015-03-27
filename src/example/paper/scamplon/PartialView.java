@@ -56,6 +56,22 @@ public class PartialView {
         return true;
     }
 
+    public boolean delete(Entry e) {
+        int i = 0;
+        boolean found = false;
+        for (; i < this.out.size(); i++) {
+            if (this.out.get(i) == e) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            this.out.remove(i);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @param n
      * @return
@@ -130,6 +146,7 @@ public class PartialView {
      * @return oldest element
      */
     public Entry oldest() {
+        if (this.out.size() == 0) return null;
         Entry oldest = this.out.get(0);
         for (Entry e : this.out) {
             if (oldest.age < e.age) {
@@ -204,7 +221,7 @@ public class PartialView {
 
         if (newSize != (list.size() + received.size())) {
             System.err.println(newSize + " vs " + list.size() + " + " + received.size());
-            throw new RuntimeException("LOSING ARCS! MUST NOT HAPPEN!");
+            throw new RuntimeException("@" + me.getID() +":LOSING ARCS! MUST NOT HAPPEN!");
         }
 
         list.addAll(received);

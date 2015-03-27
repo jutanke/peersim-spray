@@ -177,6 +177,23 @@ public class PartialViewTest {
     }
 
     @Test
+    public void testMerge0() throws Exception {
+        PartialView.TEST_ENV = true;
+        PartialView view = new PartialView();
+
+        List<PartialView.Entry> received = new ArrayList<PartialView.Entry>();
+        received.add(HelperForTest.entry(1,0));
+        received.add(HelperForTest.entry(9,0));
+        Node p = HelperForTest.createNode(12);
+        Node me = HelperForTest.createNode(0);
+        int otherViewSize = 4;
+
+        view.merge(me, p, received, otherViewSize);
+
+        System.err.println(view);
+    }
+
+    @Test
     public void testMerge1() throws Exception {
         PartialView.TEST_ENV = true;
         PartialView view = new PartialView();

@@ -1,5 +1,6 @@
 package example.paper.scamplon;
 
+import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.transport.Transport;
@@ -22,6 +23,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
     private Queue<Event> events;
     private final int DELTA_T = 35;
     private HashMap<Long, Node> inView;
+    private PartialView.Entry lastDestination;
 
 
     public Scamplon(String prefix) {
@@ -121,9 +123,18 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
 
 
     public void shuffle(Node me) {
+
+        if (this.isBlocked) {
+            // delayed too much
+            this.partialView.delete(this.lastDestination);
+            this.partialView.freeze();
+            System.err.println("@" + me.getID() + " remove " + lastDestination.node.getID());
+        }
+
         this.partialView.incrementAge();
 
         PartialView.Entry q = this.partialView.oldest();
+        if (q == null) return;
 
         List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
 
@@ -132,6 +143,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
         ScamplonMessage m = ScamplonMessage.shuffleWithSecret(
                 me, nodesToSend, this.partialView.degree(), nextSecret());
 
+        this.lastDestination = q;
         this.isBlocked = true;
         send(me, q.node, m);
 
@@ -158,17 +170,22 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol {
 
     public void onShuffleResponse(Node me, ScamplonMessage message) {
         if (message.type != ScamplonMessage.Type.ShuffleResponse) throw new RuntimeException("nop4");
-        if (!this.isBlocked) {
-            throw new RuntimeException("must not happen");
+
+        if (this.isCorrectSecret(message)) {
+            if (!this.isBlocked) {
+                throw new RuntimeException("must not happen");
+            }
+
+            this.isBlocked = false;
+
+            final List<PartialView.Entry> received = message.a;
+            final int otherViewSize = message.partialViewSize;
+            Node q = message.sender;
+
+            this.partialView.merge(me, q, received, otherViewSize);
+        } else {
+            System.err.println("Message got dropped!");
         }
-
-        this.isBlocked = false;
-
-        final List<PartialView.Entry> received = message.a;
-        final int otherViewSize = message.partialViewSize;
-        Node q = message.sender;
-
-        this.partialView.merge(me, q, received, otherViewSize);
     }
 
 

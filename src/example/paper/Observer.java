@@ -62,8 +62,8 @@ public class Observer implements Control {
         System.err.println("MIN:" + min + ", MAX:" + max);
 
         if (CommonState.getTime() % 25 == 0) {
-            //System.out.println(avgPathLength(observer));
-            System.out.println(observer.meanClusterCoefficient());
+            System.out.println(avgPathLength(observer));
+            //System.out.println(observer.meanClusterCoefficient());
             //System.out.println(observer.avgReachablePaths(0).reachQuota);
         }
 
