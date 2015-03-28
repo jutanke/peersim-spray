@@ -23,6 +23,10 @@ elif [ "$1" = "acyclon" ]
 then
     echo "ADAPTIVE CYCLON"
     java -cp "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator example/paper/acyclon.txt
+elif [ "$1" = "scamplon-c" ]
+then
+    echo "CYCLIC SCAMPLON"
+    java -cp "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator example/cyclic/scamplon.txt
 else
     echo "NO PROTOCOL SELECTED!"
 fi

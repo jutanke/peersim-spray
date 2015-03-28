@@ -1,7 +1,7 @@
-SIZE 100
+SIZE 50000
 
 # parameters of periodic execution
-CYCLES 1000
+CYCLES 5000
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -24,7 +24,7 @@ random.seed 1234539890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 example.paper.scamplon.Scamplon
-protocol.0.c 2
+protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
@@ -40,13 +40,19 @@ protocol.tr UnreliableTransport
 protocol.tr.transport urt
 protocol.tr.drop DROP
 
-init.0 example.paper.scamplon.Initializer
-init.0.protocol 0
+#init.0 example.paper.scamplon.Initializer
+#init.0.protocol 0
 
 init.sch CDScheduler
 init.sch.protocol 0
 init.sch.randstart
 
+control.o1 example.paper.scamplon.Churn
+control.o1.protocol 0
+control.o1.FINAL
+control.o1.step 1
+control.o1.addingPerStep 5000
+control.o1.startAdd 0
 
 control.o0 example.paper.Observer
 control.o0.protocol 0

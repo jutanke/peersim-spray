@@ -1,0 +1,46 @@
+# A somewhat more dynamic setting. The network grows and decreases at the
+# same time. Connectivity and degree stats are printed.
+# It can be observed how the published unsubscription algorithm gradually
+# erodes the graph using the health test observer,
+# resulting in failed subscriptions.
+#
+# For other possibilities please refer to the configuration documentation
+# for scamp.
+
+
+
+random.seed 1234569890
+
+simulation.cycles 13
+
+control.sh Shuffle
+
+network.size 1
+network.maxSize 50000
+
+protocol.0 example.cyclic.scamplon.Scamp
+protocol.0.c 0
+#protocol.0.leaseTimeout 100
+#protocol.0.indirectionTTL 10
+
+control.d0 DynamicNetwork
+control.d0.add 500
+control.d0.step 2
+control.d0.until 20
+control.d0.init.0 example.cyclic.scamplon.Subscribe
+control.d0.init.0.protocol 0
+
+control.d1 example.cyclic.scamplon.Unsubscribe
+control.d1.add -100
+control.d1.step 1
+control.d1.from 10
+control.d1.protocol 0
+
+control.o0 peersim.reports.DegreeStats
+control.o0.protocol 0
+
+control.o1 peersim.reports.ConnectivityObserver
+control.o1.protocol 0
+
+control.o2 example.cyclic.scamplon.Health
+control.o2.protocol 0

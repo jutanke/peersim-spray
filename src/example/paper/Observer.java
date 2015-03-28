@@ -1,6 +1,7 @@
 package example.paper;
 
 import example.PeerSamplingService;
+import example.paper.scamplon.Scamplon;
 import example.webrtc.data.DictGraph;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
@@ -65,7 +66,7 @@ public class Observer implements Control {
 
         if (CommonState.getTime() % 1 == 0) {
             if (count > 0) {
-                System.out.println(observer.avgReachablePaths(0).reachQuota);
+                //System.out.println(observer.avgReachablePaths(0).reachQuota);
                 //System.out.println(avgPathLength(observer));
                 //System.out.println(observer.meanClusterCoefficient());
                 //System.out.println(((double)count) / (double)Network.size());
@@ -73,6 +74,8 @@ public class Observer implements Control {
                 System.out.println(0);
             }
         }
+
+        System.err.println("arcs: " + Scamplon.arcCount);
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 999 == 0) {
             //System.out.println(observer.toGraph());

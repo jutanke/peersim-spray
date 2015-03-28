@@ -18,6 +18,8 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     // E N T I T Y
     // ============================================
 
+    public static int arcCount = 0;
+
     private PartialView partialView;
     private int step;
     private boolean isBlocked = false;
@@ -238,6 +240,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
                 //TODO send accept
                 Scamplon s = (Scamplon) subscriber.getProtocol(pid);
                 s.inView.put(me.getID(), me);
+                this.arcCount += 1;
 
             } else if (this.degree() > 0) {
                 Node forwardTarget = this.getNeighbor(CommonState.r.nextInt(this.degree()));

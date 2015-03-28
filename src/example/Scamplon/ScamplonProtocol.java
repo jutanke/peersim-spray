@@ -19,7 +19,7 @@ public abstract class ScamplonProtocol implements Linkable, EDProtocol, CDProtoc
     // ============================================
 
     private static final String PAR_C = "c";
-    private static final String SCAMPLON_PROT = "0";
+    public static final String SCAMPLON_PROT = "0";
     private static final String PAR_TRANSPORT = "transport";
 
     public ScamplonProtocol(String n) {
