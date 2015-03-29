@@ -72,6 +72,26 @@ public class PartialView {
         return false;
     }
 
+    public void deleteAll(Node n) {
+        List<Integer> positions = new ArrayList<Integer>();
+        for (int i = 0; i < this.out.size(); i++) {
+            if (this.out.get(i).node.getID() == n.getID()) {
+                positions.add(i);
+            }
+        }
+        for (int i : positions) {
+            this.out.remove(i);
+        }
+    }
+
+    public void switchNode(Node oldNode, Node newNode) {
+        for (Entry e : this.out) {
+            if (e.node.getID() == oldNode.getID()) {
+                e.node = newNode;
+            }
+        }
+    }
+
     /**
      * @param n
      * @return
@@ -458,7 +478,7 @@ public class PartialView {
     // E N T R Y
     // ============================================
     public static final class Entry implements Comparable<Entry>, Comparator<Entry> {
-        public final Node node;
+        public Node node;
         public int age;
         public boolean isVolatile;
 

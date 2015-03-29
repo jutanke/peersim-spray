@@ -54,6 +54,28 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
     @Override
     public void nextCycle(Node node, int protocolID) {
+
+        // maintain inview
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        final List<Long> remove = new ArrayList<Long>();
+        for (Node in : this.inView.values()) {
+            final Scamplon s = (Scamplon) in.getProtocol(pid);
+            if (!s.contains(node)) {
+                remove.add(in.getID());
+            }
+        }
+        for (long rem: remove) {
+            this.inView.remove(rem);
+        }
+        for (int i = 0; i < this.degree(); i++) {
+            final Node n = this.partialView.get(i);
+            final Scamplon out = (Scamplon) n.getProtocol(pid);
+            if (!out.inView.containsKey(n.getID())) {
+                out.inView.put(n.getID(), n);
+            }
+        }
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         if (!this.isBlocked && !this.events.isEmpty()) {
             final Event ev = this.events.poll();
             this.processEvent(node, pid, ev.message);
@@ -196,6 +218,22 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     // ============================================
     // S C A M P
     // ============================================
+
+    public static void unsubscribe(Node node) {
+        Scamplon current = (Scamplon) node.getProtocol(pid);
+        if (current.isUp()) {
+            current.down();
+            final int ls = current.inView.size();
+            final int l = current.degree();
+            final int notifyIn = Math.max(ls - c - 1, 0);
+            for (int i = 0; i < notifyIn; i++) {
+
+            }
+        } else {
+            throw new RuntimeException("already down");
+        }
+
+    }
 
     /**
      * We assume that the contact c got selected through indirection!

@@ -1,7 +1,7 @@
-SIZE 50000
+SIZE 1000
 
 # parameters of periodic execution
-CYCLES 5000
+CYCLES 150000
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -50,8 +50,8 @@ init.sch.randstart
 control.o1 example.paper.scamplon.Churn
 control.o1.protocol 0
 control.o1.FINAL
-control.o1.step 1
-control.o1.addingPerStep 5000
+control.o1.step 100
+control.o1.addingPerStep 5
 control.o1.startAdd 0
 
 control.o0 example.paper.Observer

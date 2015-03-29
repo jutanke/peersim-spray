@@ -75,7 +75,7 @@ public class Observer implements Control {
             }
         }
 
-        System.err.println("arcs: " + Scamplon.arcCount);
+        System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 999 == 0) {
             //System.out.println(observer.toGraph());

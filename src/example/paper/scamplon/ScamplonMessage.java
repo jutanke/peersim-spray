@@ -17,7 +17,7 @@ public class ScamplonMessage {
         Forward
     }
 
-    public static final int INIT_TTL = 25;
+    public static final int INIT_TTL = 100;
 
     public final Type type;
     public final Node sender;
