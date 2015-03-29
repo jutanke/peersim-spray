@@ -16,11 +16,11 @@ public abstract class ChurnProtocol implements Control {
 
     private static final String PROTOCOL = "o1";
     private static final String PAR_ADD_COUNT = "addingPerStep";
-    private static final String PARR_REM_COUNT = "removing";
+    private static final String PARR_REM_COUNT = "removingPerStep";
     private static final String PAR_ADD_START = "startAdd";
-    private static final String PAR_REM_START = "startrem";
-    private static final String PAR_ADD_END = "startadd";
-    private static final String PAR_REM_END = "startrem";
+    private static final String PAR_REM_START = "startRem";
+    private static final String PAR_ADD_END = "endAdd";
+    private static final String PAR_REM_END = "endRem";
 
     public final int ADDING_COUNT;
     public final int REMOVING_COUNT;
@@ -38,8 +38,8 @@ public abstract class ChurnProtocol implements Control {
         this.REMOVING_COUNT = Configuration.getInt(n + "." + PARR_REM_COUNT, 0);
         this.ADDING_START = Configuration.getInt(n + "." + PAR_ADD_START, Integer.MAX_VALUE);
         this.REMOVING_START = Configuration.getInt(n + "." + PAR_REM_START, Integer.MAX_VALUE);
-        this.REMOVING_END = Configuration.getInt(n + "." + PAR_ADD_END, Integer.MAX_VALUE);
-        this.ADDING_END = Configuration.getInt(n + "." + PAR_REM_END, Integer.MAX_VALUE);
+        this.REMOVING_END = Configuration.getInt(n + "." + PAR_REM_END, Integer.MAX_VALUE);
+        this.ADDING_END = Configuration.getInt(n + "." + PAR_ADD_END, Integer.MAX_VALUE);
         final int nsize = Network.size();
         this.pid = Configuration.lookupPid(cyclProtocol);
         for (int i = 0; i < nsize; i++) {
@@ -47,6 +47,10 @@ public abstract class ChurnProtocol implements Control {
             Dynamic d = (Dynamic) node.getProtocol(pid);
             d.down();
             availableNodes.add(node);
+            System.err.println("Churn insert:" + this.ADDING_COUNT +
+                    " [" + this.ADDING_START + ".." + this.ADDING_END + "]");
+            System.err.println("Churn remove:" + this.REMOVING_COUNT +
+                    " [" + this.REMOVING_START + ".." + this.REMOVING_END + "]");
         }
     }
 
@@ -72,11 +76,23 @@ public abstract class ChurnProtocol implements Control {
 
         if (currentTimestamp >= this.REMOVING_START && currentTimestamp <= this.REMOVING_END) {
             // REMOVE ELEMENTS
-
+            for (int i = 0; i < this.REMOVING_COUNT && this.graph.size() > 0; i++) {
+                final int pos = CommonState.r.nextInt(this.graph.size());
+                final Node rem = this.graph.get(pos);
+                this.removeNode(rem);
+                Dynamic d = (Dynamic) rem.getProtocol(pid);
+                if (d.isUp()) {
+                    d.down();
+                }
+                this.graph.remove(pos);
+                this.availableNodes.push(rem);
+            }
         }
 
         return false;
     }
+
+    public abstract void removeNode(Node node);
 
     public abstract void addNode(Node subscriber, Node contact);
 }

@@ -15,6 +15,11 @@ public class Churn extends ChurnProtocol {
     }
 
     @Override
+    public void removeNode(Node node) {
+
+    }
+
+    @Override
     public void addNode(Node subscriber, Node contact) {
         CyclonProtocol pp = (CyclonProtocol) subscriber.getProtocol(this.pid);
         pp.addNeighbor(contact);

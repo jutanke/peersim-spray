@@ -54,37 +54,38 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
     @Override
     public void nextCycle(Node node, int protocolID) {
-
-        // maintain inview
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        final List<Long> remove = new ArrayList<Long>();
-        for (Node in : this.inView.values()) {
-            final Scamplon s = (Scamplon) in.getProtocol(pid);
-            if (!s.contains(node)) {
-                remove.add(in.getID());
+        if (this.isUp()) {
+            // maintain inview
+            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            final List<Long> remove = new ArrayList<Long>();
+            for (Node in : this.inView.values()) {
+                final Scamplon s = (Scamplon) in.getProtocol(pid);
+                if (!s.contains(node) || !s.isUp()) {
+                    remove.add(in.getID());
+                }
             }
-        }
-        for (long rem: remove) {
-            this.inView.remove(rem);
-        }
-        for (int i = 0; i < this.degree(); i++) {
-            final Node n = this.partialView.get(i);
-            final Scamplon out = (Scamplon) n.getProtocol(pid);
-            if (!out.inView.containsKey(n.getID())) {
-                out.inView.put(n.getID(), n);
+            for (long rem : remove) {
+                this.inView.remove(rem);
             }
-        }
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            for (int i = 0; i < this.degree(); i++) {
+                final Node n = this.partialView.get(i);
+                final Scamplon out = (Scamplon) n.getProtocol(pid);
+                if (!out.inView.containsKey(n.getID())) {
+                    out.inView.put(n.getID(), n);
+                }
+            }
+            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        if (!this.isBlocked && !this.events.isEmpty()) {
-            final Event ev = this.events.poll();
-            this.processEvent(node, pid, ev.message);
-        }
+            if (!this.isBlocked && !this.events.isEmpty()) {
+                final Event ev = this.events.poll();
+                this.processEvent(node, pid, ev.message);
+            }
 
-        if (node.isUp() && (this.step % DELTA_T) == 0) {
-            this.shuffle(node);
+            if ((this.step % DELTA_T) == 0) {
+                this.shuffle(node);
+            }
+            this.step += 1;
         }
-        this.step += 1;
     }
 
     @Override
@@ -214,6 +215,23 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         }
     }
 
+    /**
+     *
+     * @param me
+     * @param o node from inview
+     * @param replace node from outview
+     */
+    public void replace(Node me, Node o, Node replace) {
+        Scamplon j = (Scamplon) o.getProtocol(pid);
+        j.partialView.switchNode(me, replace);
+
+        Scamplon i = (Scamplon) replace.getProtocol(pid);
+        i.inView.remove(me.getID());
+        if (!i.inView.containsKey(o.getID())) {
+            i.inView.put(o.getID(), o);
+        }
+    }
+
 
     // ============================================
     // S C A M P
@@ -224,11 +242,20 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         if (current.isUp()) {
             current.down();
             final int ls = current.inView.size();
-            final int l = current.degree();
             final int notifyIn = Math.max(ls - c - 1, 0);
-            for (int i = 0; i < notifyIn; i++) {
-
+            final Queue<Node> in = new LinkedList<Node>(current.inView.values());
+            final List<Node> out = current.partialView.list();
+            for (int i = 0; i < notifyIn && out.size() > 0; i++) {
+                final Node ex = in.poll();
+                final Node dest = out.get(i % out.size());
+                current.replace(node, ex, dest);
             }
+
+            while (!in.isEmpty()) {
+                final Scamplon next = (Scamplon) in.poll().getProtocol(pid);
+                next.partialView.deleteAll(node);
+            }
+
         } else {
             throw new RuntimeException("already down");
         }

@@ -14,6 +14,11 @@ public class Churn extends ChurnProtocol {
     }
 
     @Override
+    public void removeNode(Node node) {
+        Scamplon.unsubscribe(node);
+    }
+
+    @Override
     public void addNode(Node subscriber, Node contact) {
         Scamplon.subscribe(subscriber, contact);
     }

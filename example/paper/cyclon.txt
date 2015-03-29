@@ -3,7 +3,7 @@ SIZE 1000
 DEGREE 7
 
 # parameters of periodic execution
-CYCLES 1000
+CYCLES 20000
 CYCLE SIZE*10000
 
 # parameters of message transfer
