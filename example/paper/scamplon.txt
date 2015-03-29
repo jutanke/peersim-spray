@@ -1,7 +1,7 @@
 SIZE 1000
 
 # parameters of periodic execution
-CYCLES 20000
+CYCLES 10100
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -53,7 +53,7 @@ control.o1.FINAL
 control.o1.step 1
 control.o1.addingPerStep 1
 control.o1.startAdd 0
-control.o1.endAdd 2000
+#control.o1.endAdd 2000
 control.o1.removingPerStep 1
 control.o1.startRem 5000
 

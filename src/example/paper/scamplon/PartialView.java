@@ -73,14 +73,14 @@ public class PartialView {
     }
 
     public void deleteAll(Node n) {
-        List<Integer> positions = new ArrayList<Integer>();
-        for (int i = 0; i < this.out.size(); i++) {
-            if (this.out.get(i).node.getID() == n.getID()) {
-                positions.add(i);
+        while (this.contains(n)) {
+            int i = 0;
+            for (; i<this.degree();i++) {
+                if (this.get(i).getID() == n.getID()) {
+                    this.out.remove(i);
+                    break;
+                }
             }
-        }
-        for (int i : positions) {
-            this.out.remove(i);
         }
     }
 

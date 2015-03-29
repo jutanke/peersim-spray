@@ -57,10 +57,33 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         if (this.isUp()) {
             // maintain inview
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            final List<Node> remove = new ArrayList<Node>();
+            for (Node i : this.inView.values()) {
+                final Scamplon in = (Scamplon) i.getProtocol(pid);
+                if (!in.contains(node) || !in.isUp()) {
+                    remove.add(i);
+                }
+            }
+            for (Node n : remove) {
+                this.removeFromInView(n);
+            }
+
+            for (int i = 0; i < this.degree(); i++) {
+                final Node o = this.partialView.get(i);
+                final Scamplon out = (Scamplon) o.getProtocol(pid);
+                if (!out.inView.containsKey(node.getID())) {
+                    out.addToInview(o, node);
+                }
+            }
+
+
+            /*
             final List<Long> remove = new ArrayList<Long>();
             for (Node in : this.inView.values()) {
                 final Scamplon s = (Scamplon) in.getProtocol(pid);
                 if (!s.contains(node) || !s.isUp()) {
+                    System.err.println("@" + node.getID() + " -> " + this.debug());
+                    System.err.println("from " + in.getID() + " -> " + s.debug());
                     remove.add(in.getID());
                 }
             }
@@ -71,9 +94,10 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
                 final Node n = this.partialView.get(i);
                 final Scamplon out = (Scamplon) n.getProtocol(pid);
                 if (!out.inView.containsKey(n.getID())) {
-                    out.inView.put(n.getID(), n);
+                    //out.inView.put(n.getID(), n);
                 }
             }
+            */
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
             if (!this.isBlocked && !this.events.isEmpty()) {
@@ -141,12 +165,35 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
     @Override
     public String debug() {
-        return null;
+        final StringBuilder sb = new StringBuilder();
+        sb.append("in:[");
+        for (Long l : this.inView.keySet()) {
+            if (sb.length() > 4) {
+                sb.append(",");
+            }
+            sb.append(l);
+        }
+        sb.append("] out:");
+        sb.append(this.partialView);
+        return sb.toString();
     }
 
     // ============================================
     // C Y C L O N
     // ============================================
+
+    private void addToInview(Node me, Node n) {
+        if (me.getID() == n.getID()) {
+            throw new RuntimeException("cannot put myself");
+        }
+        if (!this.inView.containsKey(n.getID())) {
+            this.inView.put(n.getID(), n);
+        }
+    }
+
+    private void removeFromInView(Node n) {
+        this.inView.remove(n.getID());
+    }
 
 
     public void shuffle(Node me) {
@@ -221,15 +268,22 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
      * @param o node from inview
      * @param replace node from outview
      */
-    public void replace(Node me, Node o, Node replace) {
-        Scamplon j = (Scamplon) o.getProtocol(pid);
-        j.partialView.switchNode(me, replace);
-
-        Scamplon i = (Scamplon) replace.getProtocol(pid);
-        i.inView.remove(me.getID());
-        if (!i.inView.containsKey(o.getID())) {
-            i.inView.put(o.getID(), o);
+    public boolean replace(Node me, Node o, Node replace) {
+        if (me.getID() == o.getID() || replace.getID() == me.getID()) {
+            throw new RuntimeException("never!");
         }
+        if (o.getID() != replace.getID()) {
+            Scamplon j = (Scamplon) o.getProtocol(pid);
+            j.partialView.switchNode(me, replace);
+
+            Scamplon i = (Scamplon) replace.getProtocol(pid);
+            i.inView.remove(me.getID());
+            if (!i.inView.containsKey(o.getID())) {
+                //i.inView.put(o.getID(), o);
+            }
+            return true;
+        }
+        return false;
     }
 
 
@@ -245,16 +299,25 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
             final int notifyIn = Math.max(ls - c - 1, 0);
             final Queue<Node> in = new LinkedList<Node>(current.inView.values());
             final List<Node> out = current.partialView.list();
+            int count = 0;
             for (int i = 0; i < notifyIn && out.size() > 0; i++) {
                 final Node ex = in.poll();
                 final Node dest = out.get(i % out.size());
-                current.replace(node, ex, dest);
+                if (current.replace(node, ex, dest)) {
+                    count += 1;
+                } else {
+                    count += 2;
+                }
             }
 
             while (!in.isEmpty()) {
                 final Scamplon next = (Scamplon) in.poll().getProtocol(pid);
                 next.partialView.deleteAll(node);
+                count++;
             }
+
+            System.err.println("@" + node.getID() + " -> " + current.debug());
+            System.err.println("remove " + count + " arcs");
 
         } else {
             throw new RuntimeException("already down");
@@ -287,6 +350,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
             send(me, this.partialView.get(pos), forward);
         }
+        System.err.println("Add " + (this.degree() + c) + " arcs");
     }
 
     private void onForward(Node me, ScamplonMessage forward) {
@@ -304,8 +368,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
                 //TODO send accept
                 Scamplon s = (Scamplon) subscriber.getProtocol(pid);
-                s.inView.put(me.getID(), me);
-                this.arcCount += 1;
+                s.addToInview(subscriber, me);
 
             } else if (this.degree() > 0) {
                 Node forwardTarget = this.getNeighbor(CommonState.r.nextInt(this.degree()));
