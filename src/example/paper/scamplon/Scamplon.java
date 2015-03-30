@@ -22,13 +22,13 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
     private PartialView partialView;
     private int step;
-    private boolean isBlocked = false;
+    public boolean isBlocked = false;
     private int currentSecret = Integer.MIN_VALUE;
     private Queue<Event> events;
     private final int DELTA_T = 35;
     private HashMap<Long, Node> inView;
     private PartialView.Entry lastDestination;
-
+    private Queue<Node> deleteASAP;
 
     public Scamplon(String prefix) {
         super(prefix);
@@ -36,6 +36,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         this.events = new LinkedList<Event>();
         this.partialView = new PartialView();
         this.inView = new HashMap<Long, Node>();
+        this.deleteASAP = new LinkedList<Node>();
     }
 
     @Override
@@ -45,6 +46,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         s.step = CommonState.r.nextInt(DELTA_T);
         s.partialView = new PartialView();
         s.inView = new HashMap<Long, Node>();
+        s.deleteASAP = new LinkedList<Node>();
         return s;
     }
 
@@ -55,6 +57,13 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     @Override
     public void nextCycle(Node node, int protocolID) {
         if (this.isUp()) {
+            if (!this.isBlocked && !this.deleteASAP.isEmpty()) {
+                while (!this.deleteASAP.isEmpty()) {
+                    final Node del = this.deleteASAP.poll();
+                    this.partialView.deleteAll(del);
+                }
+            }
+
             // maintain inview
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             final List<Node> remove = new ArrayList<Node>();
@@ -76,28 +85,6 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
                 }
             }
 
-
-            /*
-            final List<Long> remove = new ArrayList<Long>();
-            for (Node in : this.inView.values()) {
-                final Scamplon s = (Scamplon) in.getProtocol(pid);
-                if (!s.contains(node) || !s.isUp()) {
-                    System.err.println("@" + node.getID() + " -> " + this.debug());
-                    System.err.println("from " + in.getID() + " -> " + s.debug());
-                    remove.add(in.getID());
-                }
-            }
-            for (long rem : remove) {
-                this.inView.remove(rem);
-            }
-            for (int i = 0; i < this.degree(); i++) {
-                final Node n = this.partialView.get(i);
-                final Scamplon out = (Scamplon) n.getProtocol(pid);
-                if (!out.inView.containsKey(n.getID())) {
-                    //out.inView.put(n.getID(), n);
-                }
-            }
-            */
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
             if (!this.isBlocked && !this.events.isEmpty()) {
@@ -175,6 +162,10 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         }
         sb.append("] out:");
         sb.append(this.partialView);
+        sb.append(", isUp:");
+        sb.append(this.isUp);
+        sb.append(", isBlocked:");
+        sb.append(this.isBlocked);
         return sb.toString();
     }
 
@@ -197,70 +188,78 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
 
     public void shuffle(Node me) {
+        if (this.isUp()) {
+            if (this.isBlocked) {
+                // delayed too much
+                this.partialView.delete(this.lastDestination);
+                this.inView.remove(this.lastDestination.node.getID()); // just in case
+                this.partialView.freeze();
+            }
 
-        if (this.isBlocked) {
-            // delayed too much
-            this.partialView.delete(this.lastDestination);
-            this.partialView.freeze();
-            System.err.println("@" + me.getID() + " remove " + lastDestination.node.getID());
+            this.partialView.incrementAge();
+
+            PartialView.Entry q = this.partialView.oldest();
+            if (q == null) return;
+
+            List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
+
+            nodesToSend.add(new PartialView.Entry(me));
+
+            ScamplonMessage m = ScamplonMessage.shuffleWithSecret(
+                    me, nodesToSend, this.partialView.degree(), nextSecret());
+
+            MessageSupervisor.put(q.node, m);
+
+            this.lastDestination = q;
+            this.isBlocked = true;
+            send(me, q.node, m);
         }
-
-        this.partialView.incrementAge();
-
-        PartialView.Entry q = this.partialView.oldest();
-        if (q == null) return;
-
-        List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
-
-        nodesToSend.add(new PartialView.Entry(me));
-
-        ScamplonMessage m = ScamplonMessage.shuffleWithSecret(
-                me, nodesToSend, this.partialView.degree(), nextSecret());
-
-        this.lastDestination = q;
-        this.isBlocked = true;
-        send(me, q.node, m);
-
     }
 
     public void onShuffle(Node me, ScamplonMessage message) {
-        if (message.type != ScamplonMessage.Type.Shuffle) throw new RuntimeException("nop3");
-        if (this.isBlocked) {
-            throw new RuntimeException("nop");
-            //this.events.offer(new Event(me, message));
-        } else {
-            List<PartialView.Entry> nodesToSend = this.partialView.subset();
-            Node p = message.sender;
-            List<PartialView.Entry> received = message.a;
-            final int otherViewSize = message.partialViewSize;
+        if (this.isUp()) {
+            if (message.type != ScamplonMessage.Type.Shuffle) throw new RuntimeException("nop3");
+            if (this.isBlocked) {
+                throw new RuntimeException("nop");
+                //this.events.offer(new Event(me, message));
+            } else {
+                List<PartialView.Entry> nodesToSend = this.partialView.subset();
+                Node p = message.sender;
+                List<PartialView.Entry> received = message.a;
+                final int otherViewSize = message.partialViewSize;
 
-            ScamplonMessage m = ScamplonMessage.shuffleResponse(
-                    me, PartialView.clone(nodesToSend), message, this.partialView.degree());
+                ScamplonMessage m = ScamplonMessage.shuffleResponse(
+                        me, PartialView.clone(nodesToSend), message, this.partialView.degree());
 
-            this.partialView.merge(me, p, received, otherViewSize);
-            send(me, p, m);
+                this.partialView.merge(me, p, received, otherViewSize);
+                send(me, p, m);
+            }
         }
     }
 
     public void onShuffleResponse(Node me, ScamplonMessage message) {
-        if (message.type != ScamplonMessage.Type.ShuffleResponse) throw new RuntimeException("nop4");
+        if (this.isUp()) {
+            if (message.type != ScamplonMessage.Type.ShuffleResponse) throw new RuntimeException("nop4");
 
-        if (this.isCorrectSecret(message)) {
-            if (!this.isBlocked) {
-                throw new RuntimeException("must not happen");
+            if (this.isCorrectSecret(message) && MessageSupervisor.validate(me, message)) {
+                if (!this.isBlocked) {
+                    throw new RuntimeException("must not happen");
+                }
+
+                this.isBlocked = false;
+
+                final List<PartialView.Entry> received = message.a;
+                final int otherViewSize = message.partialViewSize;
+                Node q = message.sender;
+
+                this.partialView.merge(me, q, received, otherViewSize);
+            } else {
+                System.err.println("Message got dropped!");
             }
-
-            this.isBlocked = false;
-
-            final List<PartialView.Entry> received = message.a;
-            final int otherViewSize = message.partialViewSize;
-            Node q = message.sender;
-
-            this.partialView.merge(me, q, received, otherViewSize);
-        } else {
-            System.err.println("Message got dropped!");
         }
     }
+
+
 
     /**
      *
@@ -268,22 +267,60 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
      * @param o node from inview
      * @param replace node from outview
      */
-    public boolean replace(Node me, Node o, Node replace) {
-        if (me.getID() == o.getID() || replace.getID() == me.getID()) {
-            throw new RuntimeException("never!");
-        }
-        if (o.getID() != replace.getID()) {
-            Scamplon j = (Scamplon) o.getProtocol(pid);
-            j.partialView.switchNode(me, replace);
+    public int replace(Node me, Node o, Node replace) {
+        //System.err.println("@" + me.getID() + " replace " + replace.getID() + " at " + o.getID());
+        //System.err.println("@" + me.getID() + " = " + this.debug());
+        Scamplon j = (Scamplon) o.getProtocol(pid);         // o -> me
+        Scamplon i = (Scamplon) replace.getProtocol(pid);   // me -> replace
 
-            Scamplon i = (Scamplon) replace.getProtocol(pid);
-            i.inView.remove(me.getID());
-            if (!i.inView.containsKey(o.getID())) {
-                //i.inView.put(o.getID(), o);
+        //System.err.println("@" + o.getID() + " = " + j.debug());
+        //System.err.println("@" + replace.getID() + " = " + i.debug());
+
+        if (i.isUp() && j.isUp()) {
+            if (me.getID() == o.getID() || replace.getID() == me.getID()) {
+                throw new RuntimeException("never!");
             }
-            return true;
+            if (o.getID() == replace.getID()) {
+                int count = 0;
+                if (j.isBlocked) {
+                    count = j.partialView.count(me);
+                    j.deleteASAP.add(me);
+                } else {
+                    count = j.partialView.deleteAll(me);
+                }
+                if (i.inView.containsKey(me.getID())) {
+                    i.inView.remove(me.getID());
+                    count += 1;
+                }
+                return count;
+            } else {
+                int count = j.partialView.switchNode(me, replace);
+                if (i.inView.containsKey(me.getID())) {
+                    count += 1;
+                    i.inView.remove(me.getID());
+                }
+                if (!i.inView.containsKey(o.getID())) {
+                    //i.inView.put(o.getID(), o);
+                    i.addToInview(me, o);
+                    count -= 1;
+                }
+                return count;
+            }
+        } else {
+            // either i or j is not up: remove all nodes regarding |me|
+            int count = 0;
+            if (j.isBlocked) {
+                count = j.partialView.count(me);
+                j.deleteASAP.add(me);
+            } else {
+                count = j.partialView.deleteAll(me);
+            }
+            if (i.inView.containsKey(me.getID())) {
+                i.inView.remove(me.getID());
+                count += 1;
+            }
+            return count;
         }
-        return false;
     }
 
 
@@ -296,28 +333,34 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         if (current.isUp()) {
             current.down();
             final int ls = current.inView.size();
-            final int notifyIn = Math.max(ls - c - 1, 0);
+            final int notifyIn = Math.max(ls - c, 0);
             final Queue<Node> in = new LinkedList<Node>(current.inView.values());
             final List<Node> out = current.partialView.list();
             int count = 0;
             for (int i = 0; i < notifyIn && out.size() > 0; i++) {
                 final Node ex = in.poll();
                 final Node dest = out.get(i % out.size());
-                if (current.replace(node, ex, dest)) {
-                    count += 1;
-                } else {
-                    count += 2;
-                }
+                count += current.replace(node, ex, dest);
+
+                final Scamplon quelle = (Scamplon) ex.getProtocol(pid);
+                final Scamplon senke = (Scamplon) dest.getProtocol(pid);
+                //System.err.println("after replace: @" + node.getID());
+                //System.err.println("Q@" + ex.getID() + " = " + quelle.debug());
+                //System.err.println("S@" + dest.getID() + " = " + senke.debug());
             }
 
             while (!in.isEmpty()) {
                 final Scamplon next = (Scamplon) in.poll().getProtocol(pid);
-                next.partialView.deleteAll(node);
+                if (next.isBlocked) {
+                    next.deleteASAP.add(node);
+                } else {
+                    next.partialView.deleteAll(node);
+                }
                 count++;
             }
 
-            System.err.println("@" + node.getID() + " -> " + current.debug());
-            System.err.println("remove " + count + " arcs");
+            current.partialView.clear();
+            current.inView.clear();
 
         } else {
             throw new RuntimeException("already down");
@@ -350,7 +393,6 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
             send(me, this.partialView.get(pos), forward);
         }
-        System.err.println("Add " + (this.degree() + c) + " arcs");
     }
 
     private void onForward(Node me, ScamplonMessage forward) {
@@ -359,7 +401,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
             throw new RuntimeException("nop2");
         }
 
-        if (!forward.isDead()) {
+        if (!forward.isDead() && forward.subscriber.isUp()) {
             final Node subscriber = forward.subscriber;
 
 
@@ -383,6 +425,8 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
 
     private boolean isUp = true;
+    private int hash = Integer.MIN_VALUE;
+
     @Override
     public boolean isUp() {
         return this.isUp;
@@ -394,23 +438,19 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     }
 
     @Override
+    public int hash() {
+        return 0;
+    }
+
+    @Override
     public void down() {
+        this.hash++;
         this.isUp = false;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("in:");
-        for (Node n : this.inView.values()) {
-            if (sb.length() > 3) {
-                sb.append(",");
-            }
-            sb.append(n.getID());
-        }
-        sb.append(" out:");
-        sb.append(this.partialView);
-        return sb.toString();
+        return this.debug();
     }
 
     // ===========================================

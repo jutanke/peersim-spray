@@ -10,5 +10,6 @@ public interface Dynamic {
     boolean isUp();
     void up();
     void down();
+    int hash();
 
 }

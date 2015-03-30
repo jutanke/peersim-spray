@@ -72,24 +72,44 @@ public class PartialView {
         return false;
     }
 
-    public void deleteAll(Node n) {
+    public int deleteAll(Node n) {
+        int count = 0;
         while (this.contains(n)) {
             int i = 0;
             for (; i<this.degree();i++) {
                 if (this.get(i).getID() == n.getID()) {
                     this.out.remove(i);
+                    count += 1;
                     break;
                 }
             }
         }
+        return count;
     }
 
-    public void switchNode(Node oldNode, Node newNode) {
+    public void clear() {
+        this.out.clear();
+    }
+
+    public int count(Node n) {
+        int i = 0;
+        for (Entry e : this.out) {
+            if (e.node.getID() == n.getID()) {
+                i++;
+            }
+        }
+        return i;
+    }
+
+    public int switchNode(Node oldNode, Node newNode) {
+        int count = 0;
         for (Entry e : this.out) {
             if (e.node.getID() == oldNode.getID()) {
                 e.node = newNode;
+                count += 1;
             }
         }
+        return count;
     }
 
     /**
@@ -214,6 +234,7 @@ public class PartialView {
         //Scamplon culprit = (Scamplon) other.getProtocol(Scamplon.pid);
         //System.err.println("culprit " +other.getID()+ " :" + culprit);
 
+        //System.err.println("list size:" + list.size() + " (@" + me.getID() + ")");
         int newSize = (list.size() % 2 == 0) ?
                 (int) Math.ceil((list.size() + otherSize) / 2.0) :
                 (int) Math.floor((list.size() + otherSize) / 2.0);
@@ -240,7 +261,13 @@ public class PartialView {
         }
 
         if (newSize != (list.size() + received.size())) {
+            System.err.println("Error @" + me.getID() + " receiving from " + other.getID());
+            Scamplon qq = (Scamplon) me.getProtocol(Scamplon.pid);
+            System.err.println("@" + me.getID() + " = " + qq.debug());
+            System.err.println("new list:" + list + " other size:" + otherSize);
             System.err.println(newSize + " vs " + list.size() + " + " + received.size());
+            System.err.println("from " + other.getID() + " rec:" + received + " isup:" +
+                    ((Scamplon)other.getProtocol(Scamplon.pid)).isUp());
             throw new RuntimeException("@" + me.getID() +":LOSING ARCS! MUST NOT HAPPEN!");
         }
 

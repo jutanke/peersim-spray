@@ -15,8 +15,8 @@ public class Churn extends ChurnProtocol {
     }
 
     @Override
-    public void removeNode(Node node) {
-
+    public boolean removeNode(Node node) {
+        return true;
     }
 
     @Override

@@ -14,8 +14,12 @@ public class Churn extends ChurnProtocol {
     }
 
     @Override
-    public void removeNode(Node node) {
+    public boolean removeNode(Node node) {
+        if (((Scamplon) node.getProtocol(Scamplon.pid)).isBlocked) {
+            return false;
+        }
         Scamplon.unsubscribe(node);
+        return true;
     }
 
     @Override

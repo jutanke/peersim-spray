@@ -121,6 +121,11 @@ public class CyclonBlocking extends CyclonProtocol {
         return this.currentSecret;
     }
 
+    @Override
+    public int hash() {
+        return 0;
+    }
+
     /**
      * to ensure no overlapping
      */

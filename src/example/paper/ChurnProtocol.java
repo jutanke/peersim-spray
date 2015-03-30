@@ -28,7 +28,7 @@ public abstract class ChurnProtocol implements Control {
     public final long REMOVING_START;
     public final long REMOVING_END;
     public final long ADDING_END;
-    protected  final int pid;
+    protected final int pid;
 
     protected LinkedList<Node> graph = new LinkedList<Node>();
     protected LinkedList<Node> availableNodes = new LinkedList<Node>();
@@ -58,6 +58,21 @@ public abstract class ChurnProtocol implements Control {
     public boolean execute() {
 
         final long currentTimestamp = CommonState.getTime();
+
+        if (currentTimestamp >= this.REMOVING_START && currentTimestamp <= this.REMOVING_END) {
+            // REMOVE ELEMENTS
+            for (int i = 0; i < this.REMOVING_COUNT && this.graph.size() > 0; i++) {
+                final int pos = CommonState.r.nextInt(this.graph.size());
+                final Node rem = this.graph.get(pos);
+                Dynamic d = (Dynamic) rem.getProtocol(pid);
+                if (d.isUp()) {
+                    d.down();
+                }
+                this.graph.remove(pos);
+                this.availableNodes.push(rem);
+            }
+        }
+
         if (currentTimestamp >= this.ADDING_START && currentTimestamp <= this.ADDING_END) {
             // ADD ELEMENTS
 
@@ -74,25 +89,14 @@ public abstract class ChurnProtocol implements Control {
             }
         }
 
-        if (currentTimestamp >= this.REMOVING_START && currentTimestamp <= this.REMOVING_END) {
-            // REMOVE ELEMENTS
-            for (int i = 0; i < this.REMOVING_COUNT && this.graph.size() > 0; i++) {
-                final int pos = CommonState.r.nextInt(this.graph.size());
-                final Node rem = this.graph.get(pos);
-                this.removeNode(rem);
-                Dynamic d = (Dynamic) rem.getProtocol(pid);
-                if (d.isUp()) {
-                    d.down();
-                }
-                this.graph.remove(pos);
-                this.availableNodes.push(rem);
-            }
-        }
-
         return false;
     }
 
-    public abstract void removeNode(Node node);
+    /**
+     * @param node
+     * @return when true then select this node, otherwise do not select it
+     */
+    public abstract boolean removeNode(Node node);
 
     public abstract void addNode(Node subscriber, Node contact);
 }

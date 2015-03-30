@@ -75,6 +75,7 @@ public class Observer implements Control {
             }
         }
 
+        System.err.println("arc count:" + observer.countArcs());
         System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 999 == 0) {
