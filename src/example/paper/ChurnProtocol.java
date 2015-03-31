@@ -1,6 +1,7 @@
 package example.paper;
 
 import example.paper.cyclon.CyclonProtocol;
+import example.paper.scamplon.PartialView;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -84,8 +85,9 @@ public abstract class ChurnProtocol implements Control {
                 final Dynamic d = (Dynamic) current.getProtocol(pid);
                 d.up();
                 if (graph.size() > 0) {
-                    final int pos = CommonState.r.nextInt(this.graph.size());
-                    final Node contact = graph.get(pos); // INDIRECTION
+                    //final int pos = CommonState.r.nextInt(this.graph.size());
+                    //final Node contact = graph.get(pos); // INDIRECTION
+                    final Node contact = getBestNode();
                     this.addNode(current, contact);
                 }
                 this.graph.add(current);
@@ -93,6 +95,31 @@ public abstract class ChurnProtocol implements Control {
         }
 
         return false;
+    }
+
+    private Node getBestNode() {
+        Node a = graph.get(CommonState.r.nextInt(this.graph.size()));
+        Node b = graph.get(CommonState.r.nextInt(this.graph.size()));
+        //Node c = graph.get(CommonState.r.nextInt(this.graph.size()));
+
+        Dynamic A = (Dynamic) a.getProtocol(pid);
+        Dynamic B = (Dynamic) b.getProtocol(pid);
+        //Dynamic C = (Dynamic) c.getProtocol(pid);
+
+        /*
+        if (A.degree() > B.degree() && A.degree() > C.degree()) {
+            return a;
+        } else if (B.degree() > C.degree()) {
+            return b;
+        } else {
+            return c;
+        }
+        */
+        if (A.degree() > B.degree()) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     /**

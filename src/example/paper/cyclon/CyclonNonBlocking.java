@@ -77,6 +77,11 @@ public class CyclonNonBlocking extends CyclonProtocol {
         }
     }
 
+    @Override
+    public int hash() {
+        return 0;
+    }
+
     // ===========================================
     // P R I V A T E
     // ===========================================

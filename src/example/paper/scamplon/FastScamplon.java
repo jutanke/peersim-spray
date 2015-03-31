@@ -11,7 +11,7 @@ import java.util.*;
  * THIS is not EVENT-based due to simplification
  * Created by julian on 3/31/15.
  */
-public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements Dynamic {
+public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements Dynamic, PartialView.Parent {
 
     // ============================================
     // E N T I T Y
@@ -100,7 +100,19 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
 
     @Override
     public String debug() {
-        return "...";
+        StringBuilder sb = new StringBuilder();
+        sb.append(", in:[");
+        for (Node n : this.inView.values()) {
+            if (sb.length() > 4) {
+                sb.append(",");
+            }
+            sb.append(n.getID());
+        }
+        sb.append("], out:");
+        sb.append(this.partialView);
+        sb.append(", isUp:");
+        sb.append(this.isUp());
+        return sb.toString();
     }
 
     // ============================================
@@ -117,9 +129,19 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
         this.updateInView(me);
         if (this.isUp()) {
             if (this.degree() > 0) {
+                this.partialView.freeze();
                 this.partialView.incrementAge();
                 final PartialView.Entry q = this.partialView.oldest();
+
+                //System.err.println("start shuffle from " + me.getID() + " = (" +
+                //        this.debug() + ") with " + q.node.getID() +
+                //       " = (" + ((FastScamplon) q.node.getProtocol(pid)).debug() + ")");
+
                 final List<PartialView.Entry> nodesToSend = this.partialView.subsetMinus1(q);
+
+                //System.err.println("@" + me.getID() + " = " + this.partialView);
+                //System.err.println("Send nodes:" + nodesToSend + " my size:" + this.degree());
+
                 nodesToSend.add(new PartialView.Entry(me));
                 final FastScamplon Q = (FastScamplon) q.node.getProtocol(pid);
                 if (Q.isUp()) {
@@ -148,17 +170,22 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
             final List<PartialView.Entry> received,
             final int otherPartialViewSize) {
         if (this.isUp()) {
+            this.partialView.freeze();
             List<PartialView.Entry> nodesToSend = this.partialView.subset();
-            this.partialView.merge(me, me, received, otherPartialViewSize);
+            final int size = this.degree();
+            //.println("receive shuffle @" + me.getID() + " from " + sender.getID());
+            //System.err.println("Send nodes: " + nodesToSend);
+            this.partialView.merge(me, sender, received, otherPartialViewSize, false);
             this.updateInView(me);
             this.updateOutView(me);
             final FastScamplon P = (FastScamplon) sender.getProtocol(pid);
+
             P.finishShuffle(
                     sender,
                     me,
                     PartialView.clone(received),
                     PartialView.clone(nodesToSend),
-                    this.degree());
+                    size);
         }
     }
 
@@ -179,6 +206,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
             final List<PartialView.Entry> received,
             final int otherPartialViewSize) {
         if (this.isUp()) {
+            //System.err.println("finish shuffle @" + me.getID() + " from " + sender.getID());
             this.partialView.merge(me, sender, received, otherPartialViewSize);
             this.updateInView(me);
             this.updateOutView(me);
@@ -200,6 +228,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     public static void unsubscribe(Node node) {
         final FastScamplon current = (FastScamplon) node.getProtocol(pid);
         current.updateInView(node);
+        //System.err.println(current.debug());
         if (current.isUp()) {
             int count = 0;
             current.down();
@@ -217,6 +246,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
                 final FastScamplon next = (FastScamplon) in.poll().getProtocol(pid);
                 count += next.partialView.deleteAll(node);
             }
+            System.err.println("remove " + node.getID() + ", delete " + count + " arcs");
             current.partialView.clear();
             current.inView.clear();
         }
@@ -230,18 +260,20 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     public static void subscribe(final Node s, final Node c) {
         final FastScamplon subscriber = (FastScamplon) s.getProtocol(pid);
         final FastScamplon contact = (FastScamplon) c.getProtocol(pid);
+        int count = 0;
         if (subscriber.isUp() && contact.isUp()) {
             subscriber.addNeighbor(c);
             for (Node n : contact.getPeers()) {
-                forward(s, n, 0);
+                count += forward(s, n, 0) ? 1 : 0;
             }
             for (int i = 0; i < FastScamplon.c && contact.degree() > 0; i++) {
                 Node n = contact.getNeighbor(CommonState.r.nextInt(contact.degree()));
-                forward(s, n, 0);
+                count += forward(s, n, 0) ? 1 : 0;
             }
         } else {
             throw new RuntimeException("@Subscribe (" + s.getID() + " -> " + c.getID() + " not up");
         }
+        System.err.println("add " + s.getID() + ", add " + count + " arcs");
     }
 
     // =================================================================
@@ -262,6 +294,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
         for (Node n : this.getPeers()) {
             final FastScamplon current = (FastScamplon) n.getProtocol(pid);
             if (!current.inView.containsKey(me.getID())) {
+
                 current.addToInview(n, me);
             }
         }
@@ -273,7 +306,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
      * @param node
      * @param counter
      */
-    public static void forward(final Node s, final Node node, int counter) {
+    public static boolean forward(final Node s, final Node node, int counter) {
         counter++;
         if (counter < FORWARD_TTL) {
             final FastScamplon current = (FastScamplon) node.getProtocol(pid);
@@ -281,14 +314,17 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
                 final FastScamplon subscriber = (FastScamplon) s.getProtocol(pid);
                 current.addNeighbor(s);
                 subscriber.addToInview(s, node);
+                return true;
             } else if (current.degree() > 0) {
                 Node next = current.partialView.get(CommonState.r.nextInt(current.degree()));
-                forward(s, next, counter);
+                return forward(s, next, counter);
             } else {
                 System.err.println("DEAD END for subscription " + s.getID() + " @" + node.getID());
+                return false;
             }
         } else {
             System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
+            return false;
         }
     }
 
@@ -305,15 +341,28 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
      * @return
      */
     private int replace(Node me, Node a, Node b) {
-        int count = 0;
+        int count = this.partialView.count(b); // not really accurate
         final FastScamplon A = (FastScamplon) a.getProtocol(pid);
         final FastScamplon B = (FastScamplon) b.getProtocol(pid);
+        if (me.getID() == a.getID() || me.getID() == b.getID()) {
+            throw new RuntimeException("FATAL");
+        }
         if (a.isUp() && b.isUp()) {
-
+            if (a.getID() == b.getID()) {
+                count += A.partialView.deleteAll(me);
+                B.inView.remove(me.getID());
+            } else {
+                final int swn = A.partialView.switchNode(me, b);
+                count += Math.max(swn/2, 1); // inaccurate
+                B.inView.remove(me.getID());
+                if (!B.inView.containsKey(a.getID())) {
+                    B.addToInview(b, a);
+                }
+            }
         } else {
             // either a or b is down, so we just kill all links regarding (me)
             count += A.partialView.deleteAll(me);
-            count += (B.inView.remove(me.getID()) != null ? 1 : 0);
+            B.inView.remove(me.getID());
         }
         return count;
     }
@@ -322,7 +371,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
         if (me.getID() == n.getID()) {
             throw new RuntimeException("cannot put myself");
         }
-        if (this.inView.containsKey(n.getID())) {
+        if (!this.inView.containsKey(n.getID())) {
             this.inView.put(n.getID(), n);
         }
     }

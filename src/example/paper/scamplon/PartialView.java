@@ -169,6 +169,7 @@ public class PartialView {
      * @return
      */
     public List<Entry> subset() {
+        this.freeze();
         return subset(this.out, this.l());
     }
 
@@ -207,6 +208,10 @@ public class PartialView {
         this.out = merge(self, oldest, this.out, received, otherSize);
     }
 
+    public void merge(Node self, Node oldest, List<Entry> received, int otherSize, final boolean FROM_SENDER) {
+        this.out = merge(self, oldest, this.out, received, otherSize, FROM_SENDER);
+    }
+
     public boolean p() {
         return CDState.r.nextDouble() < 1.0 / (1.0 + this.out.size());
     }
@@ -226,8 +231,22 @@ public class PartialView {
     // L I S T  H E L P E R
     // ============================================
 
+    public static List<Entry> merge(
+            final Node me,
+            final Node other,
+            final List<Entry> List,
+            List<Entry> received,
+            final int otherSize) {
+        return merge(me, other, List, received, otherSize, true);
+    }
 
-    public static List<Entry> merge(Node me, Node other, List<Entry> list, List<Entry> received, int otherSize) {
+    public static List<Entry> merge(
+            final Node me,
+            final Node other,
+            final List<Entry> List,
+            List<Entry> received,
+            int otherSize,
+            final boolean FROM_SENDER) {
 
         //System.err.println("@" + me.getID() + " <- " + other.getID() + " pv:" + list + " rec:" + received + " othersize:" + otherSize);
 
@@ -235,18 +254,25 @@ public class PartialView {
         //System.err.println("culprit " +other.getID()+ " :" + culprit);
 
         //System.err.println("list size:" + list.size() + " (@" + me.getID() + ")");
-        int newSize = (list.size() % 2 == 0) ?
-                (int) Math.ceil((list.size() + otherSize) / 2.0) :
-                (int) Math.floor((list.size() + otherSize) / 2.0);
+        int newSize = (List.size() % 2 == 0) ?
+                (int) Math.ceil((List.size() + otherSize) / 2.0) :
+                (int) Math.floor((List.size() + otherSize) / 2.0);
 
         //System.err.println("(" + list.size() + " + " + otherSize + ")/ 2 = " + newSize);
 
-        RemoveVolatileResult rem = removeVolatileResults(list);
-        list = rem.rest;
+        Parent qq = (Parent) me.getProtocol(example.Scamplon.ScamplonProtocol.pid);
+        //System.err.println("from " + other.getID() + " get " + received +
+        //        " @" + me.getID() + " = " + qq.debug() + " sender:" + FROM_SENDER + " otherSize:" + otherSize);
+
+        //System.err.println("NOW:" + List + " @" + me.getID() + " from " + other.getID());
+        RemoveVolatileResult rem = removeVolatileResults(List);
+        List<Entry> list = rem.rest;
 
         if (contains(received, me)) {
             List<Entry> sent = removeAll(rem.volatiles, me); // here will never remove any element!
-            sent = removeAll(sent, other);
+            //if (FROM_SENDER) {
+                sent = removeAll(sent, other);
+            //}
             int itemsRemoved = 0;
             int sizeBefore = received.size();
             received = removeAll(received, me); // here we might remove possibly more elements..
@@ -261,13 +287,12 @@ public class PartialView {
         }
 
         if (newSize != (list.size() + received.size())) {
-            System.err.println("Error @" + me.getID() + " receiving from " + other.getID());
-            Scamplon qq = (Scamplon) me.getProtocol(Scamplon.pid);
+            System.err.println("Error @" + me.getID() + " receiving from " + other.getID() + " is sender:" + FROM_SENDER);
             System.err.println("@" + me.getID() + " = " + qq.debug());
-            System.err.println("new list:" + list + " other size:" + otherSize);
+            System.err.println("orig " + List + " =vs= " + list + " otherSize:" + otherSize);
             System.err.println(newSize + " vs " + list.size() + " + " + received.size());
-            System.err.println("from " + other.getID() + " rec:" + received + " isup:" +
-                    ((Scamplon)other.getProtocol(Scamplon.pid)).isUp());
+            //System.err.println("from " + other.getID() + " rec:" + received + " isup:" +
+                    //((Scamplon)other.getProtocol(Scamplon.pid)).isUp());
             throw new RuntimeException("@" + me.getID() +":LOSING ARCS! MUST NOT HAPPEN!");
         }
 
@@ -499,6 +524,14 @@ public class PartialView {
             this.volatiles = v;
             this.rest = r;
         }
+    }
+
+    // ============================================
+    // P A R E N T
+    // ============================================
+
+    public interface Parent {
+        String debug();
     }
 
     // ============================================

@@ -11,5 +11,6 @@ public interface Dynamic {
     void up();
     void down();
     int hash();
+    int degree();
 
 }
