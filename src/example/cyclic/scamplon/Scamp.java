@@ -254,7 +254,7 @@ public class Scamp implements CDProtocol, Linkable {
 // ----------------------------------------------------------------------
 
     /**
-     * Replace n1 with n2 in the partial view. Helper method to unsubscribe.
+     * Replace n1 with n2 in the partial view. Helper method to fastUnsubscribe.
      * This is done taking care of
      * the consistency of the data structure and dates. If n1 is not known,
      * prints a warning and exits doing nothing.
@@ -300,8 +300,8 @@ public class Scamp implements CDProtocol, Linkable {
 // ----------------------------------------------------------------------
 
     /**
-     * Run the unsubscribe protocol for the given node.
-     * @param n not to unsubscribe
+     * Run the fastUnsubscribe protocol for the given node.
+     * @param n not to fastUnsubscribe
      */
     public static void unsubscribe( Node n, int protocolID ) {
 

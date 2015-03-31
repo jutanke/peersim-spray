@@ -7,7 +7,9 @@ import peersim.core.CommonState;
 import peersim.core.Node;
 import peersim.transport.Transport;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by julian on 3/14/15.
@@ -18,8 +20,6 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     // E N T I T Y
     // ============================================
 
-    public static int arcCount = 0;
-
     private PartialView partialView;
     private int step;
     public boolean isBlocked = false;
@@ -29,6 +29,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     private HashMap<Long, Node> inView;
     private PartialView.Entry lastDestination;
     private Queue<Node> deleteASAP;
+    private Queue<Node> insertASAP;
 
     public Scamplon(String prefix) {
         super(prefix);
@@ -37,6 +38,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         this.partialView = new PartialView();
         this.inView = new HashMap<Long, Node>();
         this.deleteASAP = new LinkedList<Node>();
+        this.insertASAP = new LinkedList<Node>();
     }
 
     @Override
@@ -47,6 +49,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         s.partialView = new PartialView();
         s.inView = new HashMap<Long, Node>();
         s.deleteASAP = new LinkedList<Node>();
+        s.insertASAP = new LinkedList<Node>();
         return s;
     }
 
@@ -57,10 +60,17 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     @Override
     public void nextCycle(Node node, int protocolID) {
         if (this.isUp()) {
-            if (!this.isBlocked && !this.deleteASAP.isEmpty()) {
+            if (!this.isBlocked) {
                 while (!this.deleteASAP.isEmpty()) {
                     final Node del = this.deleteASAP.poll();
                     this.partialView.deleteAll(del);
+                }
+
+                while (!this.insertASAP.isEmpty()) {
+                    final Node s = this.insertASAP.poll();
+                    final Scamplon subscriber = (Scamplon) s.getProtocol(pid);
+                    this.addNeighbor(s);
+                    subscriber.addToInview(s, node);
                 }
             }
 
@@ -264,11 +274,9 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     }
 
 
-
     /**
-     *
      * @param me
-     * @param o node from inview
+     * @param o       node from inview
      * @param replace node from outview
      */
     public int replace(Node me, Node o, Node replace) {
@@ -332,13 +340,18 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     // S C A M P
     // ============================================
 
-    public static void unsubscribe(Node node) {
+    /**
+     * immediatly removes the node
+     *
+     * @param node
+     */
+    public static void fastUnsubscribe(Node node) {
         Scamplon current = (Scamplon) node.getProtocol(pid);
         if (current.isUp()) {
             current.down();
             final int ls = current.inView.size();
-            //final int notifyIn = Math.max(ls - c - 1, 0);
-            final int notifyIn = Math.max(ls - c, 0);
+            final int notifyIn = Math.max(ls - c - 1, 0);
+            //final int notifyIn = Math.max(ls - c, 0);
             final Queue<Node> in = new LinkedList<Node>(current.inView.values());
             final List<Node> out = current.partialView.list();
             int count = 0;
@@ -372,8 +385,68 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         } else {
             throw new RuntimeException("already down");
         }
+    }
+
+    private static final int FORWARD_TTL = 25;
+
+    /**
+     * immediatly inserts the node
+     *
+     * @param s
+     * @param c
+     */
+    public static void fastSubscribe(final Node s, final Node c) {
+        final Scamplon subscriber = (Scamplon) s.getProtocol(pid);
+        final Scamplon contact = (Scamplon) c.getProtocol(pid);
+
+        if (subscriber.isUp() && contact.isUp()) {
+            subscriber.addNeighbor(c);
+
+            for (Node n : contact.partialView.list()) {
+                fastForward(s, n, 0);
+            }
+
+            for (int i = 0; i < Scamplon.c && contact.degree() > 0; i++) {
+                Node n = contact.partialView.get(CommonState.r.nextInt(contact.degree()));
+                fastForward(s, n, 0);
+            }
+
+        } else {
+            throw new RuntimeException("Cannot subscribe when one of the Nodes is down!");
+        }
 
     }
+
+    /**
+     * fast forward in one step! (to compete with the remove function)
+     *
+     * @param s
+     * @param node
+     * @param counter
+     */
+    private static void fastForward(final Node s, final Node node, int counter) {
+        counter++;
+        if (counter < FORWARD_TTL) {
+            final Scamplon current = (Scamplon) node.getProtocol(pid);
+            if (current.partialView.p() && node.getID() != s.getID()) {
+                final Scamplon subscriber = (Scamplon) s.getProtocol(pid);
+                if (current.isBlocked) {
+                    current.insertASAP.add(s);
+                } else {
+                    current.addNeighbor(s);
+                    subscriber.addToInview(s, node);
+                }
+            } else if (current.degree() > 0) {
+                Node next = current.partialView.get(CommonState.r.nextInt(current.degree()));
+                fastForward(s, next, counter);
+            } else {
+                System.err.println("DEAD END for subscription " + s.getID() + " @" + node.getID());
+            }
+        } else {
+            System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
+        }
+    }
+
 
     /**
      * We assume that the contact c got selected through indirection!
@@ -385,6 +458,8 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         Scamplon subscriber = (Scamplon) s.getProtocol(pid);
         subscriber.addNeighbor(c);
         ScamplonMessage subscribe = ScamplonMessage.subscribe(s);
+        final Scamplon contact = (Scamplon) c.getProtocol(pid);
+        System.err.println("subscribe " + s.getID() + "(" + subscribe + ") to " + c.getID() + "(" + contact + ")");
         send(s, c, subscribe);
     }
 
@@ -392,13 +467,13 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         if (subscription.type != ScamplonMessage.Type.Subscribe) throw new RuntimeException("nop");
         int count = 0;
         for (Node n : this.partialView.list()) {
-            count+=1;
+            count += 1;
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
             send(me, n, forward);
         }
 
         for (int i = 0; i < c && this.degree() > 0; i++) {
-            count+=1;
+            count += 1;
             int pos = CommonState.r.nextInt(this.degree());
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
             send(me, this.partialView.get(pos), forward);
@@ -459,6 +534,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
     @Override
     public void down() {
         this.hash++;
+        this.isBlocked = false;
         this.isUp = false;
     }
 

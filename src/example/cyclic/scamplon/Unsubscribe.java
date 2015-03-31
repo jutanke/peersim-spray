@@ -21,7 +21,7 @@ import peersim.core.*;
 import peersim.dynamics.DynamicNetwork;
 
 /**
- * A network dynamics manager which can unsubscribe nodes according to the
+ * A network dynamics manager which can fastUnsubscribe nodes according to the
  * SCAMP protocol. If used for adding nodes then it works like its superclass.
  * Since it is not intended to be used for increasing networks, a warning
  * is given in that case.
