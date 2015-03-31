@@ -44,7 +44,7 @@ public class Observer implements Control {
 
         int max = Integer.MIN_VALUE;
         int min = Integer.MAX_VALUE;
-        int count = 0;
+        int count = 0, disconnected = 0;
 
         for (int i = 0; i < Network.size(); i++) {
             Node n = Network.get(i);
@@ -60,9 +60,12 @@ public class Observer implements Control {
                 if (size > max) {
                     max = size;
                 }
+                if (size == 0) {
+                    disconnected++;
+                }
             }
         }
-        System.err.println("MIN:" + min + ", MAX:" + max + " count:" + count);
+        System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count + ", disconnected:" + disconnected);
 
         if (CommonState.getTime() % 1 == 0) {
             if (count > 0) {
@@ -71,7 +74,7 @@ public class Observer implements Control {
                 //System.out.println(observer.meanClusterCoefficient());
                 //System.out.println(((double)count) / (double)Network.size());
             } else {
-                System.out.println(0);
+                //System.out.println(0);
             }
         }
 

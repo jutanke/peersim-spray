@@ -11,15 +11,12 @@ public class Churn extends ChurnProtocol {
 
     public Churn(String n) {
         super(n, ScamplonProtocol.SCAMPLON_PROT);
+        ChurnProtocol.current = this;
     }
 
     @Override
-    public boolean removeNode(Node node) {
-        if (((Scamplon) node.getProtocol(Scamplon.pid)).isBlocked) {
-            return false;
-        }
+    public void removeNode(Node node) {
         Scamplon.unsubscribe(node);
-        return true;
     }
 
     @Override

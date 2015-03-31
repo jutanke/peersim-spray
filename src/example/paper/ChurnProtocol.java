@@ -14,6 +14,8 @@ import java.util.LinkedList;
  */
 public abstract class ChurnProtocol implements Control {
 
+    public static ChurnProtocol current;
+
     private static final String PROTOCOL = "o1";
     private static final String PAR_ADD_COUNT = "addingPerStep";
     private static final String PARR_REM_COUNT = "removingPerStep";
@@ -28,10 +30,10 @@ public abstract class ChurnProtocol implements Control {
     public final long REMOVING_START;
     public final long REMOVING_END;
     public final long ADDING_END;
-    protected final int pid;
+    public final int pid;
 
-    protected LinkedList<Node> graph = new LinkedList<Node>();
-    protected LinkedList<Node> availableNodes = new LinkedList<Node>();
+    public LinkedList<Node> graph = new LinkedList<Node>();
+    public LinkedList<Node> availableNodes = new LinkedList<Node>();
 
     public ChurnProtocol(String n, String cyclProtocol) {
         this.ADDING_COUNT = Configuration.getInt(n + "." + PAR_ADD_COUNT, 0);
@@ -64,6 +66,7 @@ public abstract class ChurnProtocol implements Control {
             for (int i = 0; i < this.REMOVING_COUNT && this.graph.size() > 0; i++) {
                 final int pos = CommonState.r.nextInt(this.graph.size());
                 final Node rem = this.graph.get(pos);
+                this.removeNode(rem);
                 Dynamic d = (Dynamic) rem.getProtocol(pid);
                 if (d.isUp()) {
                     d.down();
@@ -96,7 +99,7 @@ public abstract class ChurnProtocol implements Control {
      * @param node
      * @return when true then select this node, otherwise do not select it
      */
-    public abstract boolean removeNode(Node node);
+    public abstract void removeNode(Node node);
 
     public abstract void addNode(Node subscriber, Node contact);
 }

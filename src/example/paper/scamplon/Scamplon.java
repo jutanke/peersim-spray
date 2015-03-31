@@ -191,8 +191,12 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         if (this.isUp()) {
             if (this.isBlocked) {
                 // delayed too much
-                this.partialView.delete(this.lastDestination);
-                this.inView.remove(this.lastDestination.node.getID()); // just in case
+                final Scamplon other = (Scamplon) this.lastDestination.node.getProtocol(pid);
+                if (!other.isUp()) {
+                    this.partialView.delete(this.lastDestination);
+                    this.inView.remove(this.lastDestination.node.getID()); // just in case
+                }
+                this.hash++; // so that we can drop the current request savely
                 this.partialView.freeze();
             }
 
@@ -333,6 +337,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         if (current.isUp()) {
             current.down();
             final int ls = current.inView.size();
+            //final int notifyIn = Math.max(ls - c - 1, 0);
             final int notifyIn = Math.max(ls - c, 0);
             final Queue<Node> in = new LinkedList<Node>(current.inView.values());
             final List<Node> out = current.partialView.list();
@@ -359,6 +364,8 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
                 count++;
             }
 
+            System.err.println("remove " + count + " arcs");
+
             current.partialView.clear();
             current.inView.clear();
 
@@ -383,16 +390,20 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
     private void onSubscribe(Node me, ScamplonMessage subscription) {
         if (subscription.type != ScamplonMessage.Type.Subscribe) throw new RuntimeException("nop");
+        int count = 0;
         for (Node n : this.partialView.list()) {
+            count+=1;
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
             send(me, n, forward);
         }
 
         for (int i = 0; i < c && this.degree() > 0; i++) {
+            count+=1;
             int pos = CommonState.r.nextInt(this.degree());
             final ScamplonMessage forward = ScamplonMessage.forward(me, subscription);
             send(me, this.partialView.get(pos), forward);
         }
+        System.err.println("add " + count + " arcs");
     }
 
     private void onForward(Node me, ScamplonMessage forward) {
@@ -405,7 +416,8 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
             final Node subscriber = forward.subscriber;
 
 
-            if (this.partialView.p() && !this.contains(subscriber) && me.getID() != subscriber.getID()) {
+            //if (this.partialView.p() && !this.contains(subscriber) && me.getID() != subscriber.getID()) {
+            if (this.partialView.p() && me.getID() != subscriber.getID()) {
                 this.addNeighbor(subscriber);
 
                 //TODO send accept
@@ -417,7 +429,9 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
                 forward = ScamplonMessage.forward(me, forward);
                 send(me, forwardTarget, forward);
             } else {
-                throw new RuntimeException("no forwarding target");
+                System.err.println("@" + me.getID() + " = " + this.debug());
+                System.err.println("--> " + forward);
+                //throw new RuntimeException("no forwarding target");
             }
         }
 
@@ -425,7 +439,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
 
     private boolean isUp = true;
-    private int hash = Integer.MIN_VALUE;
+    private int hash = 0;
 
     @Override
     public boolean isUp() {
@@ -439,7 +453,7 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
 
     @Override
     public int hash() {
-        return 0;
+        return this.hash;
     }
 
     @Override

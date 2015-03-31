@@ -12,11 +12,11 @@ public class Churn extends ChurnProtocol {
 
     public Churn(String n) {
         super(n, CyclonProtocol.PAR_PROT);
+        ChurnProtocol.current = this;
     }
 
     @Override
-    public boolean removeNode(Node node) {
-        return true;
+    public void removeNode(Node node) {
     }
 
     @Override
