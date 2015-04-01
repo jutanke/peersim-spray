@@ -97,24 +97,18 @@ public abstract class ChurnProtocol implements Control {
         return false;
     }
 
-    private Node getBestNode() {
+    public Node getBestNode() {
+        if (false) {
+            return this.graph.get(CommonState.r.nextInt(this.graph.size()));
+        }
+
         Node a = graph.get(CommonState.r.nextInt(this.graph.size()));
         Node b = graph.get(CommonState.r.nextInt(this.graph.size()));
         //Node c = graph.get(CommonState.r.nextInt(this.graph.size()));
 
         Dynamic A = (Dynamic) a.getProtocol(pid);
         Dynamic B = (Dynamic) b.getProtocol(pid);
-        //Dynamic C = (Dynamic) c.getProtocol(pid);
 
-        /*
-        if (A.degree() > B.degree() && A.degree() > C.degree()) {
-            return a;
-        } else if (B.degree() > C.degree()) {
-            return b;
-        } else {
-            return c;
-        }
-        */
         if (A.degree() > B.degree()) {
             return a;
         } else {

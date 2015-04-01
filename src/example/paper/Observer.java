@@ -67,7 +67,7 @@ public class Observer implements Control {
         }
         System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count + ", disconnected:" + disconnected);
 
-        if (CommonState.getTime() % 1 == 0) {
+        if (CommonState.getTime() > 1000 && CommonState.getTime() % 10 == 0) {
             if (count > 0) {
                 //System.out.println(observer.avgReachablePaths(0).reachQuota);
                 //System.out.println(avgPathLength(observer));

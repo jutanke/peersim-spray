@@ -1,5 +1,6 @@
 package example.paper;
 
+import example.paper.scamplon.FastChurn;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -14,11 +15,14 @@ public class RemoveProtocol implements Control {
     private static final String PAR_REM_END = "endRem";
     private static final String PARR_REM_COUNT = "removingPerStep";
 
+    public static RemoveProtocol instance = null;
+
     public final long REMOVING_START;
     public final long REMOVING_END;
     public final int REMOVING_COUNT;
 
     public RemoveProtocol(String n) {
+        instance = this;
         this.REMOVING_COUNT = Configuration.getInt(n + "." + PARR_REM_COUNT, 0);
         this.REMOVING_START = Configuration.getInt(n + "." + PAR_REM_START, Integer.MAX_VALUE);
         this.REMOVING_END = Configuration.getInt(n + "." + PAR_REM_END, Integer.MAX_VALUE);

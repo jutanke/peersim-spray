@@ -1,5 +1,6 @@
 package example.webrtc.data;
 
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 import java.util.*;
@@ -365,6 +366,9 @@ public class DictGraph {
     private boolean areUndirectlyConnected(long a, long b) {
         DictNode aNode = nodes.get(a);
         DictNode bNode = nodes.get(b);
+        if (aNode == null || bNode == null) {
+            return false;
+        }
         return in(a, bNode.neighbors) || in(b, aNode.neighbors);
     }
 

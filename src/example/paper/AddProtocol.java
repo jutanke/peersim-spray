@@ -40,8 +40,9 @@ public class AddProtocol implements Control {
                 final Dynamic d = (Dynamic) current.getProtocol(churn.pid);
                 d.up();
                 if (churn.graph.size() > 0) {
-                    final int pos = CommonState.r.nextInt(churn.graph.size());
-                    final Node contact = churn.graph.get(pos); // INDIRECTION
+                    //final int pos = CommonState.r.nextInt(churn.graph.size());
+                    //final Node contact = churn.graph.get(pos); // INDIRECTION
+                    final Node contact = churn.getBestNode();
                     churn.addNode(current, contact);
                 }
                 churn.graph.add(current);

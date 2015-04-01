@@ -56,6 +56,18 @@ public class FastCyclon extends CyclonProtocol {
         }
     }
 
+    @Override
+    public int degree() {
+        int count = 0;
+        for (CyclonEntry ce : this.cache) {
+            final FastCyclon c = (FastCyclon) ce.n.getProtocol(pid);
+            if (c.isUp()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 
     public List<CyclonEntry> receiveShuffle(Node q, Node p, List<CyclonEntry> received) {
         final List<CyclonEntry> nodesToSend = this.getSample(l);

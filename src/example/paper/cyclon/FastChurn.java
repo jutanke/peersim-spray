@@ -1,6 +1,7 @@
 package example.paper.cyclon;
 
 import example.paper.ChurnProtocol;
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 /**
@@ -15,6 +16,9 @@ public class FastChurn extends ChurnProtocol {
 
     @Override
     public void removeNode(Node node) {
+        //if (CommonState.getTime() == 2210) {
+            System.err.println("remove @" + node.getID());
+        //}
         FastCyclon.removeFromNetwork(node);
     }
 

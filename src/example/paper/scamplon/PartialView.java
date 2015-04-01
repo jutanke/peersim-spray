@@ -254,6 +254,7 @@ public class PartialView {
         //System.err.println("culprit " +other.getID()+ " :" + culprit);
 
         //System.err.println("list size:" + list.size() + " (@" + me.getID() + ")");
+
         int newSize = (List.size() % 2 == 0) ?
                 (int) Math.ceil((List.size() + otherSize) / 2.0) :
                 (int) Math.floor((List.size() + otherSize) / 2.0);
@@ -261,10 +262,12 @@ public class PartialView {
         //System.err.println("(" + list.size() + " + " + otherSize + ")/ 2 = " + newSize);
 
         Parent qq = (Parent) me.getProtocol(example.Scamplon.ScamplonProtocol.pid);
+
         //System.err.println("from " + other.getID() + " get " + received +
         //        " @" + me.getID() + " = " + qq.debug() + " sender:" + FROM_SENDER + " otherSize:" + otherSize);
 
         //System.err.println("NOW:" + List + " @" + me.getID() + " from " + other.getID());
+
         RemoveVolatileResult rem = removeVolatileResults(List);
         List<Entry> list = rem.rest;
 
