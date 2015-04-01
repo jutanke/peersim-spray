@@ -1,4 +1,4 @@
-SIZE 100
+SIZE 1000
 
 # parameters of periodic execution
 CYCLES 50210
@@ -54,14 +54,14 @@ control.o1.step 1
 control.o1.addingPerStep 1
 control.o1.startAdd 0
 #control.o1.endAdd 2000
-control.o1.removingPerStep 1
+#control.o1.removingPerStep 1
 #control.o1.endRem 700
 #control.o1.startRem 500
 
 control.o2 example.paper.RemoveProtocol
 control.o2.protocol 0
 control.o2.FINAL
-control.o2.step 3
+control.o2.step 1
 control.o2.startRem 2202
 #control.o2.endRem 3700
 control.o2.removingPerStep 1

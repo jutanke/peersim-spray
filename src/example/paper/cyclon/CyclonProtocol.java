@@ -28,7 +28,7 @@ public abstract class CyclonProtocol implements Dynamic, Linkable, EDProtocol, C
 
     public static int size;
     protected final int l;
-    protected final int tid, pid;
+    protected static int tid, pid;
     protected List<CyclonEntry> cache;
 
     // ===========================================
@@ -38,8 +38,8 @@ public abstract class CyclonProtocol implements Dynamic, Linkable, EDProtocol, C
     public CyclonProtocol(String n) {
         this.size = Configuration.getInt(n + "." + PAR_CACHE);
         this.l = Configuration.getInt(n + "." + PAR_L);
-        this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
-        this.pid = Configuration.lookupPid(PAR_PROT);
+        tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
+        pid = Configuration.lookupPid(PAR_PROT);
         this.cache = new ArrayList<CyclonEntry>(this.size);
     }
 

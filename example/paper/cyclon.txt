@@ -22,7 +22,7 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.lnk example.paper.cyclon.CyclonBlocking
+protocol.lnk example.paper.cyclon.FastCyclon
 protocol.lnk.cache DEGREE
 protocol.lnk.l 3
 protocol.lnk.step 1
@@ -40,12 +40,20 @@ protocol.tr.drop DROP
 #init.lnk example.paper.cyclon.Initializer
 #init.lnk.protocol lnk
 
-control.o1 example.paper.cyclon.Churn
+control.o1 example.paper.cyclon.FastChurn
 control.o1.protocol lnk
 control.o1.FINAL
 control.o1.step 1
 control.o1.addingPerStep 1
 control.o1.startAdd 0
+
+control.o2 example.paper.RemoveProtocol
+control.o2.protocol 0
+control.o2.FINAL
+control.o2.step 1
+control.o2.startRem 2202
+#control.o2.endRem 3700
+control.o2.removingPerStep 1
 
 ################### initialization ======================
 
