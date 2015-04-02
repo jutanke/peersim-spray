@@ -61,8 +61,10 @@ public abstract class ChurnProtocol implements Control {
     public boolean execute() {
 
         final long currentTimestamp = CommonState.getTime();
+        final boolean removingElements = currentTimestamp >= this.REMOVING_START && currentTimestamp <= this.REMOVING_END;
+        final boolean addingElements = currentTimestamp >= this.ADDING_START && currentTimestamp <= this.ADDING_END;
 
-        if (currentTimestamp >= this.REMOVING_START && currentTimestamp <= this.REMOVING_END) {
+        if (removingElements) {
             // REMOVE ELEMENTS
             for (int i = 0; i < this.REMOVING_COUNT && this.graph.size() > 0; i++) {
                 final int pos = CommonState.r.nextInt(this.graph.size());
@@ -77,7 +79,7 @@ public abstract class ChurnProtocol implements Control {
             }
         }
 
-        if (currentTimestamp >= this.ADDING_START && currentTimestamp <= this.ADDING_END) {
+        if (addingElements) {
             // ADD ELEMENTS
 
             for (int i = 0; i < this.ADDING_COUNT && this.availableNodes.size() > 0; i++) {
@@ -85,9 +87,8 @@ public abstract class ChurnProtocol implements Control {
                 final Dynamic d = (Dynamic) current.getProtocol(pid);
                 d.up();
                 if (graph.size() > 0) {
-                    //final int pos = CommonState.r.nextInt(this.graph.size());
-                    //final Node contact = graph.get(pos); // INDIRECTION
-                    final Node contact = getBestNode();
+                    //final Node contact = getBestNode();
+                    final Node contact = getNode();
                     this.addNode(current, contact);
                 }
                 this.graph.add(current);
@@ -95,6 +96,10 @@ public abstract class ChurnProtocol implements Control {
         }
 
         return false;
+    }
+
+    public Node getNode() {
+        return this.graph.get(CommonState.r.nextInt(this.graph.size()));
     }
 
     public Node getBestNode() {

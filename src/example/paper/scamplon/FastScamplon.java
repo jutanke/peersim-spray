@@ -2,6 +2,7 @@ package example.paper.scamplon;
 
 import example.PeerSamplingService;
 import example.paper.Dynamic;
+import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -13,6 +14,8 @@ import java.util.*;
  */
 public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements Dynamic, PartialView.Parent {
 
+    private static final String PARAM_START_SHUFFLE = "startShuffle";
+
     // ============================================
     // E N T I T Y
     // ============================================
@@ -21,9 +24,11 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     private Map<Long, Node> inView;
     private boolean isUp = true;
     private static final int FORWARD_TTL = 25;
+    private final int startShuffle;
 
     public FastScamplon(String prefix) {
         super(prefix);
+        this.startShuffle = Configuration.getInt(prefix + "." + PARAM_START_SHUFFLE, 0);
         this.partialView = new PartialView();
         this.inView = new HashMap<Long, Node>();
     }
@@ -136,7 +141,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
      */
     public void startShuffle(Node me) {
         this.updateInView(me);
-        if (this.isUp()) {
+        if (this.isUp() && this.startShuffle < CommonState.getTime()) {
             if (this.degree() > 0) {
                 this.partialView.freeze();
                 this.partialView.incrementAge();
@@ -261,15 +266,21 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
         subscriber.partialView.clear();
         final FastScamplon contact = (FastScamplon) c.getProtocol(pid);
         int count = 0;
+        //System.err.println("subscribe " + s.getID() + " to " + c.getID() + " with " + contact.partialView);
+        List<Long> ids = new ArrayList<Long>();
         if (subscriber.isUp() && contact.isUp()) {
             subscriber.addNeighbor(c);
             for (Node n : contact.getPeers()) {
+                ids.add(n.getID());
                 count += forward(s, n, 0) ? 1 : 0;
             }
+            //System.err.println(" c is " + FastScamplon.c);
             for (int i = 0; i < FastScamplon.c && contact.degree() > 0; i++) {
                 Node n = contact.getNeighbor(CommonState.r.nextInt(contact.degree()));
+                ids.add(n.getID());
                 count += forward(s, n, 0) ? 1 : 0;
             }
+            //System.err.println("subscribed " + s.getID() + " to " + count + " nodes: " + ids);
         } else {
             throw new RuntimeException("@Subscribe (" + s.getID() + " -> " + c.getID() + " not up");
         }
@@ -288,7 +299,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
             counter++;
             if (counter < FORWARD_TTL) {
                 final FastScamplon current = (FastScamplon) node.getProtocol(pid);
-                if (current.partialView.p() && node.getID() != s.getID()) {
+                if (current.partialView.p() && !current.contains(s) && node.getID() != s.getID()) {
                     final FastScamplon subscriber = (FastScamplon) s.getProtocol(pid);
                     current.addNeighbor(s);
                     subscriber.addToInview(s, node);

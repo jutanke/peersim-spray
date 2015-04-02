@@ -67,11 +67,15 @@ public class Observer implements Control {
         }
         System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count + ", disconnected:" + disconnected);
 
-        if (CommonState.getTime() > 1000 && CommonState.getTime() % 10 == 0) {
+
+        System.out.println(observer.meanClusterCoefficient());
+        //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
+        //if (CommonState.getTime() > 0 ) System.out.println(avgPathLength(observer));
+
+        if (false && CommonState.getTime() > 0 && CommonState.getTime() % 1 == 0) {
             if (count > 0) {
                 //System.out.println(observer.avgReachablePaths(0).reachQuota);
                 //System.out.println(avgPathLength(observer));
-                //System.out.println(observer.meanClusterCoefficient());
                 //System.out.println(((double)count) / (double)Network.size());
             } else {
                 //System.out.println(0);
@@ -79,7 +83,7 @@ public class Observer implements Control {
         }
 
         System.err.println("arc count:" + observer.countArcs());
-        System.out.println(observer.countArcs());
+        //System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 999 == 0) {
             //System.out.println(observer.toGraph());
