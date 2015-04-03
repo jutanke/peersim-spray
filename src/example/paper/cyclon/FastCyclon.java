@@ -1,5 +1,6 @@
 package example.paper.cyclon;
 
+import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -10,12 +11,17 @@ import java.util.List;
  */
 public class FastCyclon extends CyclonProtocol {
 
+    private static final String PARAM_START_SHUFFLE = "startShuffle";
+
     // ===========================================
     // C T O R
     // ===========================================
 
+    private final int startShuffle;
+
     public FastCyclon(String n) {
         super(n);
+        this.startShuffle = Configuration.getInt(n + "." + PARAM_START_SHUFFLE, 0);
     }
 
 
@@ -45,7 +51,7 @@ public class FastCyclon extends CyclonProtocol {
     // ===========================================
 
     public void startShuffle(Node p) {
-        if (this.isUp() && this.degree() > 0) {
+        if (this.isUp() && this.degree() > 0 && CommonState.getTime() > this.startShuffle) {
             this.increaseAge();
             final Node q = this.oldest();
             final FastCyclon Q = (FastCyclon) q.getProtocol(pid);
@@ -90,10 +96,14 @@ public class FastCyclon extends CyclonProtocol {
 
         subscriber.addNeighbor(i);
 
-        final int RANDOM_WALKS = Math.min(size - 1, introducer.degree() - 1);
+        final int RANDOM_WALKS = Math.min(size - 1, introducer.degree());
+
+        //System.err.println("subscribe " + s.getID() + " to " + i.getID() + " with rw: " + RANDOM_WALKS +
+        //    introducer.debug());
+
         //System.err.println("@" + i.getID() + " - " + introducer.debug());
         //System.err.println("Random walks:" + RANDOM_WALKS);
-        for (int ii = 0; ii < RANDOM_WALKS; ii++) {
+        for (int ii = 0; ii < RANDOM_WALKS && ii < introducer.degree(); ii++) {
             randomWalk(s, introducer.getNeighbor(ii), 5);
         }
 
@@ -122,15 +132,17 @@ public class FastCyclon extends CyclonProtocol {
                 randomWalk(s, next, ttl);
             } else { // END OF RANDOM WALK: ADD
                 //if (current.degree() >= size) {
-                CyclonEntry ce = current.cache.remove(CommonState.r.nextInt(current.degree()));
-                subscriber.cache.add(ce);
+                if (s.getID() != c.getID()) {
+                    CyclonEntry ce = current.cache.remove(CommonState.r.nextInt(current.degree()));
+                    subscriber.cache.add(ce);
 
-                // sanitize ...
-                if (subscriber.cache.size() > size) {
-                    throw new RuntimeException("OVERFEED");
+                    // sanitize ...
+                    if (subscriber.cache.size() > size) {
+                        throw new RuntimeException("OVERFEED");
+                    }
+                    //}
+                    current.addNeighbor(s);
                 }
-                //}
-                current.addNeighbor(s);
             }
         }
     }

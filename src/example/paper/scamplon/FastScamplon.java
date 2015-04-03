@@ -1,6 +1,5 @@
 package example.paper.scamplon;
 
-import example.PeerSamplingService;
 import example.paper.Dynamic;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -284,7 +283,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
         } else {
             throw new RuntimeException("@Subscribe (" + s.getID() + " -> " + c.getID() + " not up");
         }
-        System.err.println("add " + s.getID() + ", add " + count + " arcs");
+        //System.err.println("add " + s.getID() + ", add " + count + " arcs");
     }
 
     /**
@@ -312,7 +311,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
                     return false;
                 }
             } else {
-                System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
+                //System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
                 return false;
             }
         }

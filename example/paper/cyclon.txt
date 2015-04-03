@@ -1,9 +1,9 @@
 # network size
-SIZE 1000
+SIZE 10000
 DEGREE 7
 
 # parameters of periodic execution
-CYCLES 8000
+CYCLES 300
 CYCLE SIZE*10000
 
 # parameters of message transfer
@@ -28,6 +28,7 @@ protocol.lnk.l 3
 protocol.lnk.step 1
 protocol.lnk.transport tr
 protocol.lnk.linkable link
+protocol.lnk.startShuffle 2
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay (CYCLE*MINDELAY)/100
@@ -44,7 +45,7 @@ control.o1 example.paper.cyclon.FastChurn
 control.o1.protocol lnk
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 1
+control.o1.addingPerStep 100000
 control.o1.startAdd 0
 
 control.o2 example.paper.RemoveProtocol

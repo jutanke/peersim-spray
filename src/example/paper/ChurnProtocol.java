@@ -50,10 +50,10 @@ public abstract class ChurnProtocol implements Control {
             Dynamic d = (Dynamic) node.getProtocol(pid);
             d.down();
             availableNodes.add(node);
-            System.err.println("Churn insert:" + this.ADDING_COUNT +
-                    " [" + this.ADDING_START + ".." + this.ADDING_END + "]");
-            System.err.println("Churn remove:" + this.REMOVING_COUNT +
-                    " [" + this.REMOVING_START + ".." + this.REMOVING_END + "]");
+            //System.err.println("Churn insert:" + this.ADDING_COUNT +
+            //        " [" + this.ADDING_START + ".." + this.ADDING_END + "]");
+            //System.err.println("Churn remove:" + this.REMOVING_COUNT +
+            //        " [" + this.REMOVING_START + ".." + this.REMOVING_END + "]");
         }
     }
 
@@ -87,8 +87,8 @@ public abstract class ChurnProtocol implements Control {
                 final Dynamic d = (Dynamic) current.getProtocol(pid);
                 d.up();
                 if (graph.size() > 0) {
-                    //final Node contact = getBestNode();
-                    final Node contact = getNode();
+                    final Node contact = getBestNode();
+                    //final Node contact = getNode();
                     this.addNode(current, contact);
                 }
                 this.graph.add(current);
@@ -103,21 +103,18 @@ public abstract class ChurnProtocol implements Control {
     }
 
     public Node getBestNode() {
-        if (false) {
-            return this.graph.get(CommonState.r.nextInt(this.graph.size()));
-        }
-
         Node a = graph.get(CommonState.r.nextInt(this.graph.size()));
         Node b = graph.get(CommonState.r.nextInt(this.graph.size()));
-        //Node c = graph.get(CommonState.r.nextInt(this.graph.size()));
-
         Dynamic A = (Dynamic) a.getProtocol(pid);
         Dynamic B = (Dynamic) b.getProtocol(pid);
 
-        if (A.degree() > B.degree()) {
-            return a;
+        final Node bigger = (A.degree() > B.degree()) ? a : b;
+        final Node smaller = (A.degree() > B.degree()) ? b : a;
+
+        if (CommonState.r.nextInt(3) == 1) {
+            return bigger;
         } else {
-            return b;
+            return smaller;
         }
     }
 

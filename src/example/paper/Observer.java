@@ -68,25 +68,20 @@ public class Observer implements Control {
         System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count + ", disconnected:" + disconnected);
 
 
-        System.out.println(observer.meanClusterCoefficient());
+        //if (CommonState.getTime() > 0 ) System.out.println(observer.meanClusterCoefficient());
         //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
-        //if (CommonState.getTime() > 0 ) System.out.println(avgPathLength(observer));
+        //if (CommonState.getTime() > 1 ) System.out.println(avgPathLength(observer));
 
-        if (false && CommonState.getTime() > 0 && CommonState.getTime() % 1 == 0) {
-            if (count > 0) {
-                //System.out.println(observer.avgReachablePaths(0).reachQuota);
-                //System.out.println(avgPathLength(observer));
-                //System.out.println(((double)count) / (double)Network.size());
-            } else {
-                //System.out.println(0);
-            }
+        if (CommonState.getTime() == 299) {
+            System.err.println("Avg path:" + avgPathLength(observer));
         }
 
         System.err.println("arc count:" + observer.countArcs());
         //System.out.println(observer.countArcs());
 
-        if (CommonState.getTime() > 0 && CommonState.getTime() % 999 == 0) {
-            //System.out.println(observer.toGraph());
+        if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {
+            //printArray(observer.inDegreeAsHistogram());
+            //System.out.println("FINAL: " + avgPathLength(observer));
         }
 
 
@@ -112,6 +107,13 @@ public class Observer implements Control {
         total += observer.avgReachablePaths(randomId()).avg; //  9
         total += observer.avgReachablePaths(randomId()).avg; // 10
         return total / 10.0;
+    }
+
+    private void printArray(int[] list) {
+        System.out.println("array");
+        for (int i = 0; i < list.length; i++) {
+            System.out.println(list[i]);
+        }
     }
 
     /**
