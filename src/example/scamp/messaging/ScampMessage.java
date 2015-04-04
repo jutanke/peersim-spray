@@ -1,15 +1,12 @@
 package example.scamp.messaging;
 
 import example.Scamplon.PartialView;
-import example.cyclon.CyclonMessage;
-import example.cyclon.PeerSamplingService;
 import example.scamp.ScampProtocol;
 import example.scampXcyclon.PartialViewEntry;
 import peersim.core.Network;
 import peersim.core.Node;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 

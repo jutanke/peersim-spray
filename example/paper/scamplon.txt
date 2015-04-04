@@ -1,4 +1,4 @@
-SIZE 100000
+SIZE 1000
 
 # parameters of periodic execution
 CYCLES 300
@@ -18,7 +18,7 @@ MAXDELAY 0
 DROP 0
 
 #random.seed 9999 # for 1000
-random.seed 0
+random.seed 9900
 
 #overlay.size SIZE
 
@@ -28,7 +28,7 @@ protocol.0 example.paper.scamplon.FastScamplon
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
-protocol.0.startShuffle 2
+protocol.0.startShuffle 0
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
 protocol.0.leaseTimeoutMin 100
@@ -53,7 +53,7 @@ control.o1 example.paper.scamplon.FastChurn
 control.o1.protocol 0
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 100000
+control.o1.addingPerStep 10000000
 control.o1.startAdd 0
 #control.o1.endAdd 200
 #control.o1.removingPerStep 1

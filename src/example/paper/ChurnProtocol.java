@@ -87,8 +87,8 @@ public abstract class ChurnProtocol implements Control {
                 final Dynamic d = (Dynamic) current.getProtocol(pid);
                 d.up();
                 if (graph.size() > 0) {
-                    final Node contact = getBestNode();
-                    //final Node contact = getNode();
+                    //final Node contact = getBestNode();
+                    final Node contact = getNode();
                     this.addNode(current, contact);
                 }
                 this.graph.add(current);
@@ -111,7 +111,7 @@ public abstract class ChurnProtocol implements Control {
         final Node bigger = (A.degree() > B.degree()) ? a : b;
         final Node smaller = (A.degree() > B.degree()) ? b : a;
 
-        if (CommonState.r.nextInt(3) == 1) {
+        if (CommonState.r.nextInt(2) == 1) {
             return bigger;
         } else {
             return smaller;

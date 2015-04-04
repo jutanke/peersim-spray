@@ -22,7 +22,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     private PartialView partialView;
     private Map<Long, Node> inView;
     private boolean isUp = true;
-    private static final int FORWARD_TTL = 25;
+    private static final int FORWARD_TTL = 125;
     private final int startShuffle;
 
     public FastScamplon(String prefix) {
@@ -298,7 +298,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
             counter++;
             if (counter < FORWARD_TTL) {
                 final FastScamplon current = (FastScamplon) node.getProtocol(pid);
-                if (current.partialView.p() && !current.contains(s) && node.getID() != s.getID()) {
+                if (current.partialView.p() && node.getID() != s.getID()) {
                     final FastScamplon subscriber = (FastScamplon) s.getProtocol(pid);
                     current.addNeighbor(s);
                     subscriber.addToInview(s, node);
@@ -311,7 +311,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
                     return false;
                 }
             } else {
-                //System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
+                System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
                 return false;
             }
         }

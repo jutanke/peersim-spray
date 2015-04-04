@@ -18,7 +18,7 @@ then
 elif [ "$1" = "scamplon" ]
 then
     echo "SCAMPLON"
-    java -cp "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator example/paper/scamplon.txt
+    java -cp -Xmx6g "peersim-1.0.5.jar:jep-2.3.0.jar:djep-1.0.0.jar" peersim.Simulator example/paper/scamplon.txt
 elif [ "$1" = "acyclon" ]
 then
     echo "ADAPTIVE CYCLON"
