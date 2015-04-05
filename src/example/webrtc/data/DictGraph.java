@@ -335,6 +335,21 @@ public class DictGraph {
         return result;
     }
 
+    /**
+     *
+     * @return
+     */
+    public double variancePartialView() {
+        double var = 0;
+        final double mean = this.meanPartialViewSize();
+        final Collection<DictNode> N = this.nodes.values();
+        for (DictNode n : N) {
+            final double c = n.neighbors.size() - mean;
+            var += c * c;
+        }
+        return var / N.size();
+    }
+
     /* =================================================================== *
      * PRIVATE
      * =================================================================== */
@@ -361,17 +376,6 @@ public class DictGraph {
             }
         }
         return actual / possible;
-    }
-
-    public double variancePartialView() {
-        double var = 0;
-        final double mean = this.meanPartialViewSize();
-        final Collection<DictNode> N = this.nodes.values();
-        for (DictNode n : N) {
-            final double c = n.neighbors.size() - mean;
-            var += c * c;
-        }
-        return var / N.size();
     }
 
     private double meanPartialViewSize() {
