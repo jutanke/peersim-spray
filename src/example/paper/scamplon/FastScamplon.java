@@ -227,7 +227,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
      * @param node
      */
     public static void unsubscribe(Node node) {
-        //if (true) return;
+        if (true) return;
         final FastScamplon current = (FastScamplon) node.getProtocol(pid);
         current.updateInView(node);
         //System.err.println(current.debug());

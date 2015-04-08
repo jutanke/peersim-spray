@@ -68,13 +68,17 @@ public class Observer implements Control {
         System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count + ", disconnected:" + disconnected);
 
 
-        if (CommonState.getTime() > 0 ) System.out.println(observer.variancePartialView());
+        //if (CommonState.getTime() > 0 ) System.out.println(observer.variancePartialView());
         //if (CommonState.getTime() > 0 ) System.out.println(observer.meanClusterCoefficient());
         //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
         //if (CommonState.getTime() > 1 ) System.out.println(avgPathLength(observer));
 
+        DictGraph.ClusterResult clusterResult = observer.countClusters();
+        System.err.println(clusterResult);
+        System.out.println(clusterResult.count + " " + clusterResult.maxClusterSize);
+
         if (CommonState.getTime() == 299) {
-            System.err.println("Avg path:" + avgPathLength(observer));
+            //System.err.println("Avg path:" + avgPathLength(observer));
         }
 
         System.err.println("arc count:" + observer.countArcs());
@@ -96,18 +100,29 @@ public class Observer implements Control {
      * @return
      */
     private double avgPathLength(DictGraph observer) {
+        System.err.println("avg path length: [");
         double total = 0;
         total += observer.avgReachablePaths(randomId()).avg; //  1
+        System.err.println("#");
         total += observer.avgReachablePaths(randomId()).avg; //  2
+        System.err.println("#");
         total += observer.avgReachablePaths(randomId()).avg; //  3
+        System.err.println("#");
         total += observer.avgReachablePaths(randomId()).avg; //  4
+        System.err.println("#");
         total += observer.avgReachablePaths(randomId()).avg; //  5
+        System.err.println("#");
         total += observer.avgReachablePaths(randomId()).avg; //  6
+        System.err.println("#");
         total += observer.avgReachablePaths(randomId()).avg; //  7
-        total += observer.avgReachablePaths(randomId()).avg; //  8
-        total += observer.avgReachablePaths(randomId()).avg; //  9
-        total += observer.avgReachablePaths(randomId()).avg; // 10
-        return total / 10.0;
+        System.err.println("#");
+        //total += observer.avgReachablePaths(randomId()).avg; //  8
+        //System.err.println("#");
+        //total += observer.avgReachablePaths(randomId()).avg; //  9
+        //System.err.println("#");
+        //total += observer.avgReachablePaths(randomId()).avg; // 10
+        System.err.println("]");
+        return total / 7.0;
     }
 
     private void printArray(int[] list) {

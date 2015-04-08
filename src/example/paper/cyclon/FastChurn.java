@@ -17,7 +17,7 @@ public class FastChurn extends ChurnProtocol {
     @Override
     public void removeNode(Node node) {
         //if (CommonState.getTime() == 2210) {
-            System.err.println("remove @" + node.getID());
+            //System.err.println("remove @" + node.getID());
         //}
         FastCyclon.removeFromNetwork(node);
     }

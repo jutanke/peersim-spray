@@ -1,4 +1,4 @@
-SIZE 1000
+SIZE 100000
 
 # parameters of periodic execution
 CYCLES 300
@@ -18,7 +18,7 @@ MAXDELAY 0
 DROP 0
 
 #random.seed 9999 # for 1000
-random.seed 9900
+random.seed 66666
 
 #overlay.size SIZE
 
@@ -55,18 +55,18 @@ control.o1.FINAL
 control.o1.step 1
 control.o1.addingPerStep 10000000
 control.o1.startAdd 0
-#control.o1.endAdd 200
+control.o1.endAdd 200
 #control.o1.removingPerStep 1
 #control.o1.endRem 700
 #control.o1.startRem 1500
 
-#control.o2 example.paper.RemoveProtocol
-#control.o2.protocol 0
-#control.o2.FINAL
-#control.o2.step 20
-#control.o2.startRem 1500
+control.o2 example.paper.RemoveProtocol
+control.o2.protocol 0
+control.o2.FINAL
+control.o2.step 1
+control.o2.startRem 200
 #control.o2.endRem 3700
-#control.o2.removingPerStep 1
+control.o2.removingPerStep 1000
 
 #control.o3 example.paper.AddProtocol
 #control.o3.protocol 0

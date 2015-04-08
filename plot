@@ -10,5 +10,6 @@ set title "SCAMPLON, 100 Nodes, c = 0, churn from cycle 2202 on"
 
 set pointintervalbox 1
 
-plot [0:300] "x.txt" using ($0):1 with lines, \
-             "y.txt" using ($0):1 with lines
+plot [200:300] "cluster.txt" using ($0):1 title "Cyclon" with lines, \
+		"clustersc.txt" using ($0):1 title "Scamplon (unsub)" with lines, \
+		"clusterscnou.txt" using ($0):1 title "Scamplon (no unsub)" with lines

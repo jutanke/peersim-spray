@@ -350,6 +350,83 @@ public class DictGraph {
         return var / N.size();
     }
 
+
+    public ClusterResult countClusters() {
+        final HashMap<Long, DictNode> lookup = new HashMap<Long, DictNode>(this.nodes);
+        int clusterCount = 0;
+        int maxClusterSize = 0;
+        int deadLinks = 0;
+        final HashSet<Long> currentCluster = new HashSet<Long>();
+
+        while (lookup.size() > 0) {
+            DictNode r = (DictNode) lookup.values().toArray()[0];
+            dfsMarking(r, currentCluster);
+            if (currentCluster.size() > maxClusterSize) {
+                maxClusterSize = currentCluster.size();
+            }
+            for (long c : currentCluster) {
+                lookup.remove(c);
+            }
+            currentCluster.clear();
+            clusterCount += 1;
+        }
+
+        return new ClusterResult(clusterCount, maxClusterSize, deadLinks);
+    }
+
+    private void dfsMarking(
+            final DictNode node,
+            final HashSet<Long> currentCluster) {
+        final Stack<DictNode> stack = new Stack<DictNode>();
+        stack.push(node);
+        while (!stack.isEmpty()) {
+            final DictNode current = stack.pop();
+            if (!currentCluster.contains(current.id)) {
+                currentCluster.add(current.id);
+                for (long n : current.neighbors) {
+                    if (!currentCluster.contains(n)) {
+                        final DictNode neighbor = this.nodes.get(n);
+                        if (neighbor != null) {
+                            stack.push(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void dfsMarkingRec(
+            final DictNode n,
+            final HashSet<Long> currentCluster) {
+        if (!currentCluster.contains(n.id)) {
+            currentCluster.add(n.id);
+            for (long neighbor : n.neighbors) {
+                if (!currentCluster.contains(neighbor)) {
+                    DictNode o = this.nodes.get(neighbor);
+                    dfsMarking(o, currentCluster);
+                }
+            }
+        }
+    }
+
+    public class ClusterResult {
+        public final int count;
+        public final int maxClusterSize;
+        public final int deadLinks;
+
+        private ClusterResult(int c, int mCs, int dl) {
+            this.count = c;
+            this.maxClusterSize = mCs;
+            this.deadLinks = dl;
+        }
+
+        @Override
+        public String toString() {
+            return "Cluster result:" + this.count + ", max cluster size:" + maxClusterSize;
+        }
+    }
+
     /* =================================================================== *
      * PRIVATE
      * =================================================================== */
@@ -429,6 +506,23 @@ public class DictGraph {
             if (n == i) return true;
         }
         return false;
+    }
+
+    /**
+     *
+     * @param src
+     * @return
+     */
+    public Map<Long, Integer> fastDijkstra(DictNode src) {
+        dist.clear();
+
+        FibonacciHeap Q = new FibonacciHeap();
+
+
+
+        // http://keithschwarz.com/interesting/code/?dir=fibonacci-heap
+
+        return dist;
     }
 
     public Map<Long, Integer> dijkstra(DictNode src) {
