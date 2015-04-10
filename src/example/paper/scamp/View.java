@@ -31,6 +31,10 @@ public class View {
     // P U B L I C
     // =====================================
 
+    public void clear() {
+        this.array.clear();
+    }
+
     /**
      * only call this on the outview!
      */

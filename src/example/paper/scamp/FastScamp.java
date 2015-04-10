@@ -33,6 +33,7 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
     public static int c;
     public final int MAX_LEASE;
     public final int MIN_LEASE;
+    private boolean isUp;
 
     // ===========================================
     // C T O R
@@ -72,17 +73,17 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
     @Override
     public boolean isUp() {
-        return false;
+        return this.isUp;
     }
 
     @Override
     public void up() {
-
+        this.isUp = true;
     }
 
     @Override
     public void down() {
-
+        this.isUp = false;
     }
 
     @Override
@@ -92,22 +93,27 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
     @Override
     public int degree() {
-        return 0;
+        return this.out.size();
     }
 
     @Override
     public Node getNeighbor(int i) {
-        return null;
+        return this.out.array.get(i).node;
     }
 
     @Override
     public boolean addNeighbor(Node neighbour) {
-        return false;
+        if (this.out.contains(neighbour)) {
+            return false;
+        } else {
+            this.out.add(neighbour);
+            return true;
+        }
     }
 
     @Override
     public boolean contains(Node neighbor) {
-        return false;
+        return this.out.contains(neighbor);
     }
 
     @Override
@@ -122,18 +128,67 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
     @Override
     public List<Node> getPeers() {
-        return null;
+        return this.out.list();
     }
 
     @Override
     public String debug() {
-        return null;
+        return "{in:" + this.in + ", out:" + this.out + "}";
     }
 
     // ===========================================
     // P R I V A T E
     // ===========================================
 
+
+    // ===========================================
+    // P R O T O C O L
+    // ===========================================
+
+    /**
+     *
+     * @param node
+     */
+    public static void unsubscribe(final Node node) {
+
+        final FastScamp current = (FastScamp) node.getProtocol(pid);
+
+
+    }
+
+    /**
+     *
+     * @param s
+     * @param c
+     */
+    public static void subscribe(final Node s, final Node c) {
+        final FastScamp subscriber = (FastScamp) s.getProtocol(pid);
+        subscriber.in.clear();
+        subscriber.out.clear();
+        final FastScamp contact = (FastScamp) c.getProtocol(pid);
+        int count = 0;
+
+        if (subscriber.isUp() && contact.isUp()) {
+
+
+
+        } else {
+            throw new RuntimeException("@sub");
+        }
+    }
+
+    /**
+     *
+     * @param s
+     * @param node
+     * @param counter
+     * @return
+     */
+    public static boolean forward(final Node s, final Node node, int counter ){
+
+
+        return false;
+    }
 
 
 }
