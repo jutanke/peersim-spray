@@ -146,6 +146,16 @@ public class Scamp implements Linkable, EDProtocol, CDProtocol, example.PeerSamp
         return "{in:" + this.in + ", out:" + this.out + "}";
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     /**
      * send a message to the network
      *

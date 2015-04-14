@@ -13,4 +13,7 @@ public interface PeerSamplingService {
 
     String debug();
 
+    int callsInThisCycle();
+    void clearCallsInCycle();
+
 }

@@ -126,6 +126,16 @@ public class CyclonBlocking extends CyclonProtocol {
         return 0;
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     /**
      * to ensure no overlapping
      */

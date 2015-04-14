@@ -11,7 +11,7 @@ import java.util.*;
  * THIS is not EVENT-based due to simplification
  * Created by julian on 3/31/15.
  */
-public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements Dynamic, PartialView.Parent {
+public class FastScamplon extends example.Scamplon.ScamplonProtocol implements Dynamic, PartialView.Parent {
 
     private static final String PARAM_START_SHUFFLE = "startShuffle";
 
@@ -24,6 +24,8 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     private boolean isUp = true;
     private static final int FORWARD_TTL = 125;
     private final int startShuffle;
+    private int callCount = 0;
+    private long lastCycle = Long.MIN_VALUE;
 
     public FastScamplon(String prefix) {
         super(prefix);
@@ -128,19 +130,34 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
         return sb.toString();
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return this.callCount;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+        this.callCount = 0;
+    }
+
     // ============================================
     // C Y C L O N
     // ============================================
 
     /**
-     *
-     *      A* --> B
+     * A* --> B
      *
      * @param me
      */
     public void startShuffle(Node me) {
+
+        final long currentTime = CommonState.getTime();
+        if (currentTime > this.lastCycle) {
+            this.callCount = 0;
+        }
+
         this.updateInView(me);
-        if (this.isUp() && this.startShuffle < CommonState.getTime()) {
+        if (this.isUp() && this.startShuffle <= CommonState.getTime()) {
             if (this.degree() > 0) {
                 this.partialView.freeze();
                 this.partialView.incrementAge();
@@ -152,16 +169,27 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
                     Q.receiveShuffle(q.node, me, PartialView.clone(nodesToSend), this.degree());
                 } else {
                     // TIME OUT
-                    this.partialView.deleteAll(q.node);
+                    final double p = (double) (c + 1) / this.partialView.degree();
+                    final int count = this.partialView.deleteAll(q.node);
                     this.inView.remove(q.node.getID());
+                    if (this.partialView.degree() > 0) {
+                        // recreate a link:
+                        if (this.partialView.degree() > 0) {
+                            for (int i = 0; i < count; i++) {
+                                if (CommonState.r.nextDouble() > p) {
+                                    final Node r = this.partialView.get(CommonState.r.nextInt(this.partialView.degree()));
+                                    this.partialView.addMultiset(r);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
     /**
-     *
-     *      A --> B*
+     * A --> B*
      *
      * @param me
      * @param sender
@@ -174,6 +202,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
             final List<PartialView.Entry> received,
             final int otherPartialViewSize) {
         if (this.isUp()) {
+            this.callCountPP(me, sender);
             this.partialView.freeze();
             List<PartialView.Entry> nodesToSend = this.partialView.subset();
             final int size = this.degree();
@@ -193,12 +222,11 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     }
 
     /**
-     *
-     *      A* --> B
+     * A* --> B
      *
      * @param me
      * @param sender
-     * @param received (FROM B)
+     * @param received             (FROM B)
      * @param otherPartialViewSize
      */
     public void finishShuffle(
@@ -220,9 +248,9 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
 
     /**
      * Transform
-     *  a --> (me) --> b
-     *  into
-     *  a --> b
+     * a --> (me) --> b
+     * into
+     * a --> b
      *
      * @param node
      */
@@ -256,6 +284,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
 
     /**
      * SUBSCRIBE
+     *
      * @param s
      * @param c
      */
@@ -288,6 +317,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
 
     /**
      * FORWARD
+     *
      * @param s
      * @param node
      * @param counter
@@ -322,6 +352,19 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
     // H E L P E R
     // =================================================================
 
+    private void callCountPP(Node me, Node from) {
+        final long currentTime = CommonState.getTime();
+
+        if (this.lastCycle == currentTime) {
+            this.callCount += 1;
+        } else if (this.lastCycle < currentTime) {
+            this.callCount = 1;
+        } else {
+            throw new RuntimeException("nope..99");
+        }
+        this.lastCycle = currentTime;
+    }
+
     private void updateInView(Node me) {
         List<Node> in = new ArrayList<Node>(this.inView.values());
         for (Node n : in) {
@@ -345,9 +388,9 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
 
     /**
      * Turn
-     *      a --> (me) --> b
+     * a --> (me) --> b
      * Into
-     *      a --> b
+     * a --> b
      *
      * @param me
      * @param a
@@ -367,7 +410,7 @@ public class FastScamplon  extends example.Scamplon.ScamplonProtocol implements 
                 B.inView.remove(me.getID());
             } else {
                 final int swn = A.partialView.switchNode(me, b);
-                count += Math.max(swn/2, 1); // inaccurate
+                count += Math.max(swn / 2, 1); // inaccurate
                 B.inView.remove(me.getID());
                 if (!B.inView.containsKey(a.getID())) {
                     B.addToInview(b, a);

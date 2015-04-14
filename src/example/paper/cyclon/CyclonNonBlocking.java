@@ -82,6 +82,16 @@ public class CyclonNonBlocking extends CyclonProtocol {
         return 0;
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     // ===========================================
     // P R I V A T E
     // ===========================================

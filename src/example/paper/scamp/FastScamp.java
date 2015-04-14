@@ -136,6 +136,16 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
         return "{in:" + this.in + ", out:" + this.out + "}";
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     // ===========================================
     // P R I V A T E
     // ===========================================

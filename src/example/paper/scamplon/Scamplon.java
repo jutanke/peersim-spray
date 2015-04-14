@@ -179,6 +179,16 @@ public class Scamplon extends example.Scamplon.ScamplonProtocol implements Dynam
         return sb.toString();
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     // ============================================
     // C Y C L O N
     // ============================================

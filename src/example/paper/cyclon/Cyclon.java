@@ -237,6 +237,16 @@ public class Cyclon implements Linkable, EDProtocol, CDProtocol, example.PeerSam
         return sb.toString();
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     // ===========================================
     // P R I V A T E
     // ===========================================

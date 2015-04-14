@@ -1,5 +1,6 @@
 package example.webrtc.data;
 
+import example.PeerSamplingService;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -31,10 +32,13 @@ public class DictGraph {
     public final Map<Long, DictNode> nodes;
 
     private List<DictNode> neighbourhood;
+
+    private final List<example.PeerSamplingService> pssList;
     private final Map<Long, Integer> dist;
     private final LinkedList<DictNode> Q;
 
     private DictGraph(int size) {
+        this.pssList = new ArrayList<PeerSamplingService>();
         this.neighbourhood = new ArrayList<DictNode>();
         this.dist = new HashMap<Long, Integer>();
         //this.prev = new int[size];
@@ -48,6 +52,7 @@ public class DictGraph {
 
 
     public void reset() {
+        this.pssList.clear();
         this.nodes.clear();
     }
 
@@ -58,6 +63,7 @@ public class DictGraph {
         }
         if (this.nodes.containsKey(n.getID())) throw new Error("should never happen");
         this.nodes.put(n.getID(), node);
+        this.pssList.add(c);
     }
 
     public AvgReachablePaths avgReachablePathsBothDirections(long v) {
@@ -103,6 +109,32 @@ public class DictGraph {
         public String toString() {
             return "avg:" + avg + "| %:" + reachQuota + " |count:" + this.count + " |total:" + total;
         }
+    }
+
+    /**
+     * how often is the pss called this time frame
+     * @return
+     */
+    public int[] histogramPassiveWorkDistribution() {
+        final int[] distribution = new int[this.pssList.size()];
+        for (int i = 0; i < distribution.length; i++) {
+            distribution[i] = this.pssList.get(i).callsInThisCycle();
+        }
+
+        int max = 1;
+        for (int i : distribution) {
+            if (i+1 > max) {
+                max = i+1;
+            }
+        }
+
+        final int[] histo = new int[max];
+
+        for (int i : distribution) {
+            histo[i]++;
+        }
+
+        return histo;
     }
 
     public MeanPathLength meanPathLength() {

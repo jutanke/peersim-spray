@@ -73,15 +73,27 @@ public class Observer implements Control {
         //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
         //if (CommonState.getTime() > 1 ) System.out.println(avgPathLength(observer));
 
-        DictGraph.ClusterResult clusterResult = observer.countClusters();
-        System.err.println(clusterResult);
-        System.out.println(clusterResult.count + " " + clusterResult.maxClusterSize);
+        //DictGraph.ClusterResult clusterResult = observer.countClusters();
+        //System.err.println(clusterResult);
+        //System.out.println(clusterResult.count + " " + clusterResult.maxClusterSize);
 
-        if (CommonState.getTime() == 299) {
-            //System.err.println("Avg path:" + avgPathLength(observer));
+        /*
+        final int[] dist = observer.histogramPassiveWorkDistribution();
+        int c = 0;
+        for (int i : dist) {
+            c += i;
+        }
+        System.err.println("exchanges:" + c);
+        System.out.println("s--@" + CommonState.getTime());
+        System.out.println(print(dist));
+        System.out.println("e--@" + CommonState.getTime());
+        */
+
+        if (CommonState.getTime() == 149) {
+            System.err.println("Avg path:" + avgPathLength(observer));
         }
 
-        System.err.println("arc count:" + observer.countArcs());
+        //System.err.println("arc count:" + observer.countArcs());
         //System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {
@@ -92,6 +104,15 @@ public class Observer implements Control {
 
 
         return false;
+    }
+
+    private String print(int[] list) {
+        StringBuilder sb = new StringBuilder();
+        for (int i : list) {
+            sb.append(i);
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     /**

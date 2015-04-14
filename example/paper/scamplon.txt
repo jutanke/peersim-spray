@@ -1,7 +1,7 @@
-SIZE 100000
+SIZE 1200
 
 # parameters of periodic execution
-CYCLES 300
+CYCLES 150
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -60,20 +60,20 @@ control.o1.endAdd 200
 #control.o1.endRem 700
 #control.o1.startRem 1500
 
-control.o2 example.paper.RemoveProtocol
-control.o2.protocol 0
-control.o2.FINAL
-control.o2.step 1
-control.o2.startRem 200
-#control.o2.endRem 3700
-control.o2.removingPerStep 1000
+#control.o2 example.paper.RemoveProtocol
+#control.o2.protocol 0
+#control.o2.FINAL
+#control.o2.step 1
+#control.o2.startRem 200
+#control.o2.endRem 300
+#control.o2.removingPerStep 1000
 
 #control.o3 example.paper.AddProtocol
 #control.o3.protocol 0
 #control.o3.FINAL
 #control.o3.step 1
-#control.o3.startAdd 100000
-#control.o3.addingPerStep 1
+#control.o3.startAdd 251
+#control.o3.addingPerStep 100
 
 control.o0 example.paper.Observer
 control.o0.protocol 0

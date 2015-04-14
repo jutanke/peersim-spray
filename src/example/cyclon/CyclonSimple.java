@@ -351,4 +351,14 @@ public class CyclonSimple implements Linkable, EDProtocol, CDProtocol, example.P
         sb.append("]");
         return sb.toString();
     }
+
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
 }

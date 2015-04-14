@@ -146,4 +146,14 @@ public class FastCyclon extends CyclonProtocol {
             }
         }
     }
+
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
 }

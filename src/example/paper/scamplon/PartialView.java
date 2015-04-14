@@ -56,6 +56,10 @@ public class PartialView {
         return true;
     }
 
+    public void addMultiset(Node n) {
+        this.out.add(new Entry(n));
+    }
+
     public boolean delete(Entry e) {
         int i = 0;
         boolean found = false;

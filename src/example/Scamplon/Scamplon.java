@@ -200,6 +200,16 @@ public class Scamplon extends ScamplonProtocol {
     }
 
     @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
+    @Override
     public String toString() {
         return this.debug();
     }

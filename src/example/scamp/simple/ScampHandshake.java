@@ -263,6 +263,16 @@ public class ScampHandshake extends ScampWithView {
 
     }
 
+    @Override
+    public int callsInThisCycle() {
+        return 0;
+    }
+
+    @Override
+    public void clearCallsInCycle() {
+
+    }
+
     // ===================================================
     // S U B  C L A S S E S
     // ===================================================
