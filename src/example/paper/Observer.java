@@ -90,10 +90,11 @@ public class Observer implements Control {
         */
 
         if (CommonState.getTime() == 149) {
-            System.err.println("Avg path:" + avgPathLength(observer));
+            System.out.println(observer.toGraph());
+            //System.err.println("Avg path:" + avgPathLength(observer));
         }
 
-        //System.err.println("arc count:" + observer.countArcs());
+        System.err.println("arc count:" + observer.countArcs());
         //System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {

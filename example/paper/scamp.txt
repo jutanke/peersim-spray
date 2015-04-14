@@ -1,7 +1,7 @@
-SIZE 1000
+SIZE 100
 
 # parameters of periodic execution
-CYCLES 25000
+CYCLES 150
 CYCLE SIZE*10000
 
 
@@ -25,8 +25,8 @@ random.seed 1234539890
 
 protocol.link peersim.core.IdleProtocol
 
-protocol.0 example.paper.scamp.Scamp
-protocol.0.c 2
+protocol.0 example.paper.scamp.FastScamp
+protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
@@ -42,8 +42,16 @@ protocol.tr UnreliableTransport
 protocol.tr.transport urt
 protocol.tr.drop DROP
 
-init.0 example.paper.scamp.Initializer
-init.0.protocol 0
+#init.0 example.paper.scamp.Initializer
+#init.0.protocol 0
+
+control.o1 example.paper.scamp.FastChurn
+control.o1.protocol lnk
+control.o1.FINAL
+control.o1.step 1
+control.o1.addingPerStep 10000000
+control.o1.startAdd 0
+control.o1.endAdd 200
 
 init.sch CDScheduler
 init.sch.protocol 0
