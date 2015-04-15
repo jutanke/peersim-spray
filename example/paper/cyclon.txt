@@ -1,5 +1,5 @@
 # network size
-SIZE 1200
+SIZE 1000000
 DEGREE 7
 
 # parameters of periodic execution

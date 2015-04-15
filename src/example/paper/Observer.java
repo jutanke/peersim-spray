@@ -69,7 +69,7 @@ public class Observer implements Control {
 
 
         //if (CommonState.getTime() > 0 ) System.out.println(observer.variancePartialView());
-        //if (CommonState.getTime() > 0 ) System.out.println(observer.meanClusterCoefficient());
+        if (CommonState.getTime() > 0 ) System.out.println(observer.meanClusterCoefficient());
         //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
         //if (CommonState.getTime() > 1 ) System.out.println(avgPathLength(observer));
 
@@ -90,11 +90,13 @@ public class Observer implements Control {
         */
 
         if (CommonState.getTime() == 149) {
-            System.out.println(observer.toGraph());
+            //System.out.println("qqq");
+            //System.out.println(print(observer.inDegreeAsHistogram()));
+            //System.out.println(observer.toGraph());
             //System.err.println("Avg path:" + avgPathLength(observer));
         }
 
-        System.err.println("arc count:" + observer.countArcs());
+        //System.err.println("arc count:" + observer.countArcs());
         //System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {

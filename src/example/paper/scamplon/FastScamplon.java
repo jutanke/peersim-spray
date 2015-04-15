@@ -19,13 +19,13 @@ public class FastScamplon extends example.Scamplon.ScamplonProtocol implements D
     // E N T I T Y
     // ============================================
 
-    private PartialView partialView;
-    private Map<Long, Node> inView;
+    protected PartialView partialView;
+    protected Map<Long, Node> inView;
     private boolean isUp = true;
-    private static final int FORWARD_TTL = 125;
-    private final int startShuffle;
-    private int callCount = 0;
-    private long lastCycle = Long.MIN_VALUE;
+    protected static final int FORWARD_TTL = 125;
+    protected final int startShuffle;
+    protected int callCount = 0;
+    protected long lastCycle = Long.MIN_VALUE;
 
     public FastScamplon(String prefix) {
         super(prefix);
@@ -325,7 +325,7 @@ public class FastScamplon extends example.Scamplon.ScamplonProtocol implements D
     public static boolean forward(final Node s, final Node node, int counter) {
         final FastScamplon N = (FastScamplon) node.getProtocol(pid);
         if (N.isUp()) {
-            counter++;
+            //counter++;
             if (counter < FORWARD_TTL) {
                 final FastScamplon current = (FastScamplon) node.getProtocol(pid);
                 if (current.partialView.p() && node.getID() != s.getID()) {
@@ -365,7 +365,7 @@ public class FastScamplon extends example.Scamplon.ScamplonProtocol implements D
         this.lastCycle = currentTime;
     }
 
-    private void updateInView(Node me) {
+    protected void updateInView(Node me) {
         List<Node> in = new ArrayList<Node>(this.inView.values());
         for (Node n : in) {
             final FastScamplon current = (FastScamplon) n.getProtocol(pid);
@@ -375,7 +375,7 @@ public class FastScamplon extends example.Scamplon.ScamplonProtocol implements D
         }
     }
 
-    private void updateOutView(Node me) {
+    protected void updateOutView(Node me) {
         for (Node n : this.getPeers()) {
             final FastScamplon current = (FastScamplon) n.getProtocol(pid);
             if (!current.inView.containsKey(me.getID())) {
@@ -424,7 +424,7 @@ public class FastScamplon extends example.Scamplon.ScamplonProtocol implements D
         return count;
     }
 
-    private void addToInview(Node me, Node n) {
+    protected void addToInview(Node me, Node n) {
         if (me.getID() == n.getID()) {
             throw new RuntimeException("cannot put myself");
         }

@@ -5,8 +5,10 @@ import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Linkable;
+import peersim.core.Network;
 import peersim.core.Node;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,8 +27,8 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
     // P R O P E R T I E S
     // ===========================================
 
-    public View in;
-    public View out;
+    public List<Node> in;
+    public List<Node> out;
     private View.ViewEntry current;
 
     private static final int FORWARD_TTL = 125;
@@ -36,6 +38,7 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
     public final int MAX_LEASE;
     public final int MIN_LEASE;
     private boolean isUp;
+    private int interval;
 
     // ===========================================
     // C T O R
@@ -47,8 +50,9 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
         this.pid = Configuration.lookupPid(SCAMP_PROT);
         this.MAX_LEASE = Configuration.getInt(n + "." + PAR_LEASE_MAX, 2000);
         this.MIN_LEASE = Configuration.getInt(n + "." + PAR_LEASE_MIN, 1000);
-        this.in = new View(this.MIN_LEASE, this.MAX_LEASE);
-        this.out = new View(this.MIN_LEASE, this.MAX_LEASE);
+        this.in = new ArrayList<Node>();
+        this.out = new ArrayList<Node>();
+        this.interval = CommonState.r.nextInt(this.MAX_LEASE - this.MIN_LEASE) + this.MIN_LEASE;
     }
 
     @Override
@@ -56,8 +60,9 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
         FastScamp scamp = null;
         try {
             scamp = (FastScamp) super.clone();
-            scamp.in = new View(this.MIN_LEASE, this.MAX_LEASE);
-            scamp.out = new View(this.MIN_LEASE, this.MAX_LEASE);
+            scamp.in = new ArrayList<Node>();
+            scamp.out = new ArrayList<Node>();
+            scamp.interval = CommonState.r.nextInt(this.MAX_LEASE - this.MIN_LEASE) + this.MIN_LEASE;
         } catch (CloneNotSupportedException e) {
         } // never happens
         // ...
@@ -70,7 +75,12 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
     @Override
     public void nextCycle(Node node, int protocolID) {
-
+        if (this.isUp()) {
+            this.leaseOthers();
+            if (this.isTimedOut()) {
+                lease(node);
+            }
+        }
     }
 
     @Override
@@ -100,7 +110,7 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
     @Override
     public Node getNeighbor(int i) {
-        return this.out.array.get(i).node;
+        return this.out.get(i);
     }
 
     @Override
@@ -130,7 +140,8 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
     @Override
     public List<Node> getPeers() {
-        return this.out.list();
+        final List<Node> result = new ArrayList<Node>(this.out);
+        return result;
     }
 
     @Override
@@ -152,14 +163,59 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
     // P R I V A T E
     // ===========================================
 
+    private void leaseOthers() {
+        outer: while (true) {
+            for (int i = 0; i < this.out.size(); i++) {
+                final FastScamp N = (FastScamp) this.out.get(i).getProtocol(pid);
+                if (N.isTimedOut()) {
+                    this.out.remove(i);
+                    break outer;
+                }
+            }
+            break;
+        }
+    }
+
+    private boolean isTimedOut() {
+        return CommonState.getTime() > 0 && CommonState.getTime() % this.interval == 0;
+    }
+
     private boolean p() {
         return CommonState.r.nextDouble() < 1.0 / (1.0 + this.degree());
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("out:[");
+        for (Node n : this.out) {
+            sb.append(n.getID());
+            sb.append(" ");
+        }
+        sb.append("] in:");
+        for (Node n : this.in) {
+            sb.append(n.getID());
+            sb.append(" ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 
     // ===========================================
     // P R O T O C O L
     // ===========================================
+
+
+    public static void lease(final Node n) {
+        final FastScamp N = (FastScamp) n.getProtocol(pid);
+        System.err.println("@" + n.getID() + " " + N.toString());
+        N.in.clear();
+        Node c = Network.get(CommonState.r.nextInt(Network.size()));
+        if (N.degree() > 0) {
+            c = N.out.get(CommonState.r.nextInt(N.degree()));
+        }
+        subscribe(n, c, true);
+    }
 
     /**
      *
@@ -169,7 +225,12 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
 
         final FastScamp current = (FastScamp) node.getProtocol(pid);
 
+        throw new RuntimeException("Not yet impl");
 
+    }
+
+    public static void subscribe(final Node s, final Node c) {
+        subscribe(s,c,false);
     }
 
     /**
@@ -177,21 +238,21 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
      * @param s
      * @param c
      */
-    public static void subscribe(final Node s, final Node c) {
+    public static void subscribe(final Node s, final Node c, final boolean isLease) {
         final FastScamp subscriber = (FastScamp) s.getProtocol(pid);
         subscriber.in.clear();
         subscriber.out.clear();
         final FastScamp contact = (FastScamp) c.getProtocol(pid);
-        int count = 0;
-
         if (subscriber.isUp() && contact.isUp()) {
             subscriber.addNeighbor(c);
             for (Node n : contact.getPeers()) {
                 forward(s, n, 0);
             }
-            for (int i = 0; i < FastScamp.c && contact.degree() > 0; i++) {
-                Node n = contact.getNeighbor(CommonState.r.nextInt(contact.degree()));
-                forward(s, n, 0);
+            if (!isLease) {
+                for (int i = 0; i < FastScamp.c && contact.degree() > 0; i++) {
+                    Node n = contact.getNeighbor(CommonState.r.nextInt(contact.degree()));
+                    forward(s, n, 0);
+                }
             }
         } else {
             throw new RuntimeException("@sub:" + s.getID() + "  @con:" + c.getID());
@@ -217,7 +278,7 @@ public class FastScamp implements CDProtocol, Dynamic, Linkable, example.PeerSam
                     subscriber.in.add(node);
                     return true;
                 } else if (current.degree() > 0) {
-                    Node next = current.out.list().get(CommonState.r.nextInt(current.degree()));
+                    Node next = current.out.get(CommonState.r.nextInt(current.degree()));
                     return forward(s, next, counter);
                 } else {
                     System.err.println("DEAD END for subscription " + s.getID() + " @" + node.getID());
