@@ -69,9 +69,13 @@ public class Observer implements Control {
 
 
         //if (CommonState.getTime() > 0 ) System.out.println(observer.variancePartialView());
-        if (CommonState.getTime() > 0 ) System.out.println(observer.meanClusterCoefficient());
+        //if (CommonState.getTime() > 0 ) System.out.println(observer.meanClusterCoefficient());
         //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
-        //if (CommonState.getTime() > 1 ) System.out.println(avgPathLength(observer));
+        //if (CommonState.getTime() > 2200) System.out.println(avgPathLength(observer));
+
+        if (observer.size() % (Math.pow(10, Math.ceil(Math.log10(observer.size())))/2) == 0) {
+            System.out.println(CommonState.getTime() + " " + avgPathLength(observer));
+        }
 
         //DictGraph.ClusterResult clusterResult = observer.countClusters();
         //System.err.println(clusterResult);
@@ -90,13 +94,16 @@ public class Observer implements Control {
         */
 
         if (CommonState.getTime() == 149) {
-            //System.out.println("qqq");
+            //System.err.println("qqq");
             //System.out.println(print(observer.inDegreeAsHistogram()));
             //System.out.println(observer.toGraph());
+
             //System.err.println("Avg path:" + avgPathLength(observer));
+            //final int[] dup = observer.duplicates();
+            //System.err.println(print(dup));
         }
 
-        //System.err.println("arc count:" + observer.countArcs());
+        System.err.println("arc count:" + observer.countArcs());
         //System.out.println(observer.countArcs());
 
         if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {
@@ -118,12 +125,38 @@ public class Observer implements Control {
         return sb.toString();
     }
 
+    private double avgPathLength(DictGraph observer) {
+        System.err.print("avg path length: [");
+        double total = 0;
+        total += observer.avgReachablePaths(0).avg; //  1
+        System.err.print("#");
+        total += observer.avgReachablePaths(observer.size() / 2).avg; //  2
+        System.err.print("#");
+        total += observer.avgReachablePaths(observer.size() / 3).avg; //  3
+        System.err.print("#");
+        total += observer.avgReachablePaths(observer.size() / 4).avg; //  4
+        System.err.print("#");
+        total += observer.avgReachablePaths(observer.size() / 8).avg; //  5
+        System.err.print("#");
+        total += observer.avgReachablePaths(observer.size() / 16).avg; //  6
+        System.err.print("#");
+        total += observer.avgReachablePaths(observer.size() - 1).avg; //  7
+        System.err.print("#");
+        //total += observer.avgReachablePaths(randomId()).avg; //  8
+        //System.err.println("#");
+        //total += observer.avgReachablePaths(randomId()).avg; //  9
+        //System.err.println("#");
+        //total += observer.avgReachablePaths(randomId()).avg; // 10
+        System.err.println("]");
+        return total / 7.0;
+    }
+
     /**
      *
      * @param observer
      * @return
      */
-    private double avgPathLength(DictGraph observer) {
+    private double avgPathLengthRand(DictGraph observer) {
         System.err.println("avg path length: [");
         double total = 0;
         total += observer.avgReachablePaths(randomId()).avg; //  1

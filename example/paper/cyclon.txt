@@ -1,9 +1,9 @@
 # network size
-SIZE 1000000
+SIZE 100000
 DEGREE 7
 
 # parameters of periodic execution
-CYCLES 150
+CYCLES 1000000
 CYCLE SIZE*10000
 
 # parameters of message transfer
@@ -45,9 +45,9 @@ control.o1 example.paper.cyclon.FastChurn
 control.o1.protocol lnk
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 10000000
+control.o1.addingPerStep 1
 control.o1.startAdd 0
-control.o1.endAdd 200
+#control.o1.endAdd 200
 
 #control.o2 example.paper.RemoveProtocol
 #control.o2.protocol 0

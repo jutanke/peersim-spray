@@ -1,7 +1,7 @@
 SIZE 100000
 
 # parameters of periodic execution
-CYCLES 100
+CYCLES 1000000
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -18,7 +18,7 @@ MAXDELAY 0
 DROP 0
 
 #random.seed 9999 # for 1000
-random.seed 0
+random.seed 9990
 
 #overlay.size SIZE
 
@@ -53,9 +53,9 @@ control.o1 example.paper.scamplon.FastChurnNoScamp
 control.o1.protocol 0
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 10000000
+control.o1.addingPerStep 1
 control.o1.startAdd 0
-control.o1.endAdd 200
+#control.o1.endAdd 200
 #control.o1.removingPerStep 1
 #control.o1.endRem 700
 #control.o1.startRem 1500

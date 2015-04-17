@@ -50,6 +50,9 @@ public class DictGraph {
      * PUBLIC
      * =================================================================== */
 
+    public int size() {
+        return this.nodes.size();
+    }
 
     public void reset() {
         this.pssList.clear();
@@ -72,6 +75,7 @@ public class DictGraph {
 
     public AvgReachablePaths avgReachablePaths(long v) {
         //Map<Long, Integer> dist = dijkstra(nodes.get(v));
+
         Map<Long, Integer> dist = dijkstraUndirected(nodes.get(v).id);
 
         AvgReachablePaths result = new AvgReachablePaths();
@@ -326,6 +330,46 @@ public class DictGraph {
         for (int deg : histogram.keySet()) {
             result[deg] = histogram.get(deg);
         }
+        return result;
+    }
+
+    public int[] duplicates() {
+
+        final Map<Long, Integer> lookup = new HashMap<Long, Integer>();
+        final Map<Integer, Integer> values = new HashMap<Integer, Integer>();
+
+        for (DictNode e : this.nodes.values()) {
+            lookup.clear();
+            for (long n : e.neighbors) {
+                if (lookup.containsKey(n)) {
+                    lookup.put(n, lookup.get(n) + 1);
+                } else {
+                    lookup.put(n, 1);
+                }
+            }
+            for (int v : lookup.values()) {
+                if (values.containsKey(v)) {
+                    values.put(v, values.get(v) + 1);
+                } else {
+                    values.put(v, 1);
+                }
+            }
+        }
+
+        int max = 0;
+        for (int k : values.keySet()) {
+            if (k > max) {
+                max = k;
+            }
+        }
+
+        final int[] result = new int[max+1];
+
+        for (int k : values.keySet()) {
+            final int v = values.get(k);
+            result[k] = v;
+        }
+
         return result;
     }
 
