@@ -19,25 +19,31 @@ public abstract class ChurnProtocol implements Control {
 
     private static final String PROTOCOL = "o1";
     private static final String PAR_ADD_COUNT = "addingPerStep";
+    private static final String PAR_ADD_PERC = "addingPerStepPerc";
     private static final String PARR_REM_COUNT = "removingPerStep";
     private static final String PAR_ADD_START = "startAdd";
     private static final String PAR_REM_START = "startRem";
     private static final String PAR_ADD_END = "endAdd";
     private static final String PAR_REM_END = "endRem";
 
+    public final int ADDING_PERCENT;
     public final int ADDING_COUNT;
     public final int REMOVING_COUNT;
     public final long ADDING_START;
     public final long REMOVING_START;
     public final long REMOVING_END;
     public final long ADDING_END;
+    public final boolean IS_PERCENTAGE;
     public final int pid;
 
     public LinkedList<Node> graph = new LinkedList<Node>();
     public LinkedList<Node> availableNodes = new LinkedList<Node>();
 
     public ChurnProtocol(String n, String cyclProtocol) {
-        this.ADDING_COUNT = Configuration.getInt(n + "." + PAR_ADD_COUNT, 0);
+        this.ADDING_COUNT = Configuration.getInt(n + "." + PAR_ADD_COUNT, -1);
+        this.ADDING_PERCENT = Configuration.getInt(n + "." + PAR_ADD_PERC, -1);
+        this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
+        System.err.println("IS PERC: " + this.IS_PERCENTAGE);
         this.REMOVING_COUNT = Configuration.getInt(n + "." + PARR_REM_COUNT, 0);
         this.ADDING_START = Configuration.getInt(n + "." + PAR_ADD_START, Integer.MAX_VALUE);
         this.REMOVING_START = Configuration.getInt(n + "." + PAR_REM_START, Integer.MAX_VALUE);
@@ -82,20 +88,36 @@ public abstract class ChurnProtocol implements Control {
         if (addingElements) {
             // ADD ELEMENTS
 
-            for (int i = 0; i < this.ADDING_COUNT && this.availableNodes.size() > 0; i++) {
-                final Node current = this.availableNodes.poll();
-                final Dynamic d = (Dynamic) current.getProtocol(pid);
-                d.up();
-                if (graph.size() > 0) {
-                    //final Node contact = getBestNode();
-                    final Node contact = getNode();
-                    this.addNode(current, contact);
+            if (this.IS_PERCENTAGE) {
+
+                final double log10 = Math.floor(Math.log10(this.graph.size()));
+                final double dev10 = Math.pow(10, log10);
+                int count = Math.max(1, (int) dev10/this.ADDING_PERCENT);
+                System.err.println("QQ:" + graph.size() + "," + log10 + "," + dev10 + "," + count);
+                for (int i = 0; i < count && this.availableNodes.size() > 0; i++) {
+                    insert();
                 }
-                this.graph.add(current);
+
+            } else {
+                for (int i = 0; i < this.ADDING_COUNT && this.availableNodes.size() > 0; i++) {
+                    insert();
+                }
             }
         }
 
         return false;
+    }
+
+    private void insert() {
+        final Node current = this.availableNodes.poll();
+        final Dynamic d = (Dynamic) current.getProtocol(pid);
+        d.up();
+        if (graph.size() > 0) {
+            //final Node contact = getBestNode();
+            final Node contact = getNode();
+            this.addNode(current, contact);
+        }
+        this.graph.add(current);
     }
 
     public Node getNode() {

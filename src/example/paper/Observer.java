@@ -7,6 +7,8 @@ import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
 import peersim.core.*;
 
+import java.util.HashSet;
+
 /**
  * Created by julian on 3/15/15.
  */
@@ -34,6 +36,9 @@ public class Observer implements Control {
     // =============================================
     // E X E C
     // =============================================
+
+    int counter = 0;
+    final HashSet<Integer> alreadyCalculated = new HashSet<Integer>();
 
     @Override
     public boolean execute() {
@@ -73,13 +78,23 @@ public class Observer implements Control {
         //if (CommonState.getTime() > 0 ) System.out.println(observer.avgReachablePaths(0).reachQuota);
         //if (CommonState.getTime() > 0) System.out.println(avgPathLength(observer));
 
-        if (observer.size() % (Math.pow(10, Math.ceil(Math.log10(observer.size())))/2) == 0) {
-            System.out.println(CommonState.getTime() + " " + avgPathLength(observer));
-        }
 
-        //DictGraph.ClusterResult clusterResult = observer.countClusters();
-        //System.err.println(clusterResult);
-        //System.out.println(clusterResult.count + " " + clusterResult.maxClusterSize);
+        /*
+        if (observer.size() % (Math.pow(10, Math.ceil(Math.log10(observer.size())))/2) == 0) {
+            if (!this.alreadyCalculated.contains(observer.size())) {
+                counter += 1;
+                if (counter > 14) {
+                    System.out.println(observer.size() + " " + avgPathLength(observer));
+                    counter = 0;
+                    this.alreadyCalculated.add(observer.size());
+                }
+            }
+        }
+        */
+
+        DictGraph.ClusterResult clusterResult = observer.countClusters();
+        System.err.println(clusterResult);
+        System.out.println(clusterResult.count + " " + clusterResult.maxClusterSize);
 
         /*
         final int[] dist = observer.histogramPassiveWorkDistribution();
