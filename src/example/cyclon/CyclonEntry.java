@@ -1,8 +1,6 @@
 package example.cyclon;
 
-import example.webrtc.cyclon2.Cyclon;
 import peersim.core.Node;
-
 import java.util.Comparator;
 
 /**

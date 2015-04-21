@@ -69,7 +69,7 @@ control.o2.FINAL
 control.o2.step 12
 control.o2.startRem 200
 control.o2.endRem 300
-control.o2.removingPerStep 1000
+control.o2.removingPerStep 10000
 
 #control.o3 example.paper.AddProtocol
 #control.o3.protocol 0

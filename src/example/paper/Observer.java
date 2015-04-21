@@ -92,9 +92,11 @@ public class Observer implements Control {
         }
         */
 
+        /*
         DictGraph.ClusterResult clusterResult = observer.countClusters();
         System.err.println(clusterResult);
         System.out.println(clusterResult.count + " " + clusterResult.maxClusterSize);
+        */
 
         /*
         final int[] dist = observer.histogramPassiveWorkDistribution();
