@@ -1,49 +1,70 @@
-############ General settings #############
+# network size
+SIZE 100000
+DEGREE 7
 
-random.seed 1234567890
+# parameters of periodic execution
+CYCLES 15050
+CYCLE SIZE*10000
 
-############ P2P settings ############
+# parameters of message transfer
+# delay values here are relative to cycle length, in percentage,
+# eg 50 means half the cycle length, 200 twice the cycle length, etc.
+MINDELAY 0
+MAXDELAY 0
+# drop is a probability, 0<=DROP<=1
+DROP 0
 
-PEERS 1000
-network.size PEERS
-network.node GeneralNode
-DEGREE 20
+random.seed 1237567890
+network.size SIZE
+simulation.endtime CYCLES
+simulation.logtime 1
 
-##### CDSimulator parameters
+################### protocols ===========================
+protocol.link peersim.core.IdleProtocol
 
-simulation.cycles 1000
-
-##### Linkable protocol ######
-
-protocol.lnk example.webrtc.cyclon.CyclonProtocol
+protocol.lnk descent.cyclon.Cyclon
 protocol.lnk.cache DEGREE
-protocol.lnk.l 5
+protocol.lnk.l 3
+protocol.lnk.step 1
+protocol.lnk.transport tr
+protocol.lnk.linkable link
+protocol.lnk.startShuffle 2
 
-############ Initialization #############
+protocol.urt UniformRandomTransport
+protocol.urt.mindelay (CYCLE*MINDELAY)/100
+protocol.urt.maxdelay (CYCLE*MAXDELAY)/100
 
-# Init each peer in lnk with K neighbours
+protocol.tr UnreliableTransport
+protocol.tr.transport urt
+protocol.tr.drop DROP
 
-init.rndlink WireKOut
-{
-	k DEGREE
-	protocol lnk
-}
+control.o1 descent.cyclon.Churn
+control.o1.protocol lnk
+control.o1.FINAL
+control.o1.step 50
+#control.o1.addingPerStep 1000
+control.o1.addingPerStepPerc 10
+control.o1.startAdd 0
+#control.o1.endAdd 200
 
-############ Observers ############
+#control.o2 descent.RemoveProtocol
+#control.o2.protocol 0
+#control.o2.FINAL
+#control.o2.step 1
+#control.o2.startRem 200
+#control.o2.endRem 3700
+#control.o2.removingPerStep 1000
 
-control.co example.webrtc.cyclon.CyclonObserver
-{
+################### initialization ======================
 
-}
+init.sch CDScheduler
+init.sch.protocol lnk
+init.sch.randstart
 
 ##### Controls #####
-# Adds one node each cycle in the simulation up to 1000 nodes in total.
 
-control.dynadd DynamicNetwork
-control.dynadd.add 1
-control.dynadd.maxsize 1000
-control.dynadd.init.rand RandNI
-control.dynadd.init.rand.protocol lnk
-control.dynadd.init.rand.k 1
 
-# control.shf Shuffle # Shuffles the order in which the nodes are iterated over during a cycle
+control.0 descent.observers.Observer
+control.0.protocol lnk
+control.0.FINAL
+control.0.step 1
