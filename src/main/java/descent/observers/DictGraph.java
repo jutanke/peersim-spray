@@ -558,7 +558,7 @@ public class DictGraph {
 		return actual / possible;
 	}
 
-	private double meanPartialViewSize() {
+	public double meanPartialViewSize() {
 		double mean = 0;
 		final Collection<DictNode> N = this.nodes.values();
 		for (DictNode n : N) {

@@ -1,8 +1,8 @@
-SIZE 1000
+SIZE 10000
 
 # parameters of periodic execution
 #CYCLES 15050
-CYCLES 360
+CYCLES 120
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -51,11 +51,11 @@ control.o1 descent.scamplon.Churn
 control.o1.protocol 0
 control.o1.FINAL
 control.o1.step 1
-#control.o1.step 15
-control.o1.addingPerStep 10000000
+control.o1.step 10
+control.o1.addingPerStep 2500
 #control.o1.addingPerStepPerc 10
 control.o1.startAdd 0
-control.o1.endAdd 200
+control.o1.endAdd 50
 #control.o1.removingPerStep 1
 #control.o1.endRem 700
 #control.o1.startRem 1500
@@ -63,17 +63,17 @@ control.o1.endAdd 200
 control.o2 descent.RemoveProtocol
 control.o2.protocol 0
 control.o2.FINAL
-control.o2.step 12
-control.o2.startRem 200
-control.o2.endRem 300
-control.o2.removingPerStep 10000
+control.o2.step 1
+control.o2.startRem 60
+control.o2.endRem 60
+control.o2.removingPerStep 5000
 
-#control.o3 descent.AddProtocol
-#control.o3.protocol 0
-#control.o3.FINAL
-#control.o3.step 1
-#control.o3.startAdd 251
-#control.o3.addingPerStep 100
+control.o3 descent.AddProtocol
+control.o3.protocol 0
+control.o3.FINAL
+control.o3.step 10
+control.o3.startAdd 100
+control.o3.addingPerStep 2500
 
 control.o0 descent.observers.Observer
 control.o0.protocol 0

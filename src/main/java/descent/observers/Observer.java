@@ -72,8 +72,8 @@ public class Observer implements Control {
 				}
 			}
 		}
-		System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count
-				+ ", disconnected:" + disconnected);
+		//System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count
+		//		+ ", disconnected:" + disconnected);
 
 		// if (CommonState.getTime() > 0 )
 		// System.out.println(observer.variancePartialView());
@@ -108,6 +108,7 @@ public class Observer implements Control {
 		 * CommonState.getTime());
 		 */
 
+
 		if (CommonState.getTime() == 299) {
 			// System.out.println("qqq");
 			// System.out.println(print(observer.inDegreeAsHistogram()));
@@ -118,8 +119,23 @@ public class Observer implements Control {
 			// System.err.println(print(dup));
 		}
 
-		System.err.println("arc count:" + observer.countArcs());
+		//System.err.println("arc count:" + observer.countArcs());
 		// System.out.println(observer.countArcs());
+
+		if (this.lastSize != observer.size()) {
+			this.lastSize = observer.size();
+			firstVar = observer.variancePartialView();
+			lastCount = lastCountTemp;
+			lastCountTemp = observer.countArcs();
+		}
+
+		System.out.println(observer.countArcs() + " " +
+				observer.variancePartialView() + " " +
+				observer.meanPartialViewSize() + " " +
+				observer.size() + " " +
+				firstVar + " " +
+				lastCount);
+
 
 		if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {
 			// printArray(observer.inDegreeAsHistogram());
@@ -128,6 +144,11 @@ public class Observer implements Control {
 
 		return false;
 	}
+
+	int lastSize = -1;
+	int lastCount = 0;
+	int lastCountTemp = 0;
+	double firstVar = -1;
 
 	private String print(int[] list) {
 		StringBuilder sb = new StringBuilder();
