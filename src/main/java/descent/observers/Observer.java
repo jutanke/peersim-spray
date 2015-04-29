@@ -81,7 +81,7 @@ public class Observer implements Control {
 			this.program.tick(CommonState.getTime(), observer);
 
 			if (CommonState.getTime() == (CommonState.getEndTime() - 1)) {
-				this.program.onLastTick();
+				this.program.onLastTick(observer);
 				this.isLast = true;
 			}
 

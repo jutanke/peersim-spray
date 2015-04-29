@@ -527,6 +527,63 @@ public class DictGraph {
 		}
 	}
 
+	public enum NetworkX {
+		Connectedness,
+		Graph
+	}
+
+	public String networkxDigraph(NetworkX type) {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("import networkx as nx\n");
+		String graph = "graph";
+		sb.append(graph);
+		sb.append(" = nx.DiGraph()\n");
+
+		for (DictNode e : this.nodes.values()) {
+			if (e.neighbors.size() > 0) {
+				for (long n : e.neighbors) {
+					sb.append(graph);
+					sb.append(".add_edge(");
+					sb.append(e.id);
+					sb.append(",");
+					sb.append(n);
+					sb.append(")\n");
+				}
+			} else {
+				sb.append(graph);
+				sb.append(".add_node(");
+				sb.append(e.id);
+				sb.append(")\n");
+			}
+		}
+
+		//print("weak:" + str(nx.algorithms.number_weakly_connected_components(MG)))
+		//print("strong:" + str(nx.algorithms.number_strongly_connected_components(MG)))
+
+		switch (type) {
+			case Connectedness:
+				sb.append("print(\"count:\" + str(");
+				sb.append(graph);
+				sb.append(".number_of_nodes()))\n");
+				sb.append("print(\"weak:\" + str(nx.algorithms.number_weakly_connected_components(");
+				sb.append(graph);
+				sb.append(")))\n");
+				sb.append("print(\"strong:\" + str(nx.algorithms.number_strongly_connected_components(");
+				sb.append(graph);
+				sb.append(")))\n");
+				break;
+			case Graph:
+
+				break;
+		}
+
+
+
+		return sb.toString();
+	}
+
 	/*
 	 * =================================================================== *
 	 * PRIVATE
