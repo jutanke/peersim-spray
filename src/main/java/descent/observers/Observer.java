@@ -4,6 +4,7 @@ import java.util.HashSet;
 
 import descent.Dynamic;
 import descent.PeerSamplingService;
+import descent.observers.program.VarianceAndArcCountProgram;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
 import peersim.core.CommonState;
@@ -24,6 +25,7 @@ public class Observer implements Control {
 	// =============================================
 
 	private int pid;
+	private final ObserverProgram program;
 
 	public Observer(String name) {
 
@@ -32,6 +34,8 @@ public class Observer implements Control {
 		} catch (MissingParameterException e) {
 			this.pid = Configuration.lookupPid(PROTOCOL_0);
 		}
+
+		this.program = new VarianceAndArcCountProgram();
 
 	}
 
@@ -44,107 +48,49 @@ public class Observer implements Control {
 
 	public boolean execute() {
 
-		final int STEP = 10;
-		final DictGraph observer = DictGraph.getSingleton(Network.size());
-		observer.reset();
+		if (!this.isLast) {
+			final int STEP = 10;
+			final DictGraph observer = DictGraph.getSingleton(Network.size());
+			observer.reset();
 
-		int max = Integer.MIN_VALUE;
-		int min = Integer.MAX_VALUE;
-		int count = 0, disconnected = 0;
+			int max = Integer.MIN_VALUE;
+			int min = Integer.MAX_VALUE;
+			int count = 0, disconnected = 0;
 
-		for (int i = 0; i < Network.size(); i++) {
-			Node n = Network.get(i);
-			Dynamic d = (Dynamic) n.getProtocol(pid);
-			if (d.isUp()) {
-				count += 1;
-				PeerSamplingService pss = (PeerSamplingService) n
-						.getProtocol(pid);
-				observer.add(n, pss);
-				final int size = pss.getPeers().size();
-				if (size < min) {
-					min = size;
-				}
-				if (size > max) {
-					max = size;
-				}
-				if (size == 0) {
-					disconnected++;
+			for (int i = 0; i < Network.size(); i++) {
+				Node n = Network.get(i);
+				Dynamic d = (Dynamic) n.getProtocol(pid);
+				if (d.isUp()) {
+					count += 1;
+					PeerSamplingService pss = (PeerSamplingService) n
+							.getProtocol(pid);
+					observer.add(n, pss);
+					final int size = pss.getPeers().size();
+					if (size < min) {
+						min = size;
+					}
+					if (size > max) {
+						max = size;
+					}
+					if (size == 0) {
+						disconnected++;
+					}
 				}
 			}
-		}
-		//System.err.println("MIN:" + min + ", MAX:" + max + ", count:" + count
-		//		+ ", disconnected:" + disconnected);
 
-		// if (CommonState.getTime() > 0 )
-		// System.out.println(observer.variancePartialView());
-		// if (CommonState.getTime() > 0 )
-		// System.out.println(observer.meanClusterCoefficient());
-		// if (CommonState.getTime() > 0 )
-		// System.out.println(observer.avgReachablePaths(0).reachQuota);
-		// if (CommonState.getTime() > 0)
-		// System.out.println(avgPathLength(observer));
+			this.program.tick(CommonState.getTime(), observer);
 
-		/*
-		 * if (observer.size() % (Math.pow(10,
-		 * Math.ceil(Math.log10(observer.size())))/2) == 0) { if
-		 * (!this.alreadyCalculated.contains(observer.size())) { counter += 1;
-		 * if (counter > 14) { System.out.println(observer.size() + " " +
-		 * avgPathLength(observer)); counter = 0;
-		 * this.alreadyCalculated.add(observer.size()); } } }
-		 */
+			if (CommonState.getTime() == (CommonState.getEndTime() - 1)) {
+				this.program.onLastTick();
+				this.isLast = true;
+			}
 
-		/*
-		 * DictGraph.ClusterResult clusterResult = observer.countClusters();
-		 * System.err.println(clusterResult);
-		 * System.out.println(clusterResult.count + " " +
-		 * clusterResult.maxClusterSize);
-		 */
-
-		/*
-		 * final int[] dist = observer.histogramPassiveWorkDistribution(); int c
-		 * = 0; for (int i : dist) { c += i; } System.err.println("exchanges:" +
-		 * c); System.out.println("s--@" + CommonState.getTime());
-		 * System.out.println(print(dist)); System.out.println("e--@" +
-		 * CommonState.getTime());
-		 */
-
-
-		if (CommonState.getTime() == 299) {
-			// System.out.println("qqq");
-			// System.out.println(print(observer.inDegreeAsHistogram()));
-			// System.out.println(observer.toGraph());
-
-			// System.err.println("Avg path:" + avgPathLength(observer));
-			// final int[] dup = observer.duplicates();
-			// System.err.println(print(dup));
-		}
-
-		//System.err.println("arc count:" + observer.countArcs());
-		// System.out.println(observer.countArcs());
-
-		if (this.lastSize != observer.size()) {
-			this.lastSize = observer.size();
-			firstVar = observer.variancePartialView();
-			lastCount = lastCountTemp;
-			lastCountTemp = observer.countArcs();
-		}
-
-		System.out.println(observer.countArcs() + " " +
-				observer.variancePartialView() + " " +
-				observer.meanPartialViewSize() + " " +
-				observer.size() + " " +
-				firstVar + " " +
-				lastCount);
-
-
-		if (CommonState.getTime() > 0 && CommonState.getTime() % 499 == 0) {
-			// printArray(observer.inDegreeAsHistogram());
-			// System.out.println("FINAL: " + avgPathLength(observer));
 		}
 
 		return false;
 	}
 
+	boolean isLast = false;
 	int lastSize = -1;
 	int lastCount = 0;
 	int lastCountTemp = 0;
