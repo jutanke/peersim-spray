@@ -1,4 +1,4 @@
-package descent.scamplon;
+package descent.spray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import descent.Dynamic;
 /**
  * THIS is not EVENT-based due to simplification Created by julian on 3/31/15.
  */
-public class Scamplon extends ScamplonProtocol implements Dynamic,
+public class Spray extends SprayProtocol implements Dynamic,
 		PartialView.Parent {
 
 	private static final String PARAM_START_SHUFFLE = "startShuffle";
@@ -33,7 +33,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	protected long lastCycle = Long.MIN_VALUE;
 	protected boolean useUnsubscription = false;
 
-	public Scamplon(String prefix) {
+	public Spray(String prefix) {
 		super(prefix);
 		this.startShuffle = Configuration.getInt(prefix + "."
 				+ PARAM_START_SHUFFLE, 0);
@@ -43,7 +43,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 
 	@Override
 	public Object clone() {
-		Scamplon s = (Scamplon) super.clone();
+		Spray s = (Spray) super.clone();
 		s.partialView = new PartialView();
 		s.inView = new HashMap<Long, Node>();
 		return s;
@@ -148,7 +148,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 				final List<PartialViewEntry> nodesToSend = this.partialView
 						.subsetMinus1(q);
 				nodesToSend.add(new PartialViewEntry(me));
-				final Scamplon Q = (Scamplon) q.node.getProtocol(pid);
+				final Spray Q = (Spray) q.node.getProtocol(pid);
 				if (Q.isUp()) {
 					Q.receiveShuffle(q.node, me,
 							PartialView.clone(nodesToSend), this.degree());
@@ -200,7 +200,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 					false);
 			this.updateInView(me);
 			this.updateOutView(me);
-			final Scamplon P = (Scamplon) sender.getProtocol(pid);
+			final Spray P = (Spray) sender.getProtocol(pid);
 
 			P.finishShuffle(sender, me, PartialView.clone(nodesToSend), size);
 		}
@@ -237,7 +237,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	 * @param node
 	 */
 	public static void unsubscribe(Node node) {
-		final Scamplon current = (Scamplon) node.getProtocol(pid);
+		final Spray current = (Spray) node.getProtocol(pid);
 		if (!current.useUnsubscription)
 			return;
 
@@ -257,7 +257,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 			}
 
 			while (!in.isEmpty()) {
-				final Scamplon next = (Scamplon) in.poll().getProtocol(pid);
+				final Spray next = (Spray) in.poll().getProtocol(pid);
 				count += next.partialView.deleteAll(node);
 			}
 			System.err.println("remove " + node.getID() + ", delete " + count
@@ -274,11 +274,11 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	 * @param c
 	 */
 	public static void subscribe(final Node s, final Node c) {
-		final Scamplon subscriber = (Scamplon) s.getProtocol(pid);
+		final Spray subscriber = (Spray) s.getProtocol(pid);
 		subscriber.inView.clear();
 		subscriber.partialView.clear();
 
-		final Scamplon contact = (Scamplon) c.getProtocol(pid);
+		final Spray contact = (Spray) c.getProtocol(pid);
 
 		if (subscriber.isUp() && contact.isUp()) {
 
@@ -287,7 +287,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 				insert(s, n);
 			}
 
-			for (int i = 0; i < Scamplon.c && contact.degree() > 0; i++) {
+			for (int i = 0; i < Spray.c && contact.degree() > 0; i++) {
 				final Node n = contact.getNeighbor(CommonState.r
 						.nextInt(contact.degree()));
 				insert(s, n);
@@ -301,9 +301,9 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	}
 
 	private static boolean insert(Node s, Node n) {
-		final Scamplon subscriber = (Scamplon) s.getProtocol(pid);
+		final Spray subscriber = (Spray) s.getProtocol(pid);
 		if (n.getID() != s.getID()) {
-			final Scamplon current = (Scamplon) n.getProtocol(pid);
+			final Spray current = (Spray) n.getProtocol(pid);
 			if (current.isUp()) {
 				current.addNeighbor(s);
 				subscriber.addToInview(s, n);
@@ -321,13 +321,13 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	 * @param counter
 	 */
 	public static boolean forward(final Node s, final Node node, int counter) {
-		final Scamplon N = (Scamplon) node.getProtocol(pid);
+		final Spray N = (Spray) node.getProtocol(pid);
 		if (N.isUp()) {
 			// counter++;
 			if (counter < FORWARD_TTL) {
-				final Scamplon current = (Scamplon) node.getProtocol(pid);
+				final Spray current = (Spray) node.getProtocol(pid);
 				if (current.partialView.p() && node.getID() != s.getID()) {
-					final Scamplon subscriber = (Scamplon) s.getProtocol(pid);
+					final Spray subscriber = (Spray) s.getProtocol(pid);
 					current.addNeighbor(s);
 					subscriber.addToInview(s, node);
 					return true;
@@ -369,7 +369,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	protected void updateInView(Node me) {
 		List<Node> in = new ArrayList<Node>(this.inView.values());
 		for (Node n : in) {
-			final Scamplon current = (Scamplon) n.getProtocol(pid);
+			final Spray current = (Spray) n.getProtocol(pid);
 			if (!current.isUp() || !current.contains(me)) {
 				this.inView.remove(n.getID());
 			}
@@ -378,7 +378,7 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 
 	protected void updateOutView(Node me) {
 		for (Node n : this.getPeers()) {
-			final Scamplon current = (Scamplon) n.getProtocol(pid);
+			final Spray current = (Spray) n.getProtocol(pid);
 			if (!current.inView.containsKey(me.getID())) {
 
 				current.addToInview(n, me);
@@ -396,8 +396,8 @@ public class Scamplon extends ScamplonProtocol implements Dynamic,
 	 */
 	private int replace(Node me, Node a, Node b) {
 		int count = this.partialView.count(b); // not really accurate
-		final Scamplon A = (Scamplon) a.getProtocol(pid);
-		final Scamplon B = (Scamplon) b.getProtocol(pid);
+		final Spray A = (Spray) a.getProtocol(pid);
+		final Spray B = (Spray) b.getProtocol(pid);
 		if (me.getID() == a.getID() || me.getID() == b.getID()) {
 			throw new RuntimeException("FATAL");
 		}

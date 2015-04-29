@@ -1,4 +1,4 @@
-package descent.scamplon;
+package descent.spray;
 
 import java.util.Comparator;
 

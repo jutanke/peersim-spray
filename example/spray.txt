@@ -25,7 +25,7 @@ random.seed 9990
 
 protocol.link peersim.core.IdleProtocol
 
-protocol.0 descent.scamplon.Scamplon
+protocol.0 descent.spray.Spray
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
@@ -47,7 +47,7 @@ init.sch CDScheduler
 init.sch.protocol 0
 init.sch.randstart
 
-control.o1 descent.scamplon.Churn
+control.o1 descent.spray.Churn
 control.o1.protocol 0
 control.o1.FINAL
 control.o1.step 1

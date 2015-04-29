@@ -1,4 +1,4 @@
-package descent.scamplon;
+package descent.spray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -267,7 +267,7 @@ public class PartialView {
 		// System.err.println("(" + list.size() + " + " + otherSize + ")/ 2 = "
 		// + newSize);
 
-		Parent qq = (Parent) me.getProtocol(ScamplonProtocol.pid);
+		Parent qq = (Parent) me.getProtocol(SprayProtocol.pid);
 
 		// System.err.println("from " + other.getID() + " get " + received +
 		// " @" + me.getID() + " = " + qq.debug() + " sender:" + FROM_SENDER +

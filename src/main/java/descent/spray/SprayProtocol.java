@@ -1,4 +1,4 @@
-package descent.scamplon;
+package descent.spray;
 
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
@@ -11,7 +11,7 @@ import descent.PeerSamplingService;
  *
  * Created by julian on 2/5/15.
  */
-public abstract class ScamplonProtocol implements Linkable, EDProtocol,
+public abstract class SprayProtocol implements Linkable, EDProtocol,
 		CDProtocol, PeerSamplingService {
 
 	public static int c, tid, pid;
@@ -24,7 +24,7 @@ public abstract class ScamplonProtocol implements Linkable, EDProtocol,
 	public static final String SCAMPLON_PROT = "0";
 	private static final String PAR_TRANSPORT = "transport";
 
-	public ScamplonProtocol(String n) {
+	public SprayProtocol(String n) {
 		c = Configuration.getInt(n + "." + PAR_C, 0);
 		tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
 		pid = Configuration.lookupPid(SCAMPLON_PROT);

@@ -1,4 +1,4 @@
-package descent.scamplon;
+package descent.spray;
 
 import peersim.core.Node;
 import descent.ChurnProtocol;
@@ -9,17 +9,17 @@ import descent.ChurnProtocol;
 public class Churn extends ChurnProtocol {
 
 	public Churn(String n) {
-		super(n, ScamplonProtocol.SCAMPLON_PROT);
+		super(n, SprayProtocol.SCAMPLON_PROT);
 		ChurnProtocol.current = this;
 	}
 
 	@Override
 	public void removeNode(Node node) {
-		Scamplon.unsubscribe(node);
+		Spray.unsubscribe(node);
 	}
 
 	@Override
 	public void addNode(Node subscriber, Node contact) {
-		Scamplon.subscribe(subscriber, contact);
+		Spray.subscribe(subscriber, contact);
 	}
 }
