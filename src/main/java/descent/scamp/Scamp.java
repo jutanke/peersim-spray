@@ -79,7 +79,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 
 	public void nextCycle(Node node, int protocolID) {
 		if (this.isUp()) {
-			//this.leaseOthers();
+			// this.leaseOthers();
 			if (this.isTimedOut()) {
 				lease(node);
 			}
@@ -199,30 +199,32 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		final Scamp N = (Scamp) n.getProtocol(pid);
 
 		// remove yourself from everyone pointing to you!
-
 		for (Node in : N.in) {
 			final Scamp In = (Scamp) in.getProtocol(pid);
-			int pos = -1;
-			for (int i = 0; i < In.out.size(); i++) {
+			boolean found = false;
+			int i = 0;
+			while (!found && i < In.out.size()) {
 				final Node o = In.out.get(i);
 				if (o.getID() == n.getID()) {
-					pos = i;
-					break;
+					In.out.remove(i);
+					found = true;
 				}
-			}
-			if (pos >= 0) {
-				In.out.remove(pos);
+				++i;
 			}
 		}
 
 		// resubscribe
-		N.in.clear();
 
+		N.in.clear();
 		Node c = Network.get(CommonState.r.nextInt(Network.size()));
 		if (N.degree() > 0) {
 			c = N.out.get(CommonState.r.nextInt(N.degree()));
+		} else {
+			System.err.println("LEASE @" + n.getID() + " " + N.toString()
+					+ " NO OUT DEGREE.");
 		}
-		//System.err.println("LEASE @" + n.getID() + " " + N.toString() + ", select c=" + c.getID());
+		// System.err.println("LEASE @" + n.getID() + " " + N.toString() +
+		// ", select c=" + c.getID());
 		subscribe(n, c, true);
 	}
 
@@ -247,16 +249,20 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	 * @param s
 	 * @param c
 	 */
-	public static void subscribe(final Node s, final Node c, final boolean isLease) {
+	public static void subscribe(final Node s, final Node c,
+			final boolean isLease) {
 		final Scamp subscriber = (Scamp) s.getProtocol(pid);
 		subscriber.in.clear();
 		if (!isLease) {
 			subscriber.out.clear();
 		}
 		final Scamp contact = (Scamp) c.getProtocol(pid);
-		//System.err.println("sub @" + c.getID() + " for s=" + s.getID() + "->" + contact + " // " +(isLease ? " T" : "F"));
+		// System.err.println("sub @" + c.getID() + " for s=" + s.getID() + "->"
+		// + contact + " // " +(isLease ? " T" : "F"));
 		if (subscriber.isUp() && contact.isUp()) {
-			subscriber.addNeighbor(c);
+			if (subscriber.addNeighbor(c)) {
+				contact.in.add(s);
+			}
 			for (Node n : contact.getPeers()) {
 				forward(s, n, 0);
 			}
@@ -281,7 +287,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	 * @return
 	 */
 	public static boolean forward(final Node s, final Node node, int counter) {
-		//System.err.println("fwd: s=" + s.getID() + " @"+ node.getID());
+		// System.err.println("fwd: s=" + s.getID() + " @"+ node.getID());
 		final Scamp N = (Scamp) node.getProtocol(pid);
 		if (N.isUp()) {
 			counter++;
@@ -292,17 +298,23 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 					final Scamp subscriber = (Scamp) s.getProtocol(pid);
 					current.addNeighbor(s);
 					subscriber.in.add(node);
-					//System.err.println("subscribed @" + node.getID() + " for s=" + s.getID());
+
+					// System.err.println("subscribed @" + node.getID() +
+					// " for s=" + s.getID());
 					return true;
+
 				} else if (current.degree() > 0) {
-					Node next = current.out.get(CommonState.r.nextInt(current.degree()));
+					Node next = current.out.get(CommonState.r.nextInt(current
+							.degree()));
 					return forward(s, next, counter);
 				} else {
-					System.err.println("DEAD END for subscription " + s.getID() + " @" + node.getID());
+					System.err.println("DEAD END for subscription " + s.getID()
+							+ " @" + node.getID());
 					return false;
 				}
 			} else {
-				System.err.println("Forward for " + s.getID() + " timed out @" + node.getID());
+				System.err.println("Forward for " + s.getID() + " timed out @"
+						+ node.getID());
 				return false;
 			}
 		}
