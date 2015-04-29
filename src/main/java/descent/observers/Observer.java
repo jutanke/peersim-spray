@@ -4,6 +4,7 @@ import java.util.HashSet;
 
 import descent.Dynamic;
 import descent.PeerSamplingService;
+import descent.observers.program.DebugProgram;
 import descent.observers.program.VarianceAndArcCountProgram;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
@@ -35,7 +36,8 @@ public class Observer implements Control {
 			this.pid = Configuration.lookupPid(PROTOCOL_0);
 		}
 
-		this.program = new VarianceAndArcCountProgram();
+		//this.program = new VarianceAndArcCountProgram();
+		this.program = new DebugProgram();
 
 	}
 
@@ -162,11 +164,13 @@ public class Observer implements Control {
 		return total / 7.0;
 	}
 
-	private void printArray(int[] list) {
-		System.out.println("array");
+	public static String printArray(int[] list) {
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < list.length; i++) {
-			System.out.println(list[i]);
+			sb.append(list[i]);
+			sb.append("\n");
 		}
+		return sb.toString();
 	}
 
 	/**
