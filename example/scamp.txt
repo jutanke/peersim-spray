@@ -1,7 +1,7 @@
-SIZE 100
+SIZE 1000
 
 # parameters of periodic execution
-CYCLES 1500
+CYCLES 30000
 CYCLE SIZE*10000
 
 
@@ -26,6 +26,7 @@ random.seed 1234539890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 descent.scamp.Scamp
+protocol.0.failure 0.0000
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr

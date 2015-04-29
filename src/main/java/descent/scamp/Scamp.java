@@ -21,6 +21,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	private static final String PAR_C = "c";
 	public static final String SCAMP_PROT = "0";
 	private static final String PAR_TRANSPORT = "transport";
+	private static final String PAR_FAILURE = "failure";
 	private static final String PAR_LEASE_MAX = "leaseTimeoutMax";
 	private static final String PAR_LEASE_MIN = "leaseTimeoutMin";
 
@@ -33,6 +34,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	private ViewEntry current;
 
 	private static final int FORWARD_TTL = 125;
+	private static double failure;
 	public static int pid;
 	public static int tid;
 	public static int c;
@@ -46,9 +48,10 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	// ===========================================
 
 	public Scamp(String n) {
-		this.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
-		this.c = Configuration.getInt(n + "." + PAR_C, 0);
-		this.pid = Configuration.lookupPid(SCAMP_PROT);
+		Scamp.tid = Configuration.getPid(n + "." + PAR_TRANSPORT);
+		Scamp.c = Configuration.getInt(n + "." + PAR_C, 0);
+		Scamp.failure = Configuration.getDouble(n + "." + PAR_FAILURE, 0);
+		Scamp.pid = Configuration.lookupPid(SCAMP_PROT);
 		this.MAX_LEASE = Configuration.getInt(n + "." + PAR_LEASE_MAX, 2000);
 		this.MIN_LEASE = Configuration.getInt(n + "." + PAR_LEASE_MIN, 1000);
 		this.in = new ArrayList<Node>();
@@ -174,6 +177,18 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		return CommonState.r.nextDouble() < 1.0 / (1.0 + this.degree());
 	}
 
+	/**
+	 * process if the connection has failed
+	 * 
+	 * @param k
+	 *            the number of hop the message traveled
+	 * @return true if the connection has failed, false otherwise
+	 */
+	private boolean pF(int k) {
+		double p = Math.pow(1 - Scamp.failure, Math.pow(k, 2) + 3 * k + 2);
+		return CommonState.r.nextDouble() < (1 - p);
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
@@ -182,7 +197,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 			sb.append(n.getID());
 			sb.append(" ");
 		}
-		sb.append("] in:");
+		sb.append("] in:[");
 		for (Node n : this.in) {
 			sb.append(n.getID());
 			sb.append(" ");
@@ -199,6 +214,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		final Scamp N = (Scamp) n.getProtocol(pid);
 
 		// remove yourself from everyone pointing to you!
+		int cutNumber = N.in.size();
 		for (Node in : N.in) {
 			final Scamp In = (Scamp) in.getProtocol(pid);
 			boolean found = false;
@@ -214,18 +230,45 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		}
 
 		// resubscribe
-
 		N.in.clear();
-		Node c = Network.get(CommonState.r.nextInt(Network.size()));
+		// Node c = Network.get(CommonState.r.nextInt(Network.size()));
+		// if (N.degree() > 0) {
+		// c = N.out.get(CommonState.r.nextInt(N.degree()));
+		// }
+		// subscribe(n, c, true);
+		// System.err.println("LEASE @" + n.getID() + " " + N.toString()
+		// + ", select c=" + c.getID());
+
+		// It has neighbours in its partial view so he can try with them
+		// may not cut any arc though, mi no kno Y :$, eventually fall off in
+		// the third case
 		if (N.degree() > 0) {
-			c = N.out.get(CommonState.r.nextInt(N.degree()));
-		} else {
-			System.err.println("LEASE @" + n.getID() + " " + N.toString()
-					+ " NO OUT DEGREE.");
+			boolean performed = false;
+			int tries = 10;
+			while (!performed && tries > 0) {
+				Node c = N.out.get(CommonState.r.nextInt(N.degree()));
+				performed = alternativeLease(n, c, cutNumber);
+				tries -= 1;
+			}
 		}
-		// System.err.println("LEASE @" + n.getID() + " " + N.toString() +
-		// ", select c=" + c.getID());
-		subscribe(n, c, true);
+		// It has no neighbours, it tries with a random one in the network
+		if (N.degree() == 0 && cutNumber > 0) {
+			boolean performed = false;
+			int tries = 10;
+			while (!performed && tries > 0) {
+				Node c = Network.get(CommonState.r.nextInt(Network.size()));
+				performed = alternativeLease(n, c, cutNumber);
+				tries -= 1;
+			}
+		}
+		// No neighbours at all, i.e., no inview, no partial view
+		// if (N.degree() == 0 && cutNumber == 0) {
+		// System.out.println("AFHAZOFHOEFAOFEZOF BZEOFBZE " + cutNumber);
+		// System.out.println("@" + n.getID() + "" + N);
+		// Node c = Network.get(CommonState.r.nextInt(Network.size()));
+		// subscribe(n, c);
+		// }
+
 	}
 
 	/**
@@ -233,15 +276,38 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	 * @param node
 	 */
 	public static void unsubscribe(final Node node) {
-
 		final Scamp current = (Scamp) node.getProtocol(pid);
-
 		throw new RuntimeException("Not yet impl");
-
 	}
 
 	public static void subscribe(final Node s, final Node c) {
 		subscribe(s, c, false);
+	}
+
+	/**
+	 * Trying an alternative lease where you send as much copies as you cut arcs
+	 * 
+	 * @param s
+	 * @param c
+	 * @param cutNumber
+	 */
+	public static boolean alternativeLease(final Node s, final Node c,
+			int cutNumber) {
+		final Scamp subscriber = (Scamp) s.getProtocol(pid);
+		subscriber.in.clear();
+		final Scamp contact = (Scamp) c.getProtocol(pid);
+		if (subscriber.isUp() && contact.isUp() && contact.degree() > 0) {
+			if (subscriber.addNeighbor(c)) {
+				contact.in.add(s);
+				--cutNumber;
+			}
+			for (int i = 0; i < cutNumber; ++i) {
+				Node n = contact.getPeers().get(i % contact.getPeers().size());
+				forward(s, n, 0);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -260,9 +326,11 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		// System.err.println("sub @" + c.getID() + " for s=" + s.getID() + "->"
 		// + contact + " // " +(isLease ? " T" : "F"));
 		if (subscriber.isUp() && contact.isUp()) {
+
 			if (subscriber.addNeighbor(c)) {
 				contact.in.add(s);
 			}
+
 			for (Node n : contact.getPeers()) {
 				forward(s, n, 0);
 			}
@@ -296,9 +364,14 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 				if (current.p() && node.getID() != s.getID()
 						&& !current.contains(s)) {
 					final Scamp subscriber = (Scamp) s.getProtocol(pid);
-					current.addNeighbor(s);
-					subscriber.in.add(node);
-
+					// process failure probability
+					System.out.println(counter);
+					if (!current.pF(counter)) {
+						// add it in the partial view
+						if (current.addNeighbor(s)) {
+							subscriber.in.add(node);
+						}
+					}
 					// System.err.println("subscribed @" + node.getID() +
 					// " for s=" + s.getID());
 					return true;
