@@ -216,8 +216,8 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		}
 
 		// resubscribe
-
 		N.in.clear();
+
 		Node c = Network.get(CommonState.r.nextInt(Network.size()));
 		if (N.degree() > 0) {
 			c = N.out.get(CommonState.r.nextInt(N.degree()));
