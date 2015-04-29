@@ -34,7 +34,7 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
     }
 
     @Override
-    public void onLastTick() {
+    public void onLastTick(DictGraph observer) {
         System.out.println("LAST");
     }
 }

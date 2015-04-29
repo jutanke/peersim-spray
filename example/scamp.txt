@@ -25,14 +25,14 @@ random.seed 1234539890
 
 protocol.link peersim.core.IdleProtocol
 
-protocol.0 example.paper.scamp.FastScamp
+protocol.0 descent.scamp.Scamp
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
-protocol.0.leaseTimeoutMin 3
-protocol.0.leaseTimeoutMax 69
+protocol.0.leaseTimeoutMin 300
+protocol.0.leaseTimeoutMax 690
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay (CYCLE*MINDELAY)/100
@@ -45,7 +45,7 @@ protocol.tr.drop DROP
 #init.0 example.paper.scamp.Initializer
 #init.0.protocol 0
 
-control.o1 example.paper.scamp.FastChurn
+control.o1 descent.scamp.Churn
 control.o1.protocol lnk
 control.o1.FINAL
 control.o1.step 1
@@ -58,7 +58,7 @@ init.sch.protocol 0
 init.sch.randstart
 
 
-control.o0 example.paper.Observer
+control.o0 descent.observers.Observer
 control.o0.protocol 0
 control.o0.FINAL
 control.o0.step 1

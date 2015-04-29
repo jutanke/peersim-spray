@@ -7,6 +7,6 @@ public interface ObserverProgram {
 
     public void tick(long currentTick, DictGraph observer);
 
-    public void onLastTick();
+    public void onLastTick(DictGraph observer);
 
 }
