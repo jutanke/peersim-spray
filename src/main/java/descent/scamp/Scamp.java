@@ -1,7 +1,13 @@
 package descent.scamp;
 
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
@@ -180,12 +186,30 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	/**
 	 * process if the connection has failed
 	 * 
-	 * @param k
-	 *            the number of hop the message traveled
+	 * @param path
+	 *            the path of the message
 	 * @return true if the connection has failed, false otherwise
 	 */
-	private boolean pF(int k) {
-		double p = Math.pow(1 - Scamp.failure, Math.pow(k, 2) + 3 * k + 2);
+	private boolean pF(List<Node> path) {
+		// Graph
+		final Map<Long, HashSet<Long>> graph = new HashMap<Long, HashSet<Long>>();
+		for (int i = 0; i < path.size(); ++i) {
+			final Node n = path.get(i);
+			if (!graph.containsKey(n.getID())) {
+				graph.put(n.getID(), new HashSet<Long>());
+			}
+			if (0 < i) {
+				final Node pre = path.get(i - 1);
+				graph.get(pre.getID()).add(n.getID());
+			}
+		}
+		HashSet<Long> discovered = new HashSet<Long>();
+		// BFS
+		Queue<Long> q = new LinkedList<Long>();
+		q.add(path.get(0).getID());
+
+		double p = Math.pow(1 - Scamp.failure, Math.pow(path.size(), 2) + 3
+				* path.size() + 2);
 		return CommonState.r.nextDouble() < (1 - p);
 	}
 
@@ -262,12 +286,12 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 			}
 		}
 		// No neighbours at all, i.e., no inview, no partial view
-		// if (N.degree() == 0 && cutNumber == 0) {
-		// System.out.println("AFHAZOFHOEFAOFEZOF BZEOFBZE " + cutNumber);
-		// System.out.println("@" + n.getID() + "" + N);
-		// Node c = Network.get(CommonState.r.nextInt(Network.size()));
-		// subscribe(n, c);
-		// }
+		if (N.degree() == 0 && cutNumber == 0) {
+			System.out.println("AFHAZOFHOEFAOFEZOF BZEOFBZE " + cutNumber);
+			System.out.println("@" + n.getID() + "" + N);
+			Node c = Network.get(CommonState.r.nextInt(Network.size()));
+			subscribe(n, c);
+		}
 
 	}
 
@@ -303,18 +327,13 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 			}
 			for (int i = 0; i < cutNumber; ++i) {
 				Node n = contact.getPeers().get(i % contact.getPeers().size());
-				forward(s, n, 0);
+				forward(s, n, new ArrayList<Node>());
 			}
 			return true;
 		}
 		return false;
 	}
 
-	/**
-	 *
-	 * @param s
-	 * @param c
-	 */
 	public static void subscribe(final Node s, final Node c,
 			final boolean isLease) {
 		final Scamp subscriber = (Scamp) s.getProtocol(pid);
@@ -332,13 +351,13 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 			}
 
 			for (Node n : contact.getPeers()) {
-				forward(s, n, 0);
+				forward(s, n, new ArrayList<Node>());
 			}
 			if (!isLease) {
 				for (int i = 0; i < Scamp.c && contact.degree() > 0; i++) {
 					Node n = contact.getNeighbor(CommonState.r.nextInt(contact
 							.degree()));
-					forward(s, n, 0);
+					forward(s, n, new ArrayList<Node>());
 				}
 			}
 		} else {
@@ -354,19 +373,18 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	 * @param counter
 	 * @return
 	 */
-	public static boolean forward(final Node s, final Node node, int counter) {
+	public static boolean forward(final Node s, final Node node, List<Node> path) {
 		// System.err.println("fwd: s=" + s.getID() + " @"+ node.getID());
 		final Scamp N = (Scamp) node.getProtocol(pid);
 		if (N.isUp()) {
-			counter++;
-			if (counter < FORWARD_TTL) {
+			path.add(node);
+			if (path.size() < FORWARD_TTL) {
 				final Scamp current = (Scamp) node.getProtocol(pid);
 				if (current.p() && node.getID() != s.getID()
 						&& !current.contains(s)) {
 					final Scamp subscriber = (Scamp) s.getProtocol(pid);
 					// process failure probability
-					System.out.println(counter);
-					if (!current.pF(counter)) {
+					if (!current.pF(path)) {
 						// add it in the partial view
 						if (current.addNeighbor(s)) {
 							subscriber.in.add(node);
@@ -379,7 +397,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 				} else if (current.degree() > 0) {
 					Node next = current.out.get(CommonState.r.nextInt(current
 							.degree()));
-					return forward(s, next, counter);
+					return forward(s, next, path);
 				} else {
 					System.err.println("DEAD END for subscription " + s.getID()
 							+ " @" + node.getID());
