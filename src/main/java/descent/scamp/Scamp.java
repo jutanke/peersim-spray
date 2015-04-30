@@ -13,6 +13,8 @@ import descent.Dynamic;
 import descent.PeerSamplingService;
 
 /**
+ * Inspired by https://github.com/csko/Peersim/tree/master/scamp
+ *
  * Created by julian on 4/9/15.
  */
 public class Scamp implements CDProtocol, Dynamic, Linkable,
