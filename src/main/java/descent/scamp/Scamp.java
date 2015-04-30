@@ -1,7 +1,6 @@
 package descent.scamp;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -187,11 +186,11 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	 * process if the connection has failed
 	 * 
 	 * @param path
-	 *            the path of the message
+	 *            the ordered list of node that the message traveled through
 	 * @return true if the connection has failed, false otherwise
 	 */
 	private boolean pF(List<Node> path) {
-		// Graph
+		// Graph of the path
 		final Map<Long, HashSet<Long>> graph = new HashMap<Long, HashSet<Long>>();
 		for (int i = 0; i < path.size(); ++i) {
 			final Node n = path.get(i);
@@ -204,12 +203,32 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 			}
 		}
 		HashSet<Long> discovered = new HashSet<Long>();
-		// BFS
+		// BFS measuring shortest path length
 		Queue<Long> q = new LinkedList<Long>();
 		q.add(path.get(0).getID());
-
-		double p = Math.pow(1 - Scamp.failure, Math.pow(path.size(), 2) + 3
-				* path.size() + 2);
+		discovered.add(path.get(0).getID());
+		int minHops = 0;
+		while (!q.isEmpty()) {
+			++minHops;
+			final Long current = q.poll();
+			if (current == path.get(path.size() - 1).getID()) {
+				break; // ugly break
+			}
+			for (Long neighbor : graph.get(current)) {
+				if (!discovered.contains(neighbor)) {
+					q.add(neighbor);
+					discovered.add(neighbor);
+				}
+			}
+		}
+		/*
+		 * System.out.println("===Path==="); for (int i= 0; i<path.size();++i){
+		 * System.out.print(path.get(i).getID()+" - "); } System.out.println();
+		 * System.out.println("minHops = " + minHops);
+		 */
+		// minHops = path.size(); // worst case
+		double p = Math.pow(1 - Scamp.failure, Math.pow(minHops, 2) + 3
+				* minHops + 2);
 		return CommonState.r.nextDouble() < (1 - p);
 	}
 
@@ -286,12 +305,12 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 			}
 		}
 		// No neighbours at all, i.e., no inview, no partial view
-		if (N.degree() == 0 && cutNumber == 0) {
-			System.out.println("AFHAZOFHOEFAOFEZOF BZEOFBZE " + cutNumber);
-			System.out.println("@" + n.getID() + "" + N);
-			Node c = Network.get(CommonState.r.nextInt(Network.size()));
-			subscribe(n, c);
-		}
+		// if (N.degree() == 0 && cutNumber == 0) {
+		// System.out.println("AFHAZOFHOEFAOFEZOF BZEOFBZE " + cutNumber);
+		// System.out.println("@" + n.getID() + "" + N);
+		// Node c = Network.get(CommonState.r.nextInt(Network.size()));
+		// subscribe(n, c);
+		// }
 
 	}
 
