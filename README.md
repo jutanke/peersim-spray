@@ -1,6 +1,6 @@
 # SPRAY
 
-This is a PeerSim (http://peersim.sourceforge.net/) implementation for
+PeerSim (http://peersim.sourceforge.net/) implementation for
 SPRAY, an adaptive, probabilistic random peer sampling service [1]
 based on SCAMP [2] and CYCLON [3].
 
