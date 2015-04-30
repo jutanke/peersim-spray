@@ -13,6 +13,11 @@ import descent.Dynamic;
 import descent.PeerSamplingService;
 
 /**
+ * ATTENTION: The lease-mechanism suggested in the Paper
+ * "Peer-to-Peer Membership Management for Gossip-Based Protocols" from
+ * A.J. Ganesh, A-M. Kermarrec and L. Massoulie seems to be broken as the
+ * arc count grows until the network is almost complete
+ *
  * Inspired by https://github.com/csko/Peersim/tree/master/scamp
  *
  * Created by julian on 4/9/15.
