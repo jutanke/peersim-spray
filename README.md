@@ -5,19 +5,19 @@ SPRAY, an adaptive, probabilistic random peer sampling service [1]
 based on SCAMP [2] and CYCLON [3].
 
 
-## Bibliography
+## References
 
 
 [1]     Gossip-based Peer Sampling:
-        MARK JELASITY
+        Mark Jelasity
         University of Szeged and Hungarian Academy of Sciences, Hungary
-        SPYROS VOULGARIS
+        Spyros Voulgaris
         ETH Zuerich, Switzerland
-        RACHID GUERRAOUI
+        Rachid Guerraoui
         EPFL, Lausanne, Switzerland
-        ANNE-MARIE KERMARREC
+        Anne-Marie Kermarrec
         INRIA, Rennes, France
-        MAARTEN VAN STEEN
+        Maarten Van Steen
         Vrije Universiteit, Amsterdam, The Netherlands
 
 [2]     Peer-to-Peer Membership Management for Gossip-Based Protocols:

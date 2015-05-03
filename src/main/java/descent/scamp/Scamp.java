@@ -19,9 +19,9 @@ import descent.PeerSamplingService;
 
 /**
  * ATTENTION: The lease-mechanism suggested in the Paper
- * "Peer-to-Peer Membership Management for Gossip-Based Protocols" from
- * A.J. Ganesh, A-M. Kermarrec and L. Massoulie seems to be broken as the
- * arc count grows until the network is almost complete
+ * "Peer-to-Peer Membership Management for Gossip-Based Protocols" from A.J.
+ * Ganesh, A-M. Kermarrec and L. Massoulie seems to be broken as the arc count
+ * grows until the network is almost complete
  *
  * Inspired by https://github.com/csko/Peersim/tree/master/scamp
  *
@@ -233,10 +233,13 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		 * System.out.print(path.get(i).getID()+" - "); } System.out.println();
 		 * System.out.println("minHops = " + minHops);
 		 */
-		// minHops = path.size(); // worst case
-		double p = Math.pow(1 - Scamp.failure, Math.pow(minHops, 2) + 3
-				* minHops + 2);
-		return CommonState.r.nextDouble() < (1 - p);
+		double pHighest = Math.pow(1 - Scamp.failure, Math.pow(path.size(), 2)
+				+ 3 * path.size() + 2); // worst case
+		double pLowest = Math.pow(1 - Scamp.failure, Math.pow(minHops, 2) + 3
+				* minHops + 2); // best case
+		double pPrecise = Math.pow(1 - Scamp.failure, Math.pow(minHops, 2) + 3
+				* minHops + 2 + (path.size() - minHops)); // precise case
+		return CommonState.r.nextDouble() < (1 - pHighest); 
 	}
 
 	@Override
