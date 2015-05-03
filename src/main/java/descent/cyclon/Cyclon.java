@@ -1,5 +1,6 @@
 package descent.cyclon;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import peersim.config.Configuration;
@@ -148,6 +149,17 @@ public class Cyclon extends CyclonProtocol {
 				}
 			}
 		}
+	}
+
+	public List<Node> getPeersThatAreAlive() {
+		final List<Node> result = new ArrayList<Node>();
+		for (Node n : this.getPeers()) {
+			final Cyclon N = (Cyclon) n.getProtocol(pid);
+			if (N.isUp()) {
+				result.add(n);
+			}
+		}
+		return result;
 	}
 
 	public int callsInThisCycle() {

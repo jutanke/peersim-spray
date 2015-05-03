@@ -63,6 +63,17 @@ public class Spray extends SprayProtocol implements Dynamic,
 		return this.isUp;
 	}
 
+	public List<Node> getPeersThatAreAlive() {
+		final List<Node> result = new ArrayList<Node>();
+		for (Node n : this.getPeers()) {
+			final Spray N = (Spray) n.getProtocol(pid);
+			if (N.isUp()) {
+				result.add(n);
+			}
+		}
+		return result;
+	}
+
 	public void up() {
 		this.isUp = true;
 	}

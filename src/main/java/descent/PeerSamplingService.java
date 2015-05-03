@@ -9,6 +9,10 @@ import java.util.List;
  */
 public interface PeerSamplingService {
 
+	boolean isUp();
+
+	List<Node> getPeersThatAreAlive();
+
 	List<Node> getPeers();
 
 	int callsInThisCycle();
