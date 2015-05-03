@@ -4,7 +4,9 @@ import java.util.HashSet;
 
 import descent.Dynamic;
 import descent.PeerSamplingService;
+import descent.observers.program.ClusterCountProgram;
 import descent.observers.program.DebugProgram;
+import descent.observers.program.PythonNetworkProgram;
 import descent.observers.program.VarianceAndArcCountProgram;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
@@ -37,7 +39,8 @@ public class Observer implements Control {
 		}
 
 		//this.program = new VarianceAndArcCountProgram();
-		this.program = new DebugProgram();
+		//this.program = new DebugProgram();
+		this.program = new PythonNetworkProgram();
 
 	}
 
@@ -66,7 +69,7 @@ public class Observer implements Control {
 					count += 1;
 					PeerSamplingService pss = (PeerSamplingService) n
 							.getProtocol(pid);
-					observer.add(n, pss);
+					observer.addStrict(n, pss);
 					final int size = pss.getPeers().size();
 					if (size < min) {
 						min = size;

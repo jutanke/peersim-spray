@@ -105,6 +105,10 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 		return this.isUp;
 	}
 
+	public List<Node> getPeersThatAreAlive() {
+		throw new RuntimeException("NOT IMPLEMENTED");
+	}
+
 	public void up() {
 		this.isUp = true;
 	}
