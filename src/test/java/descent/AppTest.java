@@ -28,9 +28,7 @@ public class AppTest
         return new TestSuite( AppTest.class );
     }
 
-    /**
-     * Rigourous Test :-)
-     */
+    @org.junit.Test
     public void testApp()
     {
         assertTrue( true );

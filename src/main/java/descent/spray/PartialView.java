@@ -120,11 +120,13 @@ public class PartialView {
 	}
 
 	/**
-	 * @param n
-	 * @return
 	 */
 	public boolean contains(Node n) {
-		return contains(this.out, n);
+		return contains(this.out, n.getID());
+	}
+
+	public boolean contains(long id) {
+		return contains(this.out, id);
 	}
 
 	/**
@@ -137,8 +139,6 @@ public class PartialView {
 	/**
 	 * Needed for the interface
 	 *
-	 * @param i
-	 * @return
 	 */
 	public Node get(int i) {
 		return this.out.get(i).node;
@@ -147,8 +147,6 @@ public class PartialView {
 	/**
 	 * might be needed internally
 	 *
-	 * @param n
-	 * @return
 	 */
 	public List<PartialViewEntry> get(Node n) {
 		return get(this.out, n);
@@ -183,8 +181,6 @@ public class PartialView {
 	/**
 	 * Should be used in the shuffle code
 	 *
-	 * @param oldest
-	 * @return
 	 */
 	public List<PartialViewEntry> subsetMinus1(PartialViewEntry oldest) {
 		return subset(this.out, oldest, this.l() - 1);
@@ -279,7 +275,7 @@ public class PartialView {
 		RemoveVolatileResult rem = removeVolatileResults(List);
 		List<PartialViewEntry> list = rem.rest;
 
-		if (contains(received, me)) {
+		if (contains(received, me.getID())) {
 			List<PartialViewEntry> sent = removeAll(rem.volatiles, me); // here
 																		// will
 																		// never
@@ -417,9 +413,9 @@ public class PartialView {
 	 * @param n
 	 * @return
 	 */
-	public static boolean contains(List<PartialViewEntry> list, Node n) {
+	public static boolean contains(List<PartialViewEntry> list, long n) {
 		for (PartialViewEntry e : list) {
-			if (e.node.getID() == n.getID()) {
+			if (e.node.getID() == n) {
 				return true;
 			}
 		}

@@ -2,7 +2,7 @@ SIZE 10000
 
 # parameters of periodic execution
 #CYCLES 15050
-CYCLES 102
+CYCLES 10000
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -30,6 +30,7 @@ protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.startShuffle 0
+protocol.0.failure 0.0001
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
 protocol.0.leaseTimeoutMin 100
@@ -51,7 +52,7 @@ control.o1 descent.spray.Churn
 control.o1.protocol 0
 control.o1.FINAL
 control.o1.step 5
-control.o1.addingPerStep SIZE/4
+control.o1.addingPerStep SIZE
 #control.o1.addingPerStepPerc 10
 control.o1.startAdd 0
 control.o1.endAdd 90
@@ -59,13 +60,13 @@ control.o1.endAdd 90
 #control.o1.endRem 700
 #control.o1.startRem 1500
 
-control.o2 descent.RemoveProtocol
-control.o2.protocol 0
-control.o2.FINAL
-control.o2.step 1
-control.o2.startRem 100
-control.o2.endRem 100
-control.o2.removingPerStep 9900
+#control.o2 descent.RemoveProtocol
+#control.o2.protocol 0
+#control.o2.FINAL
+#control.o2.step 1
+#control.o2.startRem 100
+#control.o2.endRem 100
+#control.o2.removingPerStep 9900
 
 #control.o3 descent.AddProtocol
 #control.o3.protocol 0

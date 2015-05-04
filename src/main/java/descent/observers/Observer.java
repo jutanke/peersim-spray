@@ -2,6 +2,7 @@ package descent.observers;
 
 import java.util.HashSet;
 
+import descent.observers.program.ArcCountProgram;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
 import peersim.core.CommonState;
@@ -37,7 +38,7 @@ public class Observer implements Control {
 
 		//this.program = new VarianceAndArcCountProgram();
 		//this.program = new DebugProgram();
-		this.program = new PythonNetworkProgram();
+		this.program = new ArcCountProgram();
 
 	}
 

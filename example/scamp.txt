@@ -1,7 +1,7 @@
-SIZE 1000
+SIZE 10000
 
 # parameters of periodic execution
-CYCLES 30000
+CYCLES 10000
 CYCLE SIZE*10000
 
 
@@ -43,14 +43,11 @@ protocol.tr UnreliableTransport
 protocol.tr.transport urt
 protocol.tr.drop DROP
 
-#init.0 example.paper.scamp.Initializer
-#init.0.protocol 0
-
 control.o1 descent.scamp.Churn
 control.o1.protocol lnk
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 10000000
+control.o1.addingPerStep SIZE
 control.o1.startAdd 0
 control.o1.endAdd 200
 

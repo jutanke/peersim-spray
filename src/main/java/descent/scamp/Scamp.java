@@ -106,7 +106,14 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	}
 
 	public List<Node> getPeersThatAreAlive() {
-		throw new RuntimeException("NOT IMPLEMENTED");
+		final List<Node> result = new ArrayList<Node>();
+		for (Node n: this.getPeers()) {
+			final Scamp N = (Scamp) n.getProtocol(pid);
+			if (N.isUp()) {
+				result.add(n);
+			}
+		}
+		return result;
 	}
 
 	public void up() {
@@ -403,7 +410,7 @@ public class Scamp implements CDProtocol, Dynamic, Linkable,
 	 *
 	 * @param s
 	 * @param node
-	 * @param counter
+	 * @param path
 	 * @return
 	 */
 	public static boolean forward(final Node s, final Node node, List<Node> path) {
