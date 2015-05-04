@@ -1,9 +1,9 @@
 # network size
 SIZE 10000
-DEGREE 7
+DEGREE 9
 
 # parameters of periodic execution
-CYCLES 210
+CYCLES 102
 CYCLE SIZE*10000
 
 # parameters of message transfer
@@ -24,7 +24,7 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.lnk descent.cyclon.Cyclon
 protocol.lnk.cache DEGREE
-protocol.lnk.l 3
+protocol.lnk.l 4
 protocol.lnk.step 1
 protocol.lnk.transport tr
 protocol.lnk.linkable link
@@ -42,7 +42,7 @@ control.o1 descent.cyclon.Churn
 control.o1.protocol lnk
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 10000
+control.o1.addingPerStep 100000
 #control.o1.addingPerStepPerc 10
 control.o1.startAdd 0
 control.o1.endAdd 90
@@ -52,8 +52,8 @@ control.o2.protocol 0
 control.o2.FINAL
 control.o2.step 1
 control.o2.startRem 100
-control.o2.endRem 200
-control.o2.removingPerStep SIZE/100
+control.o2.endRem 100
+control.o2.removingPerStep 9900
 
 ################### initialization ======================
 
