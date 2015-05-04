@@ -2,18 +2,15 @@ package descent.observers;
 
 import java.util.HashSet;
 
-import descent.Dynamic;
-import descent.PeerSamplingService;
-import descent.observers.program.ClusterCountProgram;
-import descent.observers.program.DebugProgram;
-import descent.observers.program.PythonNetworkProgram;
-import descent.observers.program.VarianceAndArcCountProgram;
 import peersim.config.Configuration;
 import peersim.config.MissingParameterException;
 import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
+import descent.Dynamic;
+import descent.PeerSamplingService;
+import descent.observers.program.PythonNetworkProgram;
 
 /**
  * Created by julian on 3/15/15.

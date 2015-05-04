@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import descent.PeerSamplingService;
 import peersim.core.Node;
+import descent.PeerSamplingService;
 
 /**
  * Created by julian on 26/01/15.

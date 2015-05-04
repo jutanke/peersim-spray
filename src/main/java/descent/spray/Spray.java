@@ -11,15 +11,15 @@ import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import descent.Dynamic;
+import descent.scamp.Scamp;
 
 /**
  * THIS is not EVENT-based due to simplification Created by julian on 3/31/15.
  */
-public class Spray extends SprayProtocol implements Dynamic,
-		PartialView.Parent {
+public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent {
 
 	private static final String PARAM_START_SHUFFLE = "startShuffle";
-
+	private static final String PAR_FAILURE = "failure";
 	// ============================================
 	// E N T I T Y
 	// ============================================
@@ -28,6 +28,7 @@ public class Spray extends SprayProtocol implements Dynamic,
 	protected Map<Long, Node> inView;
 	private boolean isUp = true;
 	protected static final int FORWARD_TTL = 125;
+	private static double failure;
 	protected final int startShuffle;
 	protected int callCount = 0;
 	protected long lastCycle = Long.MIN_VALUE;
@@ -37,6 +38,7 @@ public class Spray extends SprayProtocol implements Dynamic,
 		super(prefix);
 		this.startShuffle = Configuration.getInt(prefix + "."
 				+ PARAM_START_SHUFFLE, 0);
+		Spray.failure = Configuration.getDouble(prefix + "." + PAR_FAILURE, 0);
 		this.partialView = new PartialView();
 		this.inView = new HashMap<Long, Node>();
 	}
@@ -134,8 +136,17 @@ public class Spray extends SprayProtocol implements Dynamic,
 		this.callCount = 0;
 	}
 
+	/**
+	 * process if the connection has failed
+	 * 
+	 * @return true if the connection has failed, false otherwise
+	 */
+	private boolean pF() {
+		return CommonState.r.nextDouble() < (1 - Math.pow(1 - Spray.failure, 6));
+	}
+
 	// ============================================
-	// C Y C L O N
+	// C Y C L I C
 	// ============================================
 
 	/**
@@ -324,41 +335,6 @@ public class Spray extends SprayProtocol implements Dynamic,
 		return false;
 	}
 
-	/**
-	 * FORWARD
-	 *
-	 * @param s
-	 * @param node
-	 * @param counter
-	 */
-	public static boolean forward(final Node s, final Node node, int counter) {
-		final Spray N = (Spray) node.getProtocol(pid);
-		if (N.isUp()) {
-			// counter++;
-			if (counter < FORWARD_TTL) {
-				final Spray current = (Spray) node.getProtocol(pid);
-				if (current.partialView.p() && node.getID() != s.getID()) {
-					final Spray subscriber = (Spray) s.getProtocol(pid);
-					current.addNeighbor(s);
-					subscriber.addToInview(s, node);
-					return true;
-				} else if (current.degree() > 0) {
-					Node next = current.partialView.get(CommonState.r
-							.nextInt(current.degree()));
-					return forward(s, next, counter);
-				} else {
-					System.err.println("DEAD END for subscription " + s.getID()
-							+ " @" + node.getID());
-					return false;
-				}
-			} else {
-				System.err.println("Forward for " + s.getID() + " timed out @"
-						+ node.getID());
-				return false;
-			}
-		}
-		return false;
-	}
 
 	// =================================================================
 	// H E L P E R
