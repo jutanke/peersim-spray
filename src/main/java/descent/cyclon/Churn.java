@@ -11,21 +11,21 @@ public class Churn extends ChurnProtocol {
 	public static Integer call = 0;
 
 	public Churn(String prefix) {
-		super(prefix, CyclonTemp.PAR_PROT);
+		super(prefix, Cyclon.PAR_PROT);
 		ChurnProtocol.current = this;
 	}
 
 	@Override
 	public void removeNode(Node leaver) {
-		CyclonTemp leaverCyclon = (CyclonTemp) leaver
-				.getProtocol(CyclonTemp.pid);
+		Cyclon leaverCyclon = (Cyclon) leaver
+				.getProtocol(Cyclon.pid);
 		leaverCyclon.leave();
 	}
 
 	@Override
 	public void addNode(Node joiner, Node contact) {
-		CyclonTemp joinerCyclon = (CyclonTemp) joiner
-				.getProtocol(CyclonTemp.pid);
+		Cyclon joinerCyclon = (Cyclon) joiner
+				.getProtocol(Cyclon.pid);
 		joinerCyclon.join(joiner, contact);
 	}
 }

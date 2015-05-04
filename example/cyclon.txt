@@ -4,15 +4,6 @@ DEGREE 7
 
 # parameters of periodic execution
 CYCLES 210
-CYCLE SIZE*10000
-
-# parameters of message transfer
-# delay values here are relative to cycle length, in percentage,
-# eg 50 means half the cycle length, 200 twice the cycle length, etc.
-MINDELAY 0
-MAXDELAY 0
-# drop is a probability, 0<=DROP<=1
-DROP 0
 
 random.seed 1237567890
 network.size SIZE
@@ -23,20 +14,12 @@ simulation.logtime 1
 protocol.link peersim.core.IdleProtocol
 
 protocol.lnk descent.cyclon.Cyclon
-protocol.lnk.cache DEGREE
+protocol.lnk.c DEGREE
 protocol.lnk.l 3
+protocol.lnk.delta 1
 protocol.lnk.step 1
-protocol.lnk.transport tr
+protocol.lnk.start 2
 protocol.lnk.linkable link
-protocol.lnk.startShuffle 2
-
-protocol.urt UniformRandomTransport
-protocol.urt.mindelay (CYCLE*MINDELAY)/100
-protocol.urt.maxdelay (CYCLE*MAXDELAY)/100
-
-protocol.tr UnreliableTransport
-protocol.tr.transport urt
-protocol.tr.drop DROP
 
 control.o1 descent.cyclon.Churn
 control.o1.protocol lnk
@@ -47,13 +30,13 @@ control.o1.addingPerStep 10000
 control.o1.startAdd 0
 control.o1.endAdd 90
 
-control.o2 descent.RemoveProtocol
-control.o2.protocol 0
-control.o2.FINAL
-control.o2.step 1
-control.o2.startRem 100
-control.o2.endRem 200
-control.o2.removingPerStep SIZE/100
+#control.o2 descent.RemoveProtocol
+#control.o2.protocol 0
+#control.o2.FINAL
+#control.o2.step 1
+#control.o2.startRem 100
+#control.o2.endRem 200
+#control.o2.removingPerStep SIZE/100
 
 ################### initialization ======================
 
