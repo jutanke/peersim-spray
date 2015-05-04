@@ -61,7 +61,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		// #2 call the periodic function of the node every Delta time
 		// (XXX) does not work with intervals yet
 		if (CommonState.getTime() >= ARandomPeerSamplingProtocol.start
-				&& ARandomPeerSamplingProtocol.delta % CommonState.getTime() == 0) {
+				&& CommonState.getTime() % ARandomPeerSamplingProtocol.delta == 0) {
 			this.periodicCall();
 		}
 	}

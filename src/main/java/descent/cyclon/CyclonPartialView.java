@@ -66,12 +66,20 @@ public class CyclonPartialView implements IAgingPartialView {
 	}
 
 	public List<Node> getSample(Node neighbor) {
-		ArrayList<Node> sample = new ArrayList<Node>(CyclonPartialView.l);
+		ArrayList<Node> sample = new ArrayList<Node>();
 		ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
-		while (sample.size() < Math.min(CyclonPartialView.l,
-				this.partialView.size() - 1)) {
+
+		int sampleSize = clone.size();
+		if (neighbor == null) { // called from the chosen peer
+			sampleSize = Math.min(sampleSize, CyclonPartialView.l);
+		} else { // called from the initiating peer
+			sampleSize = Math.min(sampleSize - 1, CyclonPartialView.l - 1);
+			sampleSize = Math.max(sampleSize, 0);
+		}
+
+		while (sample.size() < sampleSize) {
 			int rn = CommonState.r.nextInt(clone.size());
-			if (clone.get(rn).getID() != neighbor.getID()) {
+			if (neighbor == null || clone.get(rn).getID() != neighbor.getID()) {
 				sample.add(clone.get(rn));
 			}
 			clone.remove(rn);
@@ -107,7 +115,7 @@ public class CyclonPartialView implements IAgingPartialView {
 		return this.getIndex(peer) >= 0;
 	}
 
-	public void mergeSample(Node neighbor, List<Node> newSample,
+	public void mergeSample(Node me, Node other, List<Node> newSample,
 			List<Node> oldSample) {
 		ArrayList<Node> removedPeer = new ArrayList<Node>();
 		ArrayList<Integer> removedAge = new ArrayList<Integer>();
@@ -124,13 +132,29 @@ public class CyclonPartialView implements IAgingPartialView {
 		}
 
 		// #2 remove the chosen neighbor
-		this.partialView.remove(neighbor);
+		this.removeNode(other);
 
 		// #3 insert the new sample
 		for (Node fresh : newSample) {
-			if (!this.contains(fresh)) {
+			if (!this.contains(fresh) && fresh.getID() != me.getID()) {
 				this.partialView.add(fresh);
-				this.ages.add(new Integer(0));
+				// #A look into the removing if it existed
+				boolean found = false;
+				int i = 0;
+				while (!found && i < removedPeer.size()) {
+					if (removedPeer.get(i).getID() == fresh.getID()) {
+						found = true;
+					} else {
+						++i;
+					}
+				}
+				// #B if it existed, keep the old age
+				if (found) {
+					this.ages.add((Integer) removedAge.get(i));
+				} else {
+					// #C otherwise, it's a brand new one
+					this.ages.add(new Integer(0));
+				}
 			}
 		}
 
@@ -142,15 +166,21 @@ public class CyclonPartialView implements IAgingPartialView {
 				int position = this.ages.size() - 1;
 				boolean found = false;
 				while (!found && position >= 0) {
-					if (this.ages.get(position) >= removedAge.get(position)) {
+					if (this.ages.get(position) >= removedAge.get(i)) {
 						found = true;
 					} else {
 						--position;
 					}
 				}
 				// #B insert at the rightful position to maintain the order
-				this.partialView.add(position + 1, removedPeer.get(i));
-				this.ages.add(position + 1, removedAge.get(i));
+				if (!found) {
+					this.partialView.add(0, removedPeer.get(i));
+					this.ages.add(0, removedAge.get(i));
+				} else {
+					this.ages.add(position + 1, removedAge.get(i));
+					this.partialView.add(position + 1, removedPeer.get(i));
+				}
+
 			}
 			--i;
 		}

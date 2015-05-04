@@ -8,7 +8,7 @@ import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
 import descent.Dynamic;
-import descent.rps.IDynamic;
+import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IRandomPeerSampling;
 
 /**
@@ -118,31 +118,16 @@ public abstract class ChurnProtocol implements Control {
 	private void insert() {
 		final Node current = this.availableNodes.poll();
 		if (graph.size() > 0) {
-			// final Node contact = getBestNode();
 			final Node contact = getNode();
 			this.addNode(current, contact);
+		} else {
+			this.addNode(current, null);
 		}
 		this.graph.add(current);
 	}
 
 	public Node getNode() {
 		return this.graph.get(CommonState.r.nextInt(this.graph.size()));
-	}
-
-	public Node getBestNode() {
-		Node a = graph.get(CommonState.r.nextInt(this.graph.size()));
-		Node b = graph.get(CommonState.r.nextInt(this.graph.size()));
-		Dynamic A = (Dynamic) a.getProtocol(pid);
-		Dynamic B = (Dynamic) b.getProtocol(pid);
-
-		final Node bigger = (A.degree() > B.degree()) ? a : b;
-		final Node smaller = (A.degree() > B.degree()) ? b : a;
-
-		if (CommonState.r.nextInt(2) == 1) {
-			return bigger;
-		} else {
-			return smaller;
-		}
 	}
 
 	/**

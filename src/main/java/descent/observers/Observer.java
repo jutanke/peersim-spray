@@ -77,7 +77,7 @@ public class Observer implements Control {
 					if (size == 0) {
 						disconnected++;
 					}
-				}
+				} else { System.out.println("FOHZEFIGZEFGZ"+ n.getID());}
 			}
 
 			this.program.tick(CommonState.getTime(), observer);

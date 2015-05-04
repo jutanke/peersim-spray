@@ -8,6 +8,8 @@ import descent.controllers.ChurnProtocol;
  */
 public class Churn extends ChurnProtocol {
 
+	public static Integer call = 0;
+
 	public Churn(String prefix) {
 		super(prefix, CyclonTemp.PAR_PROT);
 		ChurnProtocol.current = this;

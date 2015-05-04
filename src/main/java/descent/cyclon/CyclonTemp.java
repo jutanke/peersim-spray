@@ -54,31 +54,33 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 			CyclonTemp qProtocol = (CyclonTemp) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
 			List<Node> sample = this.partialView.getSample(q);
-			sample.add((Node) this); // (XXX) not sure 'bout the cast
+			sample.add(this.node);
 			IMessage received = qProtocol.onPeriodicCall(this.node,
 					new CyclonTempMessage(sample));
 			List<Node> samplePrime = (List<Node>) received.getPayload();
-			this.partialView.mergeSample(q, samplePrime, sample);
+			this.partialView.mergeSample(this.node, q, samplePrime, sample);
 		}
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
-		List<Node> samplePrime = this.partialView.getSample(this.node);
-		this.partialView.mergeSample(this.node,
+		List<Node> samplePrime = this.partialView.getSample(null);
+		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime);
 		return new CyclonTempMessage(samplePrime);
 	}
 
 	public void join(Node joiner, Node contact) {
-		if (this.node == null) {
+		if (this.node == null) { // lazy loading of the node identity
 			this.node = joiner;
 		}
-		CyclonTemp contactCyclon = (CyclonTemp) contact
-				.getProtocol(CyclonTemp.pid);
-		this.partialView.clear();
-		this.partialView.addNeighbor(contact);
+		if (contact != null) { // the very first join does not have any contact
+			CyclonTemp contactCyclon = (CyclonTemp) contact
+					.getProtocol(CyclonTemp.pid);
+			this.partialView.clear();
+			this.partialView.addNeighbor(contact);
+			contactCyclon.onSubscription(this.node);
+		}
 		this.isUp = true;
-		contactCyclon.onSubscription(this.node);
 	}
 
 	public void onSubscription(Node origin) {

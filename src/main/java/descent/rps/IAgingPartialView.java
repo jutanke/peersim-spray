@@ -75,14 +75,16 @@ public interface IAgingPartialView {
 	 * Merge the sample with the partial view taking into account the old sent
 	 * sample
 	 * 
-	 * @param neighbor
-	 *            the neighbor chosen for the exchange
+	 * @param me
+	 *            the peer that calls the merge function
+	 * @param other
+	 *            the other peer that sent a message to the "me" peer
 	 * @param newSample
 	 *            the new received sample
 	 * @param oldSample
 	 *            the old sent sample
 	 */
-	public void mergeSample(Node neighbor, List<Node> newSample,
+	public void mergeSample(Node me, Node other, List<Node> newSample,
 			List<Node> oldSample);
 
 	/**

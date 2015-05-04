@@ -259,16 +259,18 @@ public abstract class CyclonProtocol implements Dynamic, Linkable, EDProtocol,
 			final Node destination, final List<CyclonEntry> partialView,
 			final List<CyclonEntry> received, final List<CyclonEntry> sent) {
 
+		// #remove what you sent
 		List<CyclonEntry> pv = sieveOut(partialView, sent);
-		pv = sieveOut(pv, destination);
+		pv = sieveOut(pv, destination); // and the chosen peer
 
+		// #remove from the received thd remaining peers that you have
 		List<CyclonEntry> rec = sieveOut(received, pv);
-		rec = sieveOut(rec, me);
+		rec = sieveOut(rec, me); // remove us from the received 
+		
+		pv = insert(pv, rec); // insert in the partial view the received one
 
-		pv = insert(pv, rec);
-
-		List<CyclonEntry> sen = sieveOut(sent, pv);
-		sen = sieveOut(sen, me);
+		List<CyclonEntry> sen = sieveOut(sent, pv); // remove from the sent the partial view
+		sen = sieveOut(sen, me); // remove us from the from the sent us
 
 		Collections.sort(sen);
 		Collections.reverse(sen);
