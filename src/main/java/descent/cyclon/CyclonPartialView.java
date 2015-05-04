@@ -189,4 +189,18 @@ public class CyclonPartialView implements IAgingPartialView {
 	public int size() {
 		return this.partialView.size();
 	}
+
+	public void clear() {
+		this.partialView.clear();
+		this.ages.clear();
+	}
+
+	public boolean addNeighbor(Node peer) {
+		boolean isContaining = this.contains(peer);
+		if (!isContaining) {
+			this.partialView.add(peer);
+			this.ages.add(new Integer(0));
+		}
+		return !isContaining;
+	}
 }

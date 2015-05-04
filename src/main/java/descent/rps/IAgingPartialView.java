@@ -86,6 +86,15 @@ public interface IAgingPartialView {
 			List<Node> oldSample);
 
 	/**
+	 * Add the neighbor to the partial view
+	 * 
+	 * @param peer
+	 *            the peer to add
+	 * @return true if the peer has been added, false otherwise
+	 */
+	public boolean addNeighbor(Node peer);
+
+	/**
 	 * Check if the partial view contains a peer
 	 * 
 	 * @param peer
@@ -100,4 +109,9 @@ public interface IAgingPartialView {
 	 * @return the size of the partial view
 	 */
 	public int size();
+
+	/**
+	 * Remove all the elements contained in the partial view
+	 */
+	public void clear();
 }

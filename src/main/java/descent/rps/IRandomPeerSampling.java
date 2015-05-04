@@ -21,27 +21,31 @@ public interface IRandomPeerSampling {
 	 * call of a peer (cf periodicCall function).
 	 * 
 	 * @param origin
+	 *            the peer which initiates the periodic protocol
+	 * @param called
+	 *            the peer that is called
+	 * @param message
+	 *            the message to send to the random neighbor
 	 * 
-	 * @return return a list of peers
+	 * @return return a message
 	 */
-	public List<Node> onPeriodicCall(IRandomPeerSampling origin,
-			IMessage message);
+	public IMessage onPeriodicCall(Node origin, IMessage message);
 
 	/**
 	 * Join the network using the contact in argument.
 	 * 
 	 * @param contact
-	 *            the contact inside the network which will introduce us
+	 *            the peer that will introduce caller to the network
 	 */
-	public void join(IRandomPeerSampling contact);
+	public void join(Node contact);
 
 	/**
 	 * The event called when a peer join the network using us as contact peer.
 	 * 
-	 * @param joiner
-	 *            the peer that joins the network
+	 * @param origin
+	 *            the subscriber
 	 */
-	public void onSubscription(IRandomPeerSampling joiner);
+	public void onSubscription(Node origin);
 
 	/**
 	 * Leave the network. Either does nothing, or may help the network to
@@ -59,13 +63,6 @@ public interface IRandomPeerSampling {
 	 *         is too large
 	 */
 	public List<Node> getPeers(int k);
-
-	/**
-	 * Tries to add the neighbor to the partial view
-	 * 
-	 * @return true if the neighbor has been added, false otherwise
-	 */
-	public boolean addNeighbor(Node peer);
 
 	/**
 	 * Clone

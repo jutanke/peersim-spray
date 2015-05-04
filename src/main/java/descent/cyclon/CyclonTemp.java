@@ -1,8 +1,11 @@
 package descent.cyclon;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import peersim.config.Configuration;
+import peersim.core.CommonState;
 import peersim.core.Node;
 import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IMessage;
@@ -24,6 +27,7 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 
 	// #C local variables
 	private CyclonPartialView partialView;
+	private static int RND_WALK = 5;
 
 	/**
 	 * Construction of a Cyclon instance
@@ -49,34 +53,42 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 			Node q = this.partialView.getOldest();
 			CyclonTemp qProtocol = (CyclonTemp) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
-			List<Node> sent = this.partialView.getSample(q);
-			sent.add((Node) this); // (XXX) not sure 'bout the cast
-			List<Node> received = qProtocol.onPeriodicCall(this,
-					new CyclonTempMessage(sent));
-			this.partialView.mergeSample(q, received, sent);
+			List<Node> sample = this.partialView.getSample(q);
+			sample.add((Node) this); // (XXX) not sure 'bout the cast
+			IMessage received = qProtocol.onPeriodicCall(this.node,
+					new CyclonTempMessage(sample));
+			List<Node> samplePrime = (List<Node>) received.getPayload();
+			this.partialView.mergeSample(q, samplePrime, sample);
 		}
 	}
 
-	public List<Node> onPeriodicCall(IRandomPeerSampling origin,
-			IMessage message) {
-		List<Node> sent = this.partialView.getSample((Node) this);
-		this.partialView.mergeSample((Node) this,
-				(List<Node>) message.getPayload(), sent);
-		return sent;
+	public IMessage onPeriodicCall(Node origin, IMessage message) {
+		List<Node> samplePrime = this.partialView.getSample(this.node);
+		this.partialView.mergeSample(this.node,
+				(List<Node>) message.getPayload(), samplePrime);
+		return new CyclonTempMessage(samplePrime);
 	}
 
-	public void join(IRandomPeerSampling contact) {
-		// TODO Auto-generated method stub
-
+	public void join(Node contact) {
+		CyclonTemp contactCyclon = (CyclonTemp) contact;
+		this.partialView.clear();
+		this.partialView.addNeighbor(contact);
+		contactCyclon.onSubscription(this.node);
 	}
 
-	public void onSubscription(IRandomPeerSampling joiner) {
-		// TODO Auto-generated method stub
+	public void onSubscription(Node origin) {
+		List<Node> aliveNeighbors = this.getAliveNeighbors();
+		Collections.shuffle(aliveNeighbors, CommonState.r);
+		int nbRndWalk = Math.min(CyclonTemp.c - 1, aliveNeighbors.size());
 
+		for (int i = 0; i < nbRndWalk; ++i) {
+			randomWalk(origin, aliveNeighbors.get(i), CyclonTemp.RND_WALK);
+		}
 	}
 
 	public void leave() {
 		this.isUp = false;
+		this.partialView.clear();
 		// nothing else
 	}
 
@@ -93,6 +105,47 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	/**
+	 * Perform a random walk in the network at a depth set by ttl (time-to-live)
+	 * 
+	 * @param origin
+	 *            the subscribing peer
+	 * @param current
+	 *            the current peer that either accept the subcription or
+	 *            forwards it
+	 * @param ttl
+	 *            the current time-to-live before the subscription gets accepted
+	 */
+	private static void randomWalk(Node origin, Node current, int ttl) {
+		final CyclonTemp originCyclon = (CyclonTemp) origin.getProtocol(pid);
+		final CyclonTemp currentCyclon = (CyclonTemp) current.getProtocol(pid);
+		List<Node> aliveNeighbors = currentCyclon.getAliveNeighbors();
+		ttl -= 1;
+		// #A if the receiving peer has neighbors in its partial view
+		if (aliveNeighbors.size() > 0) {
+			// #A1 if the ttl is greater than 0, continue the random walk
+			if (ttl > 0) {
+				final Node next = aliveNeighbors.get(CommonState.r
+						.nextInt(aliveNeighbors.size()));
+				randomWalk(origin, next, ttl);
+			} else {
+				// #B if the ttl is greater than 0 or the partial view is empty,
+				// then
+				// accept the subscription and stop forwarding it
+				if (origin.getID() != current.getID()) {
+					Iterator<Node> iPeers = currentCyclon.getPeers(1)
+							.iterator();
+					if (iPeers.hasNext()) {
+						Node chosen = iPeers.next();
+						currentCyclon.partialView.removeNode(chosen);
+						originCyclon.partialView.addNeighbor(chosen);
+					}
+					currentCyclon.addNeighbor(origin);
+				}
+			}
+		}
 	}
 
 }

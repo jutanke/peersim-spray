@@ -1,6 +1,8 @@
 package descent.rps;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
@@ -25,6 +27,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 
 	// #C local variables
 	protected boolean isUp = true;
+	protected Node node = null;
 
 	/**
 	 * Constructor of the class
@@ -55,6 +58,11 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	}
 
 	public void nextCycle(Node node, int pid) {
+		// #1 lazy loading of the reference of the node
+		if (this.node == null) {
+			this.node = node;
+		}
+		// #2 call the periodic function of the node every Delta time
 		// (XXX) does not work with intervals yet
 		if (CommonState.getTime() >= ARandomPeerSamplingProtocol.start
 				&& ARandomPeerSamplingProtocol.delta % CommonState.getTime() == 0) {
@@ -78,11 +86,27 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	}
 
 	public int degree() {
-		return this.getPeers(Integer.MAX_VALUE).size();
+		return this.getAliveNeighbors().size();
 	}
 
 	public Node getNeighbor(int index) {
 		return this.getPeers(Integer.MAX_VALUE).get(index);
+	}
+
+	/**
+	 * Getter of the list of alive neighbors
+	 * 
+	 * @return a list of nodes
+	 */
+	protected List<Node> getAliveNeighbors() {
+		List<Node> neighbors = this.getPeers(Integer.MAX_VALUE);
+		ArrayList<Node> result = new ArrayList<Node>();
+		for (Node neighbor : neighbors) {
+			if (neighbor.isUp()) {
+				result.add(neighbor);
+			}
+		}
+		return result;
 	}
 
 	public void pack() {
