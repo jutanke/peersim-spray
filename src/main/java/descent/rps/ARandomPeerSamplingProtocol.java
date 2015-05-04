@@ -14,14 +14,12 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		Linkable, CDProtocol, IRandomPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
-	private static final String PAR_PROT = "lnk";
-	private static final String PAR_TRANSPORT = "transport";
+	public static final String PAR_PROT = "lnk";
 	private static final String PAR_DELTA = "delta";
 	private static final String PAR_START = "start";
 
 	// #B the values from the configuration file of peersim
-	protected static int tid;
-	protected static int pid;
+	public static int pid;
 	private static int delta;
 	private static int start;
 
@@ -38,14 +36,12 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	 *            the random peer sampling instance (Cyclon or Scamp or Spray)
 	 */
 	public ARandomPeerSamplingProtocol(String prefix) {
-		ARandomPeerSamplingProtocol.tid = Configuration.getPid(prefix + "."
-				+ ARandomPeerSamplingProtocol.PAR_TRANSPORT);
 		ARandomPeerSamplingProtocol.pid = Configuration
 				.lookupPid(ARandomPeerSamplingProtocol.PAR_PROT);
-		ARandomPeerSamplingProtocol.delta = Configuration
-				.getInt(ARandomPeerSamplingProtocol.PAR_DELTA);
-		ARandomPeerSamplingProtocol.start = Configuration
-				.getInt(ARandomPeerSamplingProtocol.PAR_START);
+		ARandomPeerSamplingProtocol.delta = Configuration.getInt(prefix + "."
+				+ ARandomPeerSamplingProtocol.PAR_DELTA);
+		ARandomPeerSamplingProtocol.start = Configuration.getInt(prefix + "."
+				+ ARandomPeerSamplingProtocol.PAR_START);
 	}
 
 	public ARandomPeerSamplingProtocol() {
@@ -70,9 +66,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		}
 	}
 
-	public boolean addNeighbor(Node peer) {
-		return this.addNeighbor(peer);
-	}
+	public abstract boolean addNeighbor(Node peer);
 
 	public boolean contains(Node neighbor) {
 		boolean found = false;
@@ -98,7 +92,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	 * 
 	 * @return a list of nodes
 	 */
-	protected List<Node> getAliveNeighbors() {
+	public List<Node> getAliveNeighbors() {
 		List<Node> neighbors = this.getPeers(Integer.MAX_VALUE);
 		ArrayList<Node> result = new ArrayList<Node>();
 		for (Node neighbor : neighbors) {

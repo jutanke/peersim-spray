@@ -8,9 +8,9 @@ import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
-import descent.Dynamic;
-import descent.PeerSamplingService;
-import descent.observers.program.PythonNetworkProgram;
+import descent.observers.program.VarianceAndArcCountProgram;
+import descent.rps.IDynamic;
+import descent.rps.IRandomPeerSampling;
 
 /**
  * Created by julian on 3/15/15.
@@ -35,9 +35,9 @@ public class Observer implements Control {
 			this.pid = Configuration.lookupPid(PROTOCOL_0);
 		}
 
-		//this.program = new VarianceAndArcCountProgram();
-		//this.program = new DebugProgram();
-		this.program = new PythonNetworkProgram();
+		this.program = new VarianceAndArcCountProgram();
+		// this.program = new DebugProgram();
+		// this.program = new PythonNetworkProgram();
 
 	}
 
@@ -61,13 +61,13 @@ public class Observer implements Control {
 
 			for (int i = 0; i < Network.size(); i++) {
 				Node n = Network.get(i);
-				Dynamic d = (Dynamic) n.getProtocol(pid);
+				IDynamic d = (IDynamic) n.getProtocol(pid);
 				if (d.isUp()) {
 					count += 1;
-					PeerSamplingService pss = (PeerSamplingService) n
+					IRandomPeerSampling pss = (IRandomPeerSampling) n
 							.getProtocol(pid);
 					observer.addStrict(n, pss);
-					final int size = pss.getPeers().size();
+					final int size = pss.getAliveNeighbors().size();
 					if (size < min) {
 						min = size;
 					}

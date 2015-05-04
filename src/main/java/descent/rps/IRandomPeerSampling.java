@@ -34,10 +34,12 @@ public interface IRandomPeerSampling {
 	/**
 	 * Join the network using the contact in argument.
 	 * 
+	 * @param joiner
+	 *            the peer that joins the network
 	 * @param contact
 	 *            the peer that will introduce caller to the network
 	 */
-	public void join(Node contact);
+	public void join(Node joiner, Node contact);
 
 	/**
 	 * The event called when a peer join the network using us as contact peer.
@@ -54,7 +56,7 @@ public interface IRandomPeerSampling {
 	public void leave();
 
 	/**
-	 * Getter of the neighbors
+	 * Getter of the neighbors, it includes dead links too
 	 * 
 	 * @param k
 	 *            the number of requested neighbors
@@ -63,6 +65,13 @@ public interface IRandomPeerSampling {
 	 *         is too large
 	 */
 	public List<Node> getPeers(int k);
+
+	/**
+	 * Getter of the neighbors, does not include peers that are dead
+	 * 
+	 * @return a list of nodes
+	 */
+	public List<Node> getAliveNeighbors();
 
 	/**
 	 * Clone

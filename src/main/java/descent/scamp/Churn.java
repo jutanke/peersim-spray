@@ -1,7 +1,7 @@
 package descent.scamp;
 
 import peersim.core.Node;
-import descent.ChurnProtocol;
+import descent.controllers.ChurnProtocol;
 
 /**
  * Created by julian on 4/15/15.

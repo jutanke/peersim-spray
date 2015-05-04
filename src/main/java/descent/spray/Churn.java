@@ -1,7 +1,7 @@
 package descent.spray;
 
 import peersim.core.Node;
-import descent.ChurnProtocol;
+import descent.controllers.ChurnProtocol;
 
 /**
  * Created by julian on 3/31/15.

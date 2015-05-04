@@ -69,10 +69,15 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 		return new CyclonTempMessage(samplePrime);
 	}
 
-	public void join(Node contact) {
-		CyclonTemp contactCyclon = (CyclonTemp) contact;
+	public void join(Node joiner, Node contact) {
+		if (this.node == null) {
+			this.node = joiner;
+		}
+		CyclonTemp contactCyclon = (CyclonTemp) contact
+				.getProtocol(CyclonTemp.pid);
 		this.partialView.clear();
 		this.partialView.addNeighbor(contact);
+		this.isUp = true;
 		contactCyclon.onSubscription(this.node);
 	}
 
@@ -119,8 +124,10 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 	 *            the current time-to-live before the subscription gets accepted
 	 */
 	private static void randomWalk(Node origin, Node current, int ttl) {
-		final CyclonTemp originCyclon = (CyclonTemp) origin.getProtocol(pid);
-		final CyclonTemp currentCyclon = (CyclonTemp) current.getProtocol(pid);
+		final CyclonTemp originCyclon = (CyclonTemp) origin
+				.getProtocol(CyclonTemp.pid);
+		final CyclonTemp currentCyclon = (CyclonTemp) current
+				.getProtocol(CyclonTemp.pid);
 		List<Node> aliveNeighbors = currentCyclon.getAliveNeighbors();
 		ttl -= 1;
 		// #A if the receiving peer has neighbors in its partial view
@@ -146,6 +153,11 @@ public class CyclonTemp extends ARandomPeerSamplingProtocol implements
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean addNeighbor(Node peer) {
+		return this.partialView.addNeighbor(peer);
 	}
 
 }

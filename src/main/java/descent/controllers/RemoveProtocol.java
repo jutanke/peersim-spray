@@ -1,5 +1,6 @@
-package descent;
+package descent.controllers;
 
+import descent.Dynamic;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;

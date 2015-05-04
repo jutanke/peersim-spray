@@ -1,4 +1,4 @@
-package descent;
+package descent.controllers;
 
 import java.util.LinkedList;
 
@@ -7,6 +7,9 @@ import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
+import descent.Dynamic;
+import descent.rps.IDynamic;
+import descent.rps.IRandomPeerSampling;
 
 /**
  * Created by julian on 3/28/15.
@@ -55,8 +58,8 @@ public abstract class ChurnProtocol implements Control {
 		this.pid = Configuration.lookupPid(cyclProtocol);
 		for (int i = 0; i < nsize; i++) {
 			final Node node = Network.get(i);
-			Dynamic d = (Dynamic) node.getProtocol(pid);
-			d.down();
+			IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
+			d.leave();
 			availableNodes.add(node);
 			// System.err.println("Churn insert:" + this.ADDING_COUNT +
 			// " [" + this.ADDING_START + ".." + this.ADDING_END + "]");
@@ -114,8 +117,6 @@ public abstract class ChurnProtocol implements Control {
 
 	private void insert() {
 		final Node current = this.availableNodes.poll();
-		final Dynamic d = (Dynamic) current.getProtocol(pid);
-		d.up();
 		if (graph.size() > 0) {
 			// final Node contact = getBestNode();
 			final Node contact = getNode();
