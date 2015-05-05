@@ -30,7 +30,7 @@ protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.startShuffle 0
-protocol.0.failure 0.0001
+protocol.0.failure 0.001
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
 protocol.0.leaseTimeoutMin 100

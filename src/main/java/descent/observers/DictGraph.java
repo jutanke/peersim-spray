@@ -593,6 +593,9 @@ public class DictGraph {
                 sb.append("\tprint(\"graph:");
                 sb.append(graph);
                 sb.append("\")\n");
+                sb.append("\tprint(\"arcs:\" + str(");
+                sb.append(graph);
+                sb.append(".number_of_edges()))\n");
                 sb.append("\tprint(\"count:\" + str(");
                 sb.append(graph);
                 sb.append(".number_of_nodes()))\n");

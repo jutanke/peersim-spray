@@ -26,7 +26,7 @@ random.seed 1234539890
 protocol.link peersim.core.IdleProtocol
 
 protocol.0 descent.scamp.Scamp
-protocol.0.failure 0.0001
+protocol.0.failure 0.001
 protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr

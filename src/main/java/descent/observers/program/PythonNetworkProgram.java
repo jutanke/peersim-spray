@@ -12,8 +12,7 @@ import peersim.core.Network;
  */
 public class PythonNetworkProgram implements ObserverProgram{
 
-    final int step = 1;
-    final int MAX_SIZE = Network.size();
+    final int step = 100;
     boolean isFirst = true;
 
     /**
@@ -23,15 +22,13 @@ public class PythonNetworkProgram implements ObserverProgram{
      */
     public void tick(long currentTick, DictGraph observer) {
 
-        /*
         if (CommonState.getTime() > 100 && CommonState.getTime() % step == 0) {
             boolean imp = this.isFirst;
             this.isFirst =false;
             System.out.println("#=================START=================== step:" + CommonState.getTime());
-            System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (MAX_SIZE - observer.size()), imp));
+            System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()), imp));
             System.out.println("#=================END===================");
         }
-        */
 
     }
 
@@ -40,8 +37,10 @@ public class PythonNetworkProgram implements ObserverProgram{
      * @param observer
      */
     public void onLastTick(DictGraph observer) {
+        /*
         System.out.println("#=================START=================== step:" + CommonState.getTime());
         System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (MAX_SIZE - observer.size()), true));
         System.out.println("#=================END===================");
+        */
     }
 }
