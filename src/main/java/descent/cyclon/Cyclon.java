@@ -48,17 +48,24 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 	}
 
 	public void periodicCall() {
-		if (this.isUp() && this.partialView.getPeers().size() > 0) {
+		if (this.isUp() && this.partialView.size() > 0) {
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
 			Cyclon qCyclon = (Cyclon) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
-			List<Node> sample = this.partialView.getSample(this.node, q, true);
-			IMessage received = qCyclon.onPeriodicCall(this.node,
-					new CyclonMessage(sample));
-			List<Node> samplePrime = (List<Node>) received.getPayload();
-			this.partialView.mergeSample(this.node, q, samplePrime, sample,
-					true);
+			if (qCyclon.isUp()) {
+				// #A if the chosen peer is alive, initiate the exchange
+				List<Node> sample = this.partialView.getSample(this.node, q,
+						true);
+				IMessage received = qCyclon.onPeriodicCall(this.node,
+						new CyclonMessage(sample));
+				List<Node> samplePrime = (List<Node>) received.getPayload();
+				this.partialView.mergeSample(this.node, q, samplePrime, sample,
+						true);
+			} else {
+				// #B if the chosen peer is dead, remove it from the view
+				this.partialView.removeNode(q);
+			}
 		}
 	}
 
@@ -103,6 +110,7 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 		return this.partialView.getPeers(k);
 	}
 
+	@Override
 	public IRandomPeerSampling clone() {
 		try {
 			Cyclon cyClone = new Cyclon();

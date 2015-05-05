@@ -36,7 +36,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	}
 
 	public void periodicCall() {
-		if (this.isUp && this.degree() > 0) {
+		if (this.isUp && this.partialView.size() > 0) {
 			// #1 choose the peer to exchange with
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
@@ -71,8 +71,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			this.node = joiner;
 		}
 		if (contact != null) { // the very first join does not have any contact
-			Spray contactSpray = (Spray) contact
-					.getProtocol(Cyclon.pid);
+			Spray contactSpray = (Spray) contact.getProtocol(Cyclon.pid);
 			this.partialView.clear();
 			this.partialView.addNeighbor(contact);
 			contactSpray.onSubscription(this.node);
@@ -83,8 +82,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public void onSubscription(Node origin) {
 		List<Node> aliveNeighbors = this.getAliveNeighbors();
 		for (Node neighbor : aliveNeighbors) {
-			Spray neighborSpray = (Spray) neighbor
-					.getProtocol(Spray.pid);
+			Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
 			neighborSpray.addNeighbor(origin);
 		}
 	}
@@ -99,6 +97,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		return this.partialView.getPeers(k);
 	}
 
+	@Override
 	public IRandomPeerSampling clone() {
 		try {
 			Spray sprayClone = new Spray();

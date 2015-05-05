@@ -3,17 +3,16 @@ package descent.rps;
 import java.util.ArrayList;
 import java.util.List;
 
-import descent.cyclon.CyclonPartialView;
-import peersim.core.CommonState;
 import peersim.core.Node;
+import descent.scamp.PartialView;
 
-public abstract class AAgingPartialView implements IAgingPartialView {
+public abstract class AAgingPartialView extends PartialView implements
+		IAgingPartialView {
 
-	protected ArrayList<Node> partialView;
 	protected ArrayList<Integer> ages;
 
 	public AAgingPartialView() {
-		this.partialView = new ArrayList<Node>();
+		super();
 		this.ages = new ArrayList<Integer>();
 	}
 
@@ -27,29 +26,10 @@ public abstract class AAgingPartialView implements IAgingPartialView {
 		return this.partialView.get(0);
 	}
 
-	public List<Node> getPeers() {
-		return this.partialView;
-	}
-
-	public List<Node> getPeers(int k) {
-		ArrayList<Node> sample;
-		if (this.partialView.size() == k || k == Integer.MAX_VALUE) {
-			sample = new ArrayList<Node>(this.partialView);
-		} else {
-			sample = new ArrayList<Node>();
-			ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
-			while (sample.size() < Math.min(k, this.partialView.size())) {
-				int rn = CommonState.r.nextInt(clone.size());
-				sample.add(clone.get(rn));
-				clone.remove(rn);
-			}
-		}
-		return sample;
-	}
-
 	public abstract List<Node> getSample(Node caller, Node neighbor,
 			boolean isInitiator);
 
+	@Override
 	public boolean removeNode(Node peer) {
 		int index = this.getIndex(peer);
 		if (index >= 0) {
@@ -79,33 +59,12 @@ public abstract class AAgingPartialView implements IAgingPartialView {
 	public abstract void mergeSample(Node me, Node other, List<Node> newSample,
 			List<Node> oldSample, boolean isInitiator);
 
+	@Override
 	public abstract boolean addNeighbor(Node peer);
 
-	public boolean contains(Node peer) {
-		return this.getIndex(peer) >= 0;
-	}
-
-	public int size() {
-		return this.partialView.size();
-	}
-
 	public void clear() {
-		this.partialView.clear();
+		super.clear();
 		this.ages.clear();
-	}
-
-	public int getIndex(Node neighbor) {
-		int i = 0;
-		int index = -1;
-		boolean found = false;
-		while (!found && i < this.partialView.size()) {
-			if (this.partialView.get(i).getID() == neighbor.getID()) {
-				found = true;
-				index = i;
-			}
-			++i;
-		}
-		return index;
 	}
 
 }
