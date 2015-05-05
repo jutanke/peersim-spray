@@ -16,13 +16,13 @@ public class Churn extends ChurnProtocol {
 
 	@Override
 	public void removeNode(Node leaver) {
-		SprayTemp leaverSpray = (SprayTemp) leaver.getProtocol(SprayTemp.pid);
+		Spray leaverSpray = (Spray) leaver.getProtocol(Spray.pid);
 		leaverSpray.leave();
 	}
 
 	@Override
 	public void addNode(Node joiner, Node contact) {
-		SprayTemp joinerSpray = (SprayTemp) joiner.getProtocol(SprayTemp.pid);
+		Spray joinerSpray = (Spray) joiner.getProtocol(Spray.pid);
 		joinerSpray.join(joiner, contact);
 	}
 }

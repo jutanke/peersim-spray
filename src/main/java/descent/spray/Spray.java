@@ -1,420 +1,142 @@
 package descent.spray;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
-import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.Dynamic;
-import descent.scamp.Scamp;
+import descent.cyclon.Cyclon;
+import descent.rps.ARandomPeerSamplingProtocol;
+import descent.rps.IMessage;
+import descent.rps.IRandomPeerSampling;
 
 /**
- * THIS is not EVENT-based due to simplification Created by julian on 3/31/15.
+ * The Spray protocol
  */
-public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent {
+public class Spray extends ARandomPeerSamplingProtocol implements
+		IRandomPeerSampling {
 
-	private static final String PARAM_START_SHUFFLE = "startShuffle";
-	private static final String PAR_FAILURE = "failure";
-	// ============================================
-	// E N T I T Y
-	// ============================================
+	// #A no configuration needed, everything is adaptive
+	// #B no values from the configuration file of peersim
+	// #C local variables
+	private SprayPartialView partialView;
 
-	protected PartialView partialView;
-	protected Map<Long, Node> inView;
-	private boolean isUp = true;
-	protected static final int FORWARD_TTL = 125;
-	private static double failure;
-	protected final int startShuffle;
-	protected int callCount = 0;
-	protected long lastCycle = Long.MIN_VALUE;
-	protected boolean useUnsubscription = false;
-
+	/**
+	 * Constructor of the Spray instance
+	 * 
+	 * @param prefix
+	 *            the peersim configuration
+	 */
 	public Spray(String prefix) {
 		super(prefix);
-		this.startShuffle = Configuration.getInt(prefix + "."
-				+ PARAM_START_SHUFFLE, 0);
-		Spray.failure = Configuration.getDouble(prefix + "." + PAR_FAILURE, 0);
-		this.partialView = new PartialView();
-		this.inView = new HashMap<Long, Node>();
+		this.partialView = new SprayPartialView();
 	}
 
-	@Override
-	public Object clone() {
-		Spray s = (Spray) super.clone();
-		s.partialView = new PartialView();
-		s.inView = new HashMap<Long, Node>();
-		return s;
+	public Spray() {
+		this.partialView = new SprayPartialView();
 	}
 
-	// ============================================
-	// P U B L I C
-	// ============================================
-
-	public void nextCycle(Node node, int protocolID) {
-		if (this.isUp()) {
-			this.startShuffle(node);
-		}
-	}
-
-	public boolean isUp() {
-		return this.isUp;
-	}
-
-	public List<Node> getPeersThatAreAlive() {
-		final List<Node> result = new ArrayList<Node>();
-		for (Node n : this.getPeers()) {
-			final Spray N = (Spray) n.getProtocol(pid);
-			if (N.isUp()) {
-				result.add(n);
+	public void periodicCall() {
+		if (this.isUp && this.degree() > 0) {
+			// #1 choose the peer to exchange with
+			this.partialView.incrementAge();
+			Node q = this.partialView.getOldest();
+			Spray qSpray = (Spray) q
+					.getProtocol(ARandomPeerSamplingProtocol.pid);
+			if (qSpray.isUp()) {
+				// #A if the chosen peer is alive, exchange
+				List<Node> sample = this.partialView.getSample(this.node, q,
+						true);
+				IMessage received = qSpray.onPeriodicCall(this.node,
+						new SprayMessage(sample));
+				List<Node> samplePrime = (List<Node>) received.getPayload();
+				this.partialView.mergeSample(this.node, q, samplePrime, sample,
+						true);
+			} else {
+				// #B run the appropriate procedure
+				this.onUnreachable(q);
 			}
 		}
-		return result;
 	}
 
-	public void up() {
+	public IMessage onPeriodicCall(Node origin, IMessage message) {
+		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
+				false);
+		this.partialView.mergeSample(this.node, origin,
+				(List<Node>) message.getPayload(), samplePrime, false);
+		return new SprayMessage(samplePrime);
+	}
+
+	public void join(Node joiner, Node contact) {
+		if (this.node == null) { // lazy loading of the node identity
+			this.node = joiner;
+		}
+		if (contact != null) { // the very first join does not have any contact
+			Spray contactSpray = (Spray) contact
+					.getProtocol(Cyclon.pid);
+			this.partialView.clear();
+			this.partialView.addNeighbor(contact);
+			contactSpray.onSubscription(this.node);
+		}
 		this.isUp = true;
 	}
 
-	public void down() {
+	public void onSubscription(Node origin) {
+		List<Node> aliveNeighbors = this.getAliveNeighbors();
+		for (Node neighbor : aliveNeighbors) {
+			Spray neighborSpray = (Spray) neighbor
+					.getProtocol(Spray.pid);
+			neighborSpray.addNeighbor(origin);
+		}
+	}
+
+	public void leave() {
 		this.isUp = false;
+		this.partialView.clear();
+		// nothing else
 	}
 
-	public int hash() {
-		return 0;
+	public List<Node> getPeers(int k) {
+		return this.partialView.getPeers(k);
 	}
 
-	public void processEvent(Node node, int pid, Object event) {
-		// N E V E R U S E D
-	}
-
-	public int degree() {
-		return this.partialView.degree();
-	}
-
-	public Node getNeighbor(int i) {
-		return this.partialView.get(i);
-	}
-
-	public boolean addNeighbor(Node neighbour) {
-		return this.partialView.add(neighbour);
-	}
-
-	public boolean contains(Node neighbor) {
-		return this.partialView.contains(neighbor);
-	}
-
-	public List<Node> getPeers() {
-		return this.partialView.list();
-	}
-
-	public String debug() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(", in:[");
-		for (Node n : this.inView.values()) {
-			if (sb.length() > 4) {
-				sb.append(",");
-			}
-			sb.append(n.getID());
+	public IRandomPeerSampling clone() {
+		try {
+			Spray sprayClone = new Spray();
+			sprayClone.partialView = (SprayPartialView) this.partialView
+					.clone();
+			return sprayClone;
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		sb.append("], out:");
-		sb.append(this.partialView);
-		sb.append(", isUp:");
-		sb.append(this.isUp());
-		return sb.toString();
+		return null;
 	}
 
-	public int callsInThisCycle() {
-		return this.callCount;
-	}
-
-	public void clearCallsInCycle() {
-		this.callCount = 0;
+	@Override
+	public boolean addNeighbor(Node peer) {
+		return this.partialView.addNeighbor(peer);
 	}
 
 	/**
-	 * process if the connection has failed
+	 * Procedure that handles the peer failures when detected
 	 * 
-	 * @return true if the connection has failed, false otherwise
+	 * @param q
+	 *            the peer supposedly crashed
 	 */
-	private boolean pF() {
-		return CommonState.r.nextDouble() < (1 - Math.pow(1 - Spray.failure, 6));
-	}
-
-	// ============================================
-	// C Y C L I C
-	// ============================================
-
-	/**
-	 * A* --> B
-	 *
-	 * @param me
-	 */
-	public void startShuffle(Node me) {
-
-		final long currentTime = CommonState.getTime();
-		if (currentTime > this.lastCycle) {
-			this.callCount = 0;
-		}
-
-		this.updateInView(me);
-		if (this.isUp() && this.startShuffle <= CommonState.getTime()) {
-			if (this.degree() > 0) {
-				this.partialView.freeze();
-				this.partialView.incrementAge();
-				final PartialViewEntry q = this.partialView.oldest();
-				final List<PartialViewEntry> nodesToSend = this.partialView
-						.subsetMinus1(q);
-				nodesToSend.add(new PartialViewEntry(me));
-				final Spray Q = (Spray) q.node.getProtocol(pid);
-				if (Q.isUp()) {
-					Q.receiveShuffle(q.node, me,
-							PartialView.clone(nodesToSend), this.degree());
-				} else {
-					// TIME OUT
-					final double p = (double) (c + 1)
-							/ this.partialView.degree();
-					final int count = this.partialView.deleteAll(q.node);
-					this.inView.remove(q.node.getID());
-					if (this.partialView.degree() > 0) {
-						// recreate a link:
-						if (this.partialView.degree() > 0) {
-							for (int i = 0; i < count; i++) {
-								if (CommonState.r.nextDouble() > p) {
-									final Node r = this.partialView
-											.get(CommonState.r
-													.nextInt(this.partialView
-															.degree()));
-									this.partialView.addMultiset(r);
-								}
-							}
-						}
-					}
+	private void onUnreachable(Node q) {
+		// #1 probability to NOT recreate the connection
+		double pRemove = 1.0 / this.partialView.size();
+		// #2 remove all occurrences of q in our partial view and count them
+		int occ = this.partialView.removeAll(q);
+		if (this.partialView.size() > 0) {
+			// #3 probabilistically doubles known connections
+			for (int i = 0; i < occ; ++i) {
+				if (CommonState.r.nextDouble() > pRemove) {
+					Node toDouble = this.partialView.getPeers().get(
+							CommonState.r.nextInt(this.partialView.size()));
+					this.partialView.addNeighbor(toDouble);
 				}
 			}
 		}
 	}
-
-	/**
-	 * A --> B*
-	 *
-	 * @param me
-	 * @param sender
-	 * @param received
-	 * @param otherPartialViewSize
-	 */
-	public void receiveShuffle(final Node me, final Node sender,
-			final List<PartialViewEntry> received,
-			final int otherPartialViewSize) {
-		if (this.isUp()) {
-			this.callCountPP(me, sender);
-			this.partialView.freeze();
-			List<PartialViewEntry> nodesToSend = this.partialView.subset();
-			final int size = this.degree();
-			// .println("receive shuffle @" + me.getID() + " from " +
-			// sender.getID());
-			// System.err.println("Send nodes: " + nodesToSend);
-			this.partialView.merge(me, sender, received, otherPartialViewSize,
-					false);
-			this.updateInView(me);
-			this.updateOutView(me);
-			final Spray P = (Spray) sender.getProtocol(pid);
-
-			P.finishShuffle(sender, me, PartialView.clone(nodesToSend), size);
-		}
-	}
-
-	/**
-	 * A* --> B
-	 *
-	 * @param me
-	 * @param sender
-	 * @param received
-	 *            (FROM B)
-	 * @param otherPartialViewSize
-	 */
-	public void finishShuffle(final Node me, final Node sender,
-			final List<PartialViewEntry> received,
-			final int otherPartialViewSize) {
-		if (this.isUp()) {
-			// System.err.println("finish shuffle @" + me.getID() + " from " +
-			// sender.getID());
-			this.partialView.merge(me, sender, received, otherPartialViewSize);
-			this.updateInView(me);
-			this.updateOutView(me);
-		}
-	}
-
-	// ============================================
-	// S C A M P
-	// ============================================
-
-	/**
-	 * Transform a --> (me) --> b into a --> b
-	 *
-	 * @param node
-	 */
-	public static void unsubscribe(Node node) {
-		final Spray current = (Spray) node.getProtocol(pid);
-		if (!current.useUnsubscription)
-			return;
-
-		current.updateInView(node);
-		// System.err.println(current.debug());
-		if (current.isUp()) {
-			int count = 0;
-			current.down();
-			final int ls = current.inView.size();
-			final int notifyIn = Math.max(ls - c - 1, 0);
-			final Queue<Node> in = new LinkedList<Node>(current.inView.values());
-			final List<Node> out = current.partialView.list();
-			for (int i = 0; i < notifyIn && out.size() > 0; i++) {
-				final Node a = in.poll();
-				final Node b = out.get(i % out.size());
-				count += current.replace(node, a, b);
-			}
-
-			while (!in.isEmpty()) {
-				final Spray next = (Spray) in.poll().getProtocol(pid);
-				count += next.partialView.deleteAll(node);
-			}
-			System.err.println("remove " + node.getID() + ", delete " + count
-					+ " arcs");
-			current.partialView.clear();
-			current.inView.clear();
-		}
-	}
-
-	/**
-	 * SUBSCRIBE
-	 *
-	 * @param s
-	 * @param c
-	 */
-	public static void subscribe(final Node s, final Node c) {
-		final Spray subscriber = (Spray) s.getProtocol(pid);
-		subscriber.inView.clear();
-		subscriber.partialView.clear();
-
-		final Spray contact = (Spray) c.getProtocol(pid);
-
-		if (subscriber.isUp() && contact.isUp()) {
-
-			subscriber.addNeighbor(c);
-			for (Node n : contact.getPeers()) {
-				insert(s, n);
-			}
-
-			for (int i = 0; i < Spray.c && contact.degree() > 0; i++) {
-				final Node n = contact.getNeighbor(CommonState.r
-						.nextInt(contact.degree()));
-				insert(s, n);
-			}
-
-		} else {
-			throw new RuntimeException("@Subscribe (" + s.getID() + " -> "
-					+ c.getID() + " not up");
-		}
-		// System.err.println("add " + s.getID() + ", add " + count + " arcs");
-	}
-
-	private static boolean insert(Node s, Node n) {
-		final Spray subscriber = (Spray) s.getProtocol(pid);
-		if (n.getID() != s.getID()) {
-			final Spray current = (Spray) n.getProtocol(pid);
-			if (current.isUp()) {
-				current.addNeighbor(s);
-				subscriber.addToInview(s, n);
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-	// =================================================================
-	// H E L P E R
-	// =================================================================
-
-	private void callCountPP(Node me, Node from) {
-		final long currentTime = CommonState.getTime();
-
-		if (this.lastCycle == currentTime) {
-			this.callCount += 1;
-		} else if (this.lastCycle < currentTime) {
-			this.callCount = 1;
-		} else {
-			throw new RuntimeException("nope..99");
-		}
-		this.lastCycle = currentTime;
-	}
-
-	protected void updateInView(Node me) {
-		List<Node> in = new ArrayList<Node>(this.inView.values());
-		for (Node n : in) {
-			final Spray current = (Spray) n.getProtocol(pid);
-			if (!current.isUp() || !current.contains(me)) {
-				this.inView.remove(n.getID());
-			}
-		}
-	}
-
-	protected void updateOutView(Node me) {
-		for (Node n : this.getPeers()) {
-			final Spray current = (Spray) n.getProtocol(pid);
-			if (!current.inView.containsKey(me.getID())) {
-
-				current.addToInview(n, me);
-			}
-		}
-	}
-
-	/**
-	 * Turn a --> (me) --> b Into a --> b
-	 *
-	 * @param me
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	private int replace(Node me, Node a, Node b) {
-		int count = this.partialView.count(b); // not really accurate
-		final Spray A = (Spray) a.getProtocol(pid);
-		final Spray B = (Spray) b.getProtocol(pid);
-		if (me.getID() == a.getID() || me.getID() == b.getID()) {
-			throw new RuntimeException("FATAL");
-		}
-		if (a.isUp() && b.isUp()) {
-			if (a.getID() == b.getID()) {
-				count += A.partialView.deleteAll(me);
-				B.inView.remove(me.getID());
-			} else {
-				final int swn = A.partialView.switchNode(me, b);
-				count += Math.max(swn / 2, 1); // inaccurate
-				B.inView.remove(me.getID());
-				if (!B.inView.containsKey(a.getID())) {
-					B.addToInview(b, a);
-				}
-			}
-		} else {
-			// either a or b is down, so we just kill all links regarding (me)
-			count += A.partialView.deleteAll(me);
-			B.inView.remove(me.getID());
-		}
-		return count;
-	}
-
-	protected void addToInview(Node me, Node n) {
-		if (me.getID() == n.getID()) {
-			throw new RuntimeException("cannot put myself");
-		}
-		if (!this.inView.containsKey(n.getID())) {
-			this.inView.put(n.getID(), n);
-		}
-	}
-
 }

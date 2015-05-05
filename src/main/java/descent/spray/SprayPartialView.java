@@ -12,12 +12,12 @@ import descent.rps.AAgingPartialView;
  * Aging partial view of the Spray random peer sampling protocol. It can contain
  * multiple references of a same peer.
  */
-public class SprayTempPartialView extends AAgingPartialView {
+public class SprayPartialView extends AAgingPartialView {
 
 	/**
 	 * Constructor of the class
 	 */
-	public SprayTempPartialView() {
+	public SprayPartialView() {
 		super();
 	}
 
@@ -119,7 +119,7 @@ public class SprayTempPartialView extends AAgingPartialView {
 
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
-		SprayTempPartialView spv = new SprayTempPartialView();
+		SprayPartialView spv = new SprayPartialView();
 		spv.partialView = new ArrayList<Node>(this.partialView);
 		spv.ages = new ArrayList<Integer>(this.ages);
 		return spv;
