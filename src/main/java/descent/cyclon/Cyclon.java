@@ -51,21 +51,22 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 		if (this.isUp() && this.partialView.getPeers().size() > 0) {
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			Cyclon qProtocol = (Cyclon) q
+			Cyclon qCyclon = (Cyclon) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
-			List<Node> sample = this.partialView.getSample(q);
-			sample.add(this.node);
-			IMessage received = qProtocol.onPeriodicCall(this.node,
+			List<Node> sample = this.partialView.getSample(this.node, q, true);
+			IMessage received = qCyclon.onPeriodicCall(this.node,
 					new CyclonMessage(sample));
 			List<Node> samplePrime = (List<Node>) received.getPayload();
-			this.partialView.mergeSample(this.node, q, samplePrime, sample);
+			this.partialView.mergeSample(this.node, q, samplePrime, sample,
+					true);
 		}
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
-		List<Node> samplePrime = this.partialView.getSample(null);
+		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
+				false);
 		this.partialView.mergeSample(this.node, origin,
-				(List<Node>) message.getPayload(), samplePrime);
+				(List<Node>) message.getPayload(), samplePrime, false);
 		return new CyclonMessage(samplePrime);
 	}
 
@@ -74,8 +75,7 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 			this.node = joiner;
 		}
 		if (contact != null) { // the very first join does not have any contact
-			Cyclon contactCyclon = (Cyclon) contact
-					.getProtocol(Cyclon.pid);
+			Cyclon contactCyclon = (Cyclon) contact.getProtocol(Cyclon.pid);
 			this.partialView.clear();
 			this.partialView.addNeighbor(contact);
 			contactCyclon.onSubscription(this.node);
@@ -126,10 +126,8 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 	 *            the current time-to-live before the subscription gets accepted
 	 */
 	private static void randomWalk(Node origin, Node current, int ttl) {
-		final Cyclon originCyclon = (Cyclon) origin
-				.getProtocol(Cyclon.pid);
-		final Cyclon currentCyclon = (Cyclon) current
-				.getProtocol(Cyclon.pid);
+		final Cyclon originCyclon = (Cyclon) origin.getProtocol(Cyclon.pid);
+		final Cyclon currentCyclon = (Cyclon) current.getProtocol(Cyclon.pid);
 		List<Node> aliveNeighbors = currentCyclon.getAliveNeighbors();
 		ttl -= 1;
 		// #A if the receiving peer has neighbors in its partial view

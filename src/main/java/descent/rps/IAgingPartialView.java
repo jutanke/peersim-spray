@@ -25,7 +25,7 @@ public interface IAgingPartialView {
 	/**
 	 * Getter of the neighbors list
 	 * 
-	 * @return the list to the neighborhood
+	 * @return the reference to the list of neighbors
 	 */
 	public List<Node> getPeers();
 
@@ -35,24 +35,27 @@ public interface IAgingPartialView {
 	 * 
 	 * @param k
 	 *            the number of requested neighbors
-	 * @return a list of nodes
+	 * @return a new instance of the list of nodes
 	 */
 	public List<Node> getPeers(int k);
 
 	/**
 	 * Getter of the neighbors
 	 * 
+	 * @param caller
+	 *            the identity of the peer calling this function
 	 * @param neighbor
 	 *            the chosen neighbor to exchange with
-	 * 
+	 * @param isInitiator
+	 *            define if the caller is the initiator of the exchange
 	 * @return a list of neighbors being the sample to send to the chosen
 	 *         neighbor
 	 */
-	public List<Node> getSample(Node neighbor);
+	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator);
 
 	/**
-	 * Remove the peer from the neighborhood, if multiple occurences of the peer
-	 * exist, it remove the oldest
+	 * Remove an occurrence of the peer from the neighborhood, if multiple
+	 * occurrences of the peer exist, it remove the oldest
 	 * 
 	 * @param peer
 	 *            the peer to remove
@@ -61,7 +64,8 @@ public interface IAgingPartialView {
 	public boolean removeNode(Node peer);
 
 	/**
-	 * Remove the peer from the neighborhood
+	 * Remove the peer from the neighborhood, if multiples occurrences of the
+	 * pair <neighbor, age> exist, only one occurrence is removed
 	 * 
 	 * @param peer
 	 *            the peer to remove
@@ -83,9 +87,11 @@ public interface IAgingPartialView {
 	 *            the new received sample
 	 * @param oldSample
 	 *            the old sent sample
+	 * @param isInitiator
+	 *            define if the peer "me" is the initiator of the exchange
 	 */
 	public void mergeSample(Node me, Node other, List<Node> newSample,
-			List<Node> oldSample);
+			List<Node> oldSample, boolean isInitiator);
 
 	/**
 	 * Add the neighbor to the partial view
@@ -116,4 +122,16 @@ public interface IAgingPartialView {
 	 * Remove all the elements contained in the partial view
 	 */
 	public void clear();
+
+	/**
+	 * Get the index in the partial view of the neighbor in argument. If
+	 * multiples instances of this peer exist, it returns the index of the first
+	 * occurrence. If no occurrence exist, it return -1
+	 * 
+	 * @param neighbor
+	 *            the neighbor to search
+	 * 
+	 * @return the first index of the neighbor, -1 if not found
+	 */
+	public int getIndex(Node neighbor);
 }
