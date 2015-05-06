@@ -12,14 +12,14 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.lnk descent.spray.Spray
-protocol.lnk.delta 1
-protocol.lnk.step 1
-protocol.lnk.start 2
-protocol.lnk.linkable link
+protocol.rps descent.spray.Spray
+protocol.rps.delta 1
+protocol.rps.step 1
+protocol.rps.start 2
+protocol.rps.linkable link
 
 control.o1 descent.spray.Churn
-control.o1.protocol lnk
+control.o1.protocol rps
 control.o1.FINAL
 control.o1.step 1
 control.o1.addingPerStep 10000
@@ -38,13 +38,13 @@ control.o1.endAdd 90
 ################### initialization ======================
 
 init.sch CDScheduler
-init.sch.protocol lnk
+init.sch.protocol rps
 init.sch.randstart
 
 ##### Controls #####
 
 
 control.0 descent.observers.Observer
-control.0.protocol lnk
+control.0.protocol rps
 control.0.FINAL
 control.0.step 1

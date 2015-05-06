@@ -14,7 +14,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		Linkable, CDProtocol, IRandomPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
-	public static final String PAR_PROT = "lnk";
+	public static final String PAR_PROT = "rps";
 	private static final String PAR_DELTA = "delta";
 	private static final String PAR_START = "start";
 
@@ -59,7 +59,6 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 			this.node = node;
 		}
 		// #2 call the periodic function of the node every Delta time
-		// (XXX) does not work with intervals yet
 		if (CommonState.getTime() >= ARandomPeerSamplingProtocol.start
 				&& CommonState.getTime() % ARandomPeerSamplingProtocol.delta == 0) {
 			this.periodicCall();

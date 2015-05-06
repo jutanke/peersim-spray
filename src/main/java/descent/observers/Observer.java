@@ -17,8 +17,7 @@ import descent.rps.IRandomPeerSampling;
  */
 public class Observer implements Control {
 
-	private static final String PROTOCOL = "lnk";
-	private static final String PROTOCOL_0 = "0";
+	private static final String PAR_PROTOCOL = "protocol";
 
 	// =============================================
 	// C T O R
@@ -28,12 +27,8 @@ public class Observer implements Control {
 	private final ObserverProgram program;
 
 	public Observer(String name) {
-
-		try {
-			this.pid = Configuration.lookupPid(PROTOCOL);
-		} catch (MissingParameterException e) {
-			this.pid = Configuration.lookupPid(PROTOCOL_0);
-		}
+		this.pid = Configuration.lookupPid(Configuration.getString(name + "."
+				+ PAR_PROTOCOL));
 
 		this.program = new VarianceAndArcCountProgram();
 		// this.program = new DebugProgram();
