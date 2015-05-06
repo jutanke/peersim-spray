@@ -9,7 +9,7 @@ import peersim.core.CommonState;
  */
 public class ArcCountProgram implements ObserverProgram {
 
-    final int step = 100;
+    final int step = 1000;
     boolean isFirst = true;
 
     /**
@@ -33,6 +33,10 @@ public class ArcCountProgram implements ObserverProgram {
      * @param observer {}
      */
     public void onLastTick(DictGraph observer) {
-
+        /*
+        System.out.println("#=================START=================== step:" + CommonState.getTime());
+        System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()), true));
+        System.out.println("#=================END===================");
+        */
     }
 }

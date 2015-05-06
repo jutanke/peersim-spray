@@ -29,7 +29,7 @@ public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent 
     protected long lastCycle = Long.MIN_VALUE;
     protected boolean useUnsubscription = false;
 
-    private HashSet<Long> knownConnections;
+    //private HashSet<Long> knownConnections;
 
     public Spray(String prefix) {
         super(prefix);
@@ -38,7 +38,7 @@ public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent 
         Spray.failure = Configuration.getDouble(prefix + "." + PAR_FAILURE, 0);
         this.partialView = new PartialView();
         this.inView = new HashMap<Long, Node>();
-        this.knownConnections = new HashSet<Long>();
+        //this.knownConnections = new HashSet<Long>();
     }
 
     @Override
@@ -46,7 +46,7 @@ public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent 
         Spray s = (Spray) super.clone();
         s.partialView = new PartialView();
         s.inView = new HashMap<Long, Node>();
-        s.knownConnections = new HashSet<Long>();
+        //s.knownConnections = new HashSet<Long>();
         return s;
     }
 
@@ -171,23 +171,8 @@ public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent 
                 nodesToSend.add(new PartialViewEntry(me));
                 final Spray Q = (Spray) q.node.getProtocol(pid);
 
-                // ~~ keep knownConnections up-to-date ~~ // remove closed connections
-                final List<Long> rm = new ArrayList<Long>();
-                for (long kc : this.knownConnections) {
-                    if (!this.partialView.contains(kc)) {
-                        rm.add(kc);
-                    }
-                }
-                for (long r : rm) {
-                    this.knownConnections.remove(r);
-                }
-                final boolean connectionIsSuccess = this.knownConnections.contains(q.node.getID()) || !this.pF();
+                final boolean connectionIsSuccess = !this.pF();
                 if (Q.isUp() && connectionIsSuccess) {
-
-                    if (!this.knownConnections.contains(q.node.getID())) {
-                        this.knownConnections.add(q.node.getID());
-                    }
-
                     Q.receiveShuffle(q.node, me,
                             PartialView.clone(nodesToSend), this.degree());
                 } else {
@@ -198,15 +183,13 @@ public class Spray extends SprayProtocol implements Dynamic, PartialView.Parent 
                     this.inView.remove(q.node.getID());
                     if (this.partialView.degree() > 0) {
                         // recreate a link:
-                        if (this.partialView.degree() > 0) {
-                            for (int i = 0; i < count; i++) {
-                                if (CommonState.r.nextDouble() > p) {
-                                    final Node r = this.partialView
-                                            .get(CommonState.r
-                                                    .nextInt(this.partialView
-                                                            .degree()));
-                                    this.partialView.addMultiset(r);
-                                }
+                        for (int i = 0; i < count; i++) {
+                            if (CommonState.r.nextDouble() > p) {
+                                final Node r = this.partialView
+                                        .get(CommonState.r
+                                                .nextInt(this.partialView
+                                                        .degree()));
+                                this.partialView.addMultiset(r);
                             }
                         }
                     }

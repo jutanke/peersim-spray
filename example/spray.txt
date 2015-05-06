@@ -2,7 +2,7 @@ SIZE 10000
 
 # parameters of periodic execution
 #CYCLES 15050
-CYCLES 10000
+CYCLES 100000
 CYCLE SIZE*10000
 
 network.size SIZE
@@ -30,7 +30,7 @@ protocol.0.c 0
 protocol.0.step 1
 protocol.0.transport tr
 protocol.0.startShuffle 0
-protocol.0.failure 0.001
+protocol.0.failure 0.0001
 protocol.0.linkable link
 protocol.0.indirectionTTL 10
 protocol.0.leaseTimeoutMin 100
