@@ -11,13 +11,13 @@ import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IRandomPeerSampling;
 
 /**
- * Created by julian on 3/28/15.
+ * Controller that add and/or remove peers from the network over time
  */
-public class ChurnProtocol implements Control {
+public class DynamicNetwork implements Control {
 
 	private static final String PAR_ADD_COUNT = "addingPerStep";
 	private static final String PAR_ADD_PERC = "addingPerStepPerc";
-	private static final String PARR_REM_COUNT = "removingPerStep";
+	private static final String PAR_REM_COUNT = "removingPerStep";
 	private static final String PAR_ADD_START = "startAdd";
 	private static final String PAR_REM_START = "startRem";
 	private static final String PAR_ADD_END = "endAdd";
@@ -37,23 +37,27 @@ public class ChurnProtocol implements Control {
 	public static LinkedList<Node> graph = new LinkedList<Node>();
 	public static LinkedList<Node> availableNodes = new LinkedList<Node>();
 
-	public ChurnProtocol(String n) {
-		this.ADDING_COUNT = Configuration.getInt(n + "." + PAR_ADD_COUNT, -1);
-		this.ADDING_PERCENT = Configuration.getInt(n + "." + PAR_ADD_PERC, -1);
+	public DynamicNetwork(String n) {
+		// #A initialize all the variable from the configuration file
+		this.ADDING_COUNT = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_ADD_COUNT, -1);
+		this.ADDING_PERCENT = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_ADD_PERC, -1);
+		this.REMOVING_COUNT = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_REM_COUNT, 0);
+		this.ADDING_START = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_ADD_START, Integer.MAX_VALUE);
+		this.REMOVING_START = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_REM_START, Integer.MAX_VALUE);
+		this.REMOVING_END = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_REM_END, Integer.MAX_VALUE);
+		this.ADDING_END = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_ADD_END, Integer.MAX_VALUE);
 		this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
-		System.err.println("IS PERC: " + this.IS_PERCENTAGE);
-		this.REMOVING_COUNT = Configuration.getInt(n + "." + PARR_REM_COUNT, 0);
-		this.ADDING_START = Configuration.getInt(n + "." + PAR_ADD_START,
-				Integer.MAX_VALUE);
-		this.REMOVING_START = Configuration.getInt(n + "." + PAR_REM_START,
-				Integer.MAX_VALUE);
-		this.REMOVING_END = Configuration.getInt(n + "." + PAR_REM_END,
-				Integer.MAX_VALUE);
-		this.ADDING_END = Configuration.getInt(n + "." + PAR_ADD_END,
-				Integer.MAX_VALUE);
+
 		final int nsize = Network.size();
-		ChurnProtocol.pid = Configuration.lookupPid(Configuration.getString(n
-				+ "." + ChurnProtocol.PAR_PROTOCOL));
+		DynamicNetwork.pid = Configuration.lookupPid(Configuration.getString(n
+				+ "." + DynamicNetwork.PAR_PROTOCOL));
 		for (int i = 0; i < nsize; i++) {
 			final Node node = Network.get(i);
 			IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
@@ -76,18 +80,18 @@ public class ChurnProtocol implements Control {
 		if (removingElements) {
 			// REMOVE ELEMENTS
 			for (int i = 0; i < this.REMOVING_COUNT
-					&& ChurnProtocol.graph.size() > 0; i++) {
-				final int pos = CommonState.r.nextInt(ChurnProtocol.graph
+					&& DynamicNetwork.graph.size() > 0; i++) {
+				final int pos = CommonState.r.nextInt(DynamicNetwork.graph
 						.size());
-				final Node rem = ChurnProtocol.graph.get(pos);
-				ChurnProtocol.removeNode(rem);
+				final Node rem = DynamicNetwork.graph.get(pos);
+				DynamicNetwork.removeNode(rem);
 				ARandomPeerSamplingProtocol d = (ARandomPeerSamplingProtocol) rem
 						.getProtocol(pid);
 				if (d.isUp()) {
 					d.leave();
 				}
-				ChurnProtocol.graph.remove(pos);
-				ChurnProtocol.availableNodes.push(rem);
+				DynamicNetwork.graph.remove(pos);
+				DynamicNetwork.availableNodes.push(rem);
 			}
 		}
 
@@ -96,20 +100,20 @@ public class ChurnProtocol implements Control {
 
 			if (this.IS_PERCENTAGE) {
 
-				final double log10 = Math.floor(Math.log10(ChurnProtocol.graph
+				final double log10 = Math.floor(Math.log10(DynamicNetwork.graph
 						.size()));
 				final double dev10 = Math.pow(10, log10);
 				int count = Math.max(1, (int) dev10 / this.ADDING_PERCENT);
 				System.err.println("QQ:" + graph.size() + "," + log10 + ","
 						+ dev10 + "," + count);
 				for (int i = 0; i < count
-						&& ChurnProtocol.availableNodes.size() > 0; i++) {
+						&& DynamicNetwork.availableNodes.size() > 0; i++) {
 					insert();
 				}
 
 			} else {
 				for (int i = 0; i < this.ADDING_COUNT
-						&& ChurnProtocol.availableNodes.size() > 0; i++) {
+						&& DynamicNetwork.availableNodes.size() > 0; i++) {
 					insert();
 				}
 			}
@@ -119,19 +123,19 @@ public class ChurnProtocol implements Control {
 	}
 
 	private void insert() {
-		final Node current = ChurnProtocol.availableNodes.poll();
+		final Node current = DynamicNetwork.availableNodes.poll();
 		if (graph.size() > 0) {
 			final Node contact = getNode();
-			ChurnProtocol.addNode(current, contact);
+			DynamicNetwork.addNode(current, contact);
 		} else {
-			ChurnProtocol.addNode(current, null);
+			DynamicNetwork.addNode(current, null);
 		}
-		ChurnProtocol.graph.add(current);
+		DynamicNetwork.graph.add(current);
 	}
 
 	public static Node getNode() {
-		return ChurnProtocol.graph.get(CommonState.r
-				.nextInt(ChurnProtocol.graph.size()));
+		return DynamicNetwork.graph.get(CommonState.r
+				.nextInt(DynamicNetwork.graph.size()));
 	}
 
 	public static void removeNode(Node leaver) {

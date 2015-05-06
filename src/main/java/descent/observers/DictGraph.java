@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import peersim.core.Node;
-import descent.PeerSamplingService;
 import descent.rps.IRandomPeerSampling;
 
 /**

@@ -2,11 +2,11 @@ package descent.scamp;
 
 import descent.rps.IMessage;
 
-public class ScampTempMessage implements IMessage {
+public class ScampMessage implements IMessage {
 
 	private int occ; // number of identities to spread in the network
 
-	public ScampTempMessage(int occ) {
+	public ScampMessage(int occ) {
 		this.occ = occ;
 	}
 
