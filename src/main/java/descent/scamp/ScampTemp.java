@@ -48,10 +48,7 @@ public class ScampTemp extends ARandomPeerSamplingProtocol implements
 	}
 
 	public void periodicCall() {
-		if (!this.isUp) {
-			return;
-		} // silently stop the execution
-			// #1 remove the connection to us and count them
+		// #1 remove the connection to us and count them
 		int occ = this.inView.size();
 		for (Node in : this.inView.getPeers()) {
 			ScampTemp inScamp = (ScampTemp) in.getProtocol(ScampTemp.pid);
@@ -60,24 +57,29 @@ public class ScampTemp extends ARandomPeerSamplingProtocol implements
 		// #2 no one knows us anymore
 		this.inView.clear();
 		// #3 re-subscribe to the network
-		Node randomNeighbor;
-		ScampTemp randomNeighborScamp;
+		Node rNeighbor;
+		ScampTemp rNeighborScamp;
 		if (this.partialView.size() > 0) {
 			// #3A get a peer from the neighborhood
-			randomNeighbor = this.partialView.getPeers(1).get(0);
-		} else if (occ > 0) {
-			// #3B get a peer from the network
-			randomNeighbor = Network.get(CommonState.r.nextInt(Network.size()));
+			rNeighbor = this.partialView.getPeers(1).get(0);
+			rNeighborScamp = (ScampTemp) rNeighbor.getProtocol(ScampTemp.pid);
 		} else {
-			this.join(this.node,
-					Network.get(CommonState.r.nextInt(Network.size())));
+			// #3B get a peer from the network
+			rNeighbor = Network.get(CommonState.r.nextInt(Network.size()));
+			rNeighborScamp = (ScampTemp) rNeighbor.getProtocol(ScampTemp.pid);
+			while (!rNeighborScamp.isUp()) {
+				rNeighbor = Network.get(CommonState.r.nextInt(Network.size()));
+				rNeighborScamp = (ScampTemp) rNeighbor
+						.getProtocol(ScampTemp.pid);
+			}
+		}
+		if (occ == 0) {
+			this.leave();
+			this.join(this.node, rNeighbor);
 			return;
 		}
-		// #3B ask it to spread the subscription
-		randomNeighborScamp = (ScampTemp) randomNeighbor
-				.getProtocol(ScampTemp.pid);
-		randomNeighborScamp
-				.onPeriodicCall(this.node, new ScampTempMessage(occ));
+		// #3C ask it to spread the subscription
+		rNeighborScamp.onPeriodicCall(this.node, new ScampTempMessage(occ));
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
@@ -100,17 +102,17 @@ public class ScampTemp extends ARandomPeerSamplingProtocol implements
 	}
 
 	public void join(Node joiner, Node contact) {
+		this.isUp = true;
 		if (this.node == null) { // lazy loading of the node identity
 			this.node = joiner;
 		}
 		if (contact != null) { // if its not the very first node of the network
-			ScampTemp contactScamp = (ScampTemp) contact
-					.getProtocol(ScampTemp.pid);
 			// add the contact node in the partial view of the origin
 			this.addNeighbor(contact);
+			ScampTemp contactScamp = (ScampTemp) contact
+					.getProtocol(ScampTemp.pid);
 			contactScamp.onSubscription(this.node);
 		}
-		this.isUp = true;
 	}
 
 	public void onSubscription(Node origin) {
@@ -142,7 +144,8 @@ public class ScampTemp extends ARandomPeerSamplingProtocol implements
 		} // silently stop the forwarding #2
 
 		path.add(this.node); // add ourself to the path
-		if (this.node.getID() != origin.getID() && this.pAccept()) {
+		if (this.node.getID() != origin.getID()
+				&& !this.partialView.contains(origin) && this.pAccept()) {
 			// #A add origin to the partial view, and "this.node" to the
 			// origin's in view
 			this.addNeighbor(origin);

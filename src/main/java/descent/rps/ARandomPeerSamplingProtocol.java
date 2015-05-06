@@ -24,7 +24,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	private static int start;
 
 	// #C local variables
-	protected boolean isUp = true;
+	protected boolean isUp = false;
 	protected Node node = null;
 
 	/**
@@ -59,7 +59,8 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 			this.node = node;
 		}
 		// #2 call the periodic function of the node every Delta time
-		if (CommonState.getTime() >= ARandomPeerSamplingProtocol.start
+		if (isUp()
+				&& CommonState.getTime() >= ARandomPeerSamplingProtocol.start
 				&& CommonState.getTime() % ARandomPeerSamplingProtocol.delta == 0) {
 			this.periodicCall();
 		}
