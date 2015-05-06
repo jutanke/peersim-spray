@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import peersim.core.CommonState;
-import peersim.core.Network;
 import peersim.core.Node;
+import descent.controllers.DynamicNetwork;
 import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IMessage;
 import descent.rps.IRandomPeerSampling;
@@ -62,24 +62,21 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 		if (this.partialView.size() > 0) {
 			// #3A get a peer from the neighborhood
 			rNeighbor = this.partialView.getPeers(1).get(0);
-			rNeighborScamp = (Scamp) rNeighbor.getProtocol(Scamp.pid);
+
 		} else {
-			// #3B get a peer from the network
-			rNeighbor = Network.get(CommonState.r.nextInt(Network.size()));
+			// #3B get a random alive peer from the network
+			rNeighbor = DynamicNetwork.getNode();
+		}
+		if (occ != 0) {
+			// #3C ask it to spread the subscription
 			rNeighborScamp = (Scamp) rNeighbor.getProtocol(Scamp.pid);
-			while (!rNeighborScamp.isUp()) {
-				rNeighbor = Network.get(CommonState.r.nextInt(Network.size()));
-				rNeighborScamp = (Scamp) rNeighbor
-						.getProtocol(Scamp.pid);
-			}
-		}
-		if (occ == 0) {
+			rNeighborScamp.onPeriodicCall(this.node, new ScampMessage(occ));
+		} else {
+			// #3D all is lost, leave
 			this.leave();
-			this.join(this.node, rNeighbor);
-			return;
+			// this.join(this.node, rNeighbor);
 		}
-		// #3C ask it to spread the subscription
-		rNeighborScamp.onPeriodicCall(this.node, new ScampMessage(occ));
+
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
@@ -109,8 +106,7 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 		if (contact != null) { // if its not the very first node of the network
 			// add the contact node in the partial view of the origin
 			this.addNeighbor(contact);
-			Scamp contactScamp = (Scamp) contact
-					.getProtocol(Scamp.pid);
+			Scamp contactScamp = (Scamp) contact.getProtocol(Scamp.pid);
 			contactScamp.onSubscription(this.node);
 		}
 	}
@@ -118,8 +114,7 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 	public void onSubscription(Node origin) {
 		// #1 forward the subscription to peers in the network
 		for (Node neighbor : this.partialView.getPeers(Integer.MAX_VALUE)) {
-			Scamp neighborScamp = (Scamp) neighbor
-					.getProtocol(Scamp.pid);
+			Scamp neighborScamp = (Scamp) neighbor.getProtocol(Scamp.pid);
 			neighborScamp
 					.onForwardedSubscription(origin, new ArrayList<Node>());
 		}
@@ -153,8 +148,7 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 			// #B otherwise, choose a neighbor at random and forward the subs
 			Node neighbor = this.partialView.getPeers().get(
 					CommonState.r.nextInt(this.partialView.size()));
-			Scamp neighborScamp = (Scamp) neighbor
-					.getProtocol(Scamp.pid);
+			Scamp neighborScamp = (Scamp) neighbor.getProtocol(Scamp.pid);
 			neighborScamp.onForwardedSubscription(origin, path);
 		}
 	}
