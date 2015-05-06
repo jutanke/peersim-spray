@@ -18,7 +18,7 @@ protocol.rps.step 1
 protocol.rps.start 2
 protocol.rps.linkable link
 
-control.o1 descent.scamp.Churn
+control.o1 descent.controllers.ChurnProtocol
 control.o1.protocol rps
 control.o1.FINAL
 control.o1.step 1
@@ -26,14 +26,6 @@ control.o1.addingPerStep 10000
 #control.o1.addingPerStepPerc 10
 control.o1.startAdd 0
 control.o1.endAdd 90
-
-#control.o2 descent.RemoveProtocol
-#control.o2.protocol 0
-#control.o2.FINAL
-#control.o2.step 1
-#control.o2.startRem 100
-#control.o2.endRem 200
-#control.o2.removingPerStep SIZE/100
 
 ################### initialization ======================
 

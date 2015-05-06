@@ -7,18 +7,14 @@ import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
-import descent.Dynamic;
 import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IRandomPeerSampling;
 
 /**
  * Created by julian on 3/28/15.
  */
-public abstract class ChurnProtocol implements Control {
+public class ChurnProtocol implements Control {
 
-	public static ChurnProtocol current;
-
-	private static final String PROTOCOL = "o1";
 	private static final String PAR_ADD_COUNT = "addingPerStep";
 	private static final String PAR_ADD_PERC = "addingPerStepPerc";
 	private static final String PARR_REM_COUNT = "removingPerStep";
@@ -26,6 +22,7 @@ public abstract class ChurnProtocol implements Control {
 	private static final String PAR_REM_START = "startRem";
 	private static final String PAR_ADD_END = "endAdd";
 	private static final String PAR_REM_END = "endRem";
+	private static final String PAR_PROTOCOL = "protocol";
 
 	public final int ADDING_PERCENT;
 	public final int ADDING_COUNT;
@@ -35,12 +32,12 @@ public abstract class ChurnProtocol implements Control {
 	public final long REMOVING_END;
 	public final long ADDING_END;
 	public final boolean IS_PERCENTAGE;
-	public final int pid;
+	protected static int pid;
 
-	public LinkedList<Node> graph = new LinkedList<Node>();
-	public LinkedList<Node> availableNodes = new LinkedList<Node>();
+	public static LinkedList<Node> graph = new LinkedList<Node>();
+	public static LinkedList<Node> availableNodes = new LinkedList<Node>();
 
-	public ChurnProtocol(String n, String cyclProtocol) {
+	public ChurnProtocol(String n) {
 		this.ADDING_COUNT = Configuration.getInt(n + "." + PAR_ADD_COUNT, -1);
 		this.ADDING_PERCENT = Configuration.getInt(n + "." + PAR_ADD_PERC, -1);
 		this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
@@ -55,7 +52,8 @@ public abstract class ChurnProtocol implements Control {
 		this.ADDING_END = Configuration.getInt(n + "." + PAR_ADD_END,
 				Integer.MAX_VALUE);
 		final int nsize = Network.size();
-		this.pid = Configuration.lookupPid(cyclProtocol);
+		ChurnProtocol.pid = Configuration.lookupPid(Configuration.getString(n
+				+ "." + ChurnProtocol.PAR_PROTOCOL));
 		for (int i = 0; i < nsize; i++) {
 			final Node node = Network.get(i);
 			IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
@@ -77,16 +75,19 @@ public abstract class ChurnProtocol implements Control {
 
 		if (removingElements) {
 			// REMOVE ELEMENTS
-			for (int i = 0; i < this.REMOVING_COUNT && this.graph.size() > 0; i++) {
-				final int pos = CommonState.r.nextInt(this.graph.size());
-				final Node rem = this.graph.get(pos);
-				this.removeNode(rem);
-				Dynamic d = (Dynamic) rem.getProtocol(pid);
+			for (int i = 0; i < this.REMOVING_COUNT
+					&& ChurnProtocol.graph.size() > 0; i++) {
+				final int pos = CommonState.r.nextInt(ChurnProtocol.graph
+						.size());
+				final Node rem = ChurnProtocol.graph.get(pos);
+				ChurnProtocol.removeNode(rem);
+				ARandomPeerSamplingProtocol d = (ARandomPeerSamplingProtocol) rem
+						.getProtocol(pid);
 				if (d.isUp()) {
-					d.down();
+					d.leave();
 				}
-				this.graph.remove(pos);
-				this.availableNodes.push(rem);
+				ChurnProtocol.graph.remove(pos);
+				ChurnProtocol.availableNodes.push(rem);
 			}
 		}
 
@@ -95,18 +96,20 @@ public abstract class ChurnProtocol implements Control {
 
 			if (this.IS_PERCENTAGE) {
 
-				final double log10 = Math.floor(Math.log10(this.graph.size()));
+				final double log10 = Math.floor(Math.log10(ChurnProtocol.graph
+						.size()));
 				final double dev10 = Math.pow(10, log10);
 				int count = Math.max(1, (int) dev10 / this.ADDING_PERCENT);
 				System.err.println("QQ:" + graph.size() + "," + log10 + ","
 						+ dev10 + "," + count);
-				for (int i = 0; i < count && this.availableNodes.size() > 0; i++) {
+				for (int i = 0; i < count
+						&& ChurnProtocol.availableNodes.size() > 0; i++) {
 					insert();
 				}
 
 			} else {
 				for (int i = 0; i < this.ADDING_COUNT
-						&& this.availableNodes.size() > 0; i++) {
+						&& ChurnProtocol.availableNodes.size() > 0; i++) {
 					insert();
 				}
 			}
@@ -116,25 +119,31 @@ public abstract class ChurnProtocol implements Control {
 	}
 
 	private void insert() {
-		final Node current = this.availableNodes.poll();
+		final Node current = ChurnProtocol.availableNodes.poll();
 		if (graph.size() > 0) {
 			final Node contact = getNode();
-			this.addNode(current, contact);
+			ChurnProtocol.addNode(current, contact);
 		} else {
-			this.addNode(current, null);
+			ChurnProtocol.addNode(current, null);
 		}
-		this.graph.add(current);
+		ChurnProtocol.graph.add(current);
 	}
 
-	public Node getNode() {
-		return this.graph.get(CommonState.r.nextInt(this.graph.size()));
+	public static Node getNode() {
+		return ChurnProtocol.graph.get(CommonState.r
+				.nextInt(ChurnProtocol.graph.size()));
 	}
 
-	/**
-	 * @param node
-	 * @return when true then select this node, otherwise do not select it
-	 */
-	public abstract void removeNode(Node node);
+	public static void removeNode(Node leaver) {
+		ARandomPeerSamplingProtocol leaverProtocol = (ARandomPeerSamplingProtocol) leaver
+				.getProtocol(ARandomPeerSamplingProtocol.pid);
+		leaverProtocol.leave();
+	}
 
-	public abstract void addNode(Node subscriber, Node contact);
+	public static void addNode(Node joiner, Node contact) {
+		ARandomPeerSamplingProtocol joinerProtocol = (ARandomPeerSamplingProtocol) joiner
+				.getProtocol(ARandomPeerSamplingProtocol.pid);
+		joinerProtocol.join(joiner, contact);
+	}
+
 }
