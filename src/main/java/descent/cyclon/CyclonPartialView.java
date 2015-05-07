@@ -5,18 +5,14 @@ import java.util.List;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.rps.IAgingPartialView;
+import descent.rps.AAgingPartialView;
 
 /**
  * Aging partial view class used within Cyclon random peer sampling protocol
  */
-public class CyclonPartialView implements IAgingPartialView {
+public class CyclonPartialView extends AAgingPartialView {
 
-	// #A local structures. Overall it behaves as an ordered set
-	private ArrayList<Node> partialView;
-	private ArrayList<Integer> ages;
-
-	// #B bounds
+	// #A bounds
 	private static int l;
 	private static int c;
 
@@ -29,86 +25,37 @@ public class CyclonPartialView implements IAgingPartialView {
 	 *            the maximum size of the samples
 	 */
 	public CyclonPartialView(int c, int l) {
+		super();
 		CyclonPartialView.l = l;
 		CyclonPartialView.c = c;
-		this.partialView = new ArrayList<Node>(CyclonPartialView.c);
-		this.ages = new ArrayList<Integer>(CyclonPartialView.c);
 	}
 
-	public void incrementAge() {
-		for (Integer age : this.ages) {
-			++age;
-		}
-	}
-
-	public Node getOldest() {
-		return this.partialView.get(0);
-	}
-
-	public List<Node> getPeers() {
-		return this.partialView;
-	}
-
-	public List<Node> getPeers(int k) {
-		ArrayList<Node> sample;
-		if (this.partialView.size() == k) {
-			sample = new ArrayList<Node>(this.partialView);
-		} else {
-			sample = new ArrayList<Node>(CyclonPartialView.l);
-			ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
-			while (sample.size() < Math.min(k, this.partialView.size())) {
-				int rn = CommonState.r.nextInt(clone.size());
-				sample.add(clone.get(rn));
-				clone.remove(rn);
-			}
-		}
-		return sample;
-	}
-
-	public List<Node> getSample(Node neighbor) {
-		ArrayList<Node> sample = new ArrayList<Node>(CyclonPartialView.l);
+	@Override
+	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator) {
+		ArrayList<Node> sample = new ArrayList<Node>();
 		ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
-		while (sample.size() < Math.min(CyclonPartialView.l,
-				this.partialView.size() - 1)) {
+
+		int sampleSize = clone.size();
+		if (!isInitiator) { // called from the chosen peer
+			sampleSize = Math.min(sampleSize, CyclonPartialView.l);
+			sample.add(caller);
+		} else { // called from the initiating peer
+			sampleSize = Math.min(sampleSize - 1, CyclonPartialView.l - 1);
+			sampleSize = Math.max(sampleSize, 0);
+			clone.remove(0);
+		}
+
+		while (sample.size() < sampleSize) {
 			int rn = CommonState.r.nextInt(clone.size());
-			if (clone.get(rn).getID() != neighbor.getID()) {
-				sample.add(clone.get(rn));
-			}
+			sample.add(clone.get(rn));
 			clone.remove(rn);
 		}
 		return sample;
 	}
 
-	public boolean removeNode(Node peer) {
-		int index = this.getIndex(peer);
-		if (index >= 0) {
-			this.partialView.remove(index);
-			this.ages.remove(index);
-		}
-		return index >= 0;
-	}
-
-	public boolean removeNode(Node peer, Integer age) {
-		int i = 0;
-		boolean found = false;
-		while (i < this.partialView.size() && !found) {
-			if (this.partialView.get(i).getID() == peer.getID()
-					&& this.ages.get(i) == age) {
-				found = true;
-				this.partialView.remove(i);
-				this.ages.remove(i);
-			}
-			++i;
-		}
-		return found;
-	}
-
-	public boolean contains(Node peer) {
-		return this.getIndex(peer) >= 0;
-	}
-
-	public void mergeSample(Node neighbor, List<Node> newSample,
-			List<Node> oldSample) {
+	@Override
+	public void mergeSample(Node me, Node other, List<Node> newSample,
+			List<Node> oldSample, boolean isInitiator) {
 		ArrayList<Node> removedPeer = new ArrayList<Node>();
 		ArrayList<Integer> removedAge = new ArrayList<Integer>();
 
@@ -124,13 +71,29 @@ public class CyclonPartialView implements IAgingPartialView {
 		}
 
 		// #2 remove the chosen neighbor
-		this.partialView.remove(neighbor);
+		this.removeNode(other);
 
 		// #3 insert the new sample
 		for (Node fresh : newSample) {
-			if (!this.contains(fresh)) {
+			if (!this.contains(fresh) && fresh.getID() != me.getID()) {
 				this.partialView.add(fresh);
-				this.ages.add(new Integer(0));
+				// #A look into the removing if it existed
+				boolean found = false;
+				int i = 0;
+				while (!found && i < removedPeer.size()) {
+					if (removedPeer.get(i).getID() == fresh.getID()) {
+						found = true;
+					} else {
+						++i;
+					}
+				}
+				// #B if it existed, keep the old age
+				if (found) {
+					this.ages.add((Integer) removedAge.get(i));
+				} else {
+					// #C otherwise, it's a brand new one
+					this.ages.add(new Integer(0));
+				}
 			}
 		}
 
@@ -142,39 +105,24 @@ public class CyclonPartialView implements IAgingPartialView {
 				int position = this.ages.size() - 1;
 				boolean found = false;
 				while (!found && position >= 0) {
-					if (this.ages.get(position) >= removedAge.get(position)) {
+					if (this.ages.get(position) >= removedAge.get(i)) {
 						found = true;
 					} else {
 						--position;
 					}
 				}
 				// #B insert at the rightful position to maintain the order
-				this.partialView.add(position + 1, removedPeer.get(i));
-				this.ages.add(position + 1, removedAge.get(i));
+				if (!found) {
+					this.partialView.add(0, removedPeer.get(i));
+					this.ages.add(0, removedAge.get(i));
+				} else {
+					this.ages.add(position + 1, removedAge.get(i));
+					this.partialView.add(position + 1, removedPeer.get(i));
+				}
+
 			}
 			--i;
 		}
-	}
-
-	/**
-	 * Getter of the index of the peer in the partial view
-	 * 
-	 * @param peer
-	 *            the peer to search
-	 * @return the index in the partial view, -1 if not found
-	 */
-	private int getIndex(Node peer) {
-		int index = -1;
-		int i = 0;
-		boolean found = false;
-		while (!found && i < this.partialView.size()) {
-			if (this.partialView.get(i).getID() == peer.getID()) {
-				found = true;
-				index = i;
-			}
-			++i;
-		}
-		return index;
 	}
 
 	@Override
@@ -186,7 +134,14 @@ public class CyclonPartialView implements IAgingPartialView {
 		return cpv;
 	}
 
-	public int size() {
-		return this.partialView.size();
+	@Override
+	public boolean addNeighbor(Node peer) {
+		boolean isContaining = this.contains(peer);
+		if (!isContaining) {
+			this.partialView.add(peer);
+			this.ages.add(new Integer(0));
+		}
+		return !isContaining;
 	}
+
 }

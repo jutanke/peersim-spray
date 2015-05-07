@@ -23,45 +23,22 @@ public interface IAgingPartialView {
 	public Node getOldest();
 
 	/**
-	 * Getter of the neighbors list
-	 * 
-	 * @return the list to the neighborhood
-	 */
-	public List<Node> getPeers();
-
-	/**
-	 * Get a list of k neighbors. If the partial view is not big enough, it
-	 * returns the partial view
-	 * 
-	 * @param k
-	 *            the number of requested neighbors
-	 * @return a list of nodes
-	 */
-	public List<Node> getPeers(int k);
-
-	/**
 	 * Getter of the neighbors
 	 * 
+	 * @param caller
+	 *            the identity of the peer calling this function
 	 * @param neighbor
 	 *            the chosen neighbor to exchange with
-	 * 
+	 * @param isInitiator
+	 *            define if the caller is the initiator of the exchange
 	 * @return a list of neighbors being the sample to send to the chosen
 	 *         neighbor
 	 */
-	public List<Node> getSample(Node neighbor);
+	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator);
 
 	/**
-	 * Remove the peer from the neighborhood, if multiple occurences of the peer
-	 * exist, it remove the oldest
-	 * 
-	 * @param peer
-	 *            the peer to remove
-	 * @return true if the peer has been removed, false otherwise
-	 */
-	public boolean removeNode(Node peer);
-
-	/**
-	 * Remove the peer from the neighborhood
+	 * Remove the peer from the neighborhood, if multiples occurrences of the
+	 * pair <neighbor, age> exist, only one occurrence is removed
 	 * 
 	 * @param peer
 	 *            the peer to remove
@@ -75,29 +52,18 @@ public interface IAgingPartialView {
 	 * Merge the sample with the partial view taking into account the old sent
 	 * sample
 	 * 
-	 * @param neighbor
-	 *            the neighbor chosen for the exchange
+	 * @param me
+	 *            the peer that calls the merge function
+	 * @param other
+	 *            the other peer that sent a message to the "me" peer
 	 * @param newSample
 	 *            the new received sample
 	 * @param oldSample
 	 *            the old sent sample
+	 * @param isInitiator
+	 *            define if the peer "me" is the initiator of the exchange
 	 */
-	public void mergeSample(Node neighbor, List<Node> newSample,
-			List<Node> oldSample);
+	public void mergeSample(Node me, Node other, List<Node> newSample,
+			List<Node> oldSample, boolean isInitiator);
 
-	/**
-	 * Check if the partial view contains a peer
-	 * 
-	 * @param peer
-	 *            the peer to search
-	 * @return true if the partial view contains the peer, false otherwise
-	 */
-	public boolean contains(Node peer);
-
-	/**
-	 * Getter of the size of the partial view
-	 * 
-	 * @return the size of the partial view
-	 */
-	public int size();
 }

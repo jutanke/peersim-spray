@@ -1,8 +1,7 @@
 # SPRAY
 
 PeerSim (http://peersim.sourceforge.net/) implementation for
-SPRAY, an adaptive, probabilistic random peer sampling service [1]
-based on SCAMP [2] and CYCLON [3].
+SPRAY, an adaptive, probabilistic random peer sampling service [1] based on SCAMP [2] and CYCLON [3].
 
 
 ## References
@@ -26,7 +25,7 @@ based on SCAMP [2] and CYCLON [3].
         Laurent Massouile,
         IEEE TRANSACTIONS ON COMPUTERS, VOL. 52, No. 2, FEBRUARY 2003
 
-[3]     CYCLON: Inexpensive Membership Management for Unstructured P2P Overlays:
+[3]     Cyclon: Inexpensive Membership Management for Unstructured P2P Overlays:
         Spyros Voulgaris,
         Daniela Gavidia,
         Maartens van Steen,
