@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import descent.controllers.DynamicNetwork;
@@ -29,10 +30,14 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 		IRandomPeerSampling {
 
 	// #A no specific parameter to set for Scamp
+	private final static String PAR_TTL = "ttl"; // time-to-live on subscription
+
 	// #B specific variables
+	private static int ttl; // avoids infinite loops in fully connected networks
+
 	// #C local variables
-	PartialView partialView;
-	PartialView inView;
+	private PartialView partialView;
+	private PartialView inView;
 
 	/**
 	 * Constructor of Scamp
@@ -42,6 +47,7 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 	 */
 	public Scamp(String prefix) {
 		super(prefix);
+		Scamp.ttl = Configuration.getInt(Scamp.PAR_TTL, 256);
 		this.partialView = new PartialView();
 		this.inView = new PartialView();
 	}
@@ -186,7 +192,7 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 	 *            the path traveled by the subscription
 	 */
 	private void onForwardedSubscription(Node origin, List<Node> path) {
-		if (!this.isUp()) {
+		if (!this.isUp() || path.size() > Scamp.ttl) {
 			return;
 		} // silently stop the forwarding #1
 		if (this.node.getID() == origin.getID() && this.partialView.size() == 0) {
@@ -198,7 +204,9 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 				&& !this.partialView.contains(origin) && this.pAccept()) {
 			// #A add origin to the partial view, and "this.node" to the
 			// origin's in view
-			this.addNeighbor(origin);
+			if (!this.pFail(path)) {
+				this.addNeighbor(origin);
+			}
 		} else {
 			// #B otherwise, choose a neighbor at random and forward the subs
 			Node neighbor = this.partialView.getPeers().get(

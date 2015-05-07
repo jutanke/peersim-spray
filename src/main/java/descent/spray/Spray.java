@@ -50,7 +50,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			Node q = this.partialView.getOldest();
 			Spray qSpray = (Spray) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
-			if (qSpray.isUp()) {
+			if (qSpray.isUp() && !this.pFail(null)) {
 				// #A if the chosen peer is alive, exchange
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);

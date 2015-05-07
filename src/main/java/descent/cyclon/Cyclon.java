@@ -61,7 +61,7 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 			Node q = this.partialView.getOldest();
 			Cyclon qCyclon = (Cyclon) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
-			if (qCyclon.isUp()) {
+			if (qCyclon.isUp() && !this.pFail(null)) {
 				// #A if the chosen peer is alive, initiate the exchange
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
