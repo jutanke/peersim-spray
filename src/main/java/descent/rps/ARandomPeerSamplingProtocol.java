@@ -14,14 +14,16 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		Linkable, CDProtocol, IRandomPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
-	public static final String PAR_PROT = "rps";
-	private static final String PAR_DELTA = "delta";
-	private static final String PAR_START = "start";
+	public static final String PAR_PROT = "rps"; // name of the protocol
+	private static final String PAR_DELTA = "delta"; // frequency of cyclic call
+	private static final String PAR_START = "start"; // start the cyclic call
+	private static final String PAR_FAIL = "fail"; // proba of fail of each peer
 
 	// #B the values from the configuration file of peersim
 	public static int pid;
 	private static int delta;
 	private static int start;
+	protected static double fail;
 
 	// #C local variables
 	protected boolean isUp = false;
@@ -42,6 +44,8 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 				+ ARandomPeerSamplingProtocol.PAR_DELTA);
 		ARandomPeerSamplingProtocol.start = Configuration.getInt(prefix + "."
 				+ ARandomPeerSamplingProtocol.PAR_START);
+		ARandomPeerSamplingProtocol.fail = Configuration.getDouble(prefix + "."
+				+ ARandomPeerSamplingProtocol.PAR_FAIL, 0.0);
 	}
 
 	public ARandomPeerSamplingProtocol() {
@@ -49,6 +53,22 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 
 	// must be implemented in the child class
 	public abstract IRandomPeerSampling clone();
+
+	public abstract boolean addNeighbor(Node peer);
+
+	/**
+	 * Compute the probability that the connection establishment fails. A fail
+	 * setup means that locally, the peer has the reference to the remote peer
+	 * but the arc (or link (or connection)) associated to it does not work. It
+	 * depends of the number of hops before reaching the peer to connect to. The
+	 * inbetween arcs and peer must remains up for the round-trip, mandatory in
+	 * three-way handshake connection context.
+	 * 
+	 * @param path
+	 *            the path traveled by the connection
+	 * @return true if the connection establishment fails, false otherwise
+	 */
+	protected abstract boolean pFail(List<Node> path);
 
 	public void onKill() {
 	}
@@ -65,8 +85,6 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 			this.periodicCall();
 		}
 	}
-
-	public abstract boolean addNeighbor(Node peer);
 
 	public boolean contains(Node neighbor) {
 		boolean found = false;

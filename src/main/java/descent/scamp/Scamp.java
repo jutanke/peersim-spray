@@ -2,7 +2,12 @@ package descent.scamp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
@@ -45,6 +50,56 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 		super();
 		this.partialView = new PartialView();
 		this.inView = new PartialView();
+	}
+
+	@Override
+	protected boolean pFail(List<Node> path) {
+		// #1 compute the shortest path from the beginning to the end, i.e.,
+		// remove the cycles
+		// #A create a graph with the path in argument
+		final Map<Long, HashSet<Long>> graph = new HashMap<Long, HashSet<Long>>();
+		for (int i = 0; i < path.size(); ++i) {
+			final Node n = path.get(i);
+			if (!graph.containsKey(n.getID())) {
+				graph.put(n.getID(), new HashSet<Long>());
+			}
+			if (0 < i) {
+				final Node pre = path.get(i - 1);
+				graph.get(pre.getID()).add(n.getID());
+			}
+		}
+		// #B breadth-first search to compute the shortest path
+		HashSet<Long> discovered = new HashSet<Long>();
+		Queue<Long> q = new LinkedList<Long>();
+		q.add(path.get(0).getID());
+		discovered.add(path.get(0).getID());
+		int minHops = 0;
+		while (!q.isEmpty()) {
+			++minHops;
+			final Long current = q.poll();
+			if (current == path.get(path.size() - 1).getID()) {
+				break; // ugly break
+			}
+			for (Long neighbor : graph.get(current)) {
+				if (!discovered.contains(neighbor)) {
+					q.add(neighbor);
+					discovered.add(neighbor);
+				}
+			}
+		}
+		// #2 compute the failure probability
+		// #2A a round-trip using the whole path (worst case)
+		double pHighest = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail,
+				Math.pow(path.size(), 2) + 3 * path.size() + 2);
+		// #2B a round-trip using the shortest path (best case)
+		double pLowest = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail,
+				Math.pow(minHops, 2) + 3 * minHops + 2);
+		// #2C a round trip using the shortest path and single travel trough
+		// the other peers in the path (precise case)
+		double pPrecise = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail,
+				Math.pow(minHops, 2) + 3 * minHops + 2
+						+ (path.size() - minHops));
+		return CommonState.r.nextDouble() < pLowest;
 	}
 
 	public void periodicCall() {

@@ -47,6 +47,14 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 		this.partialView = new CyclonPartialView(Cyclon.c, Cyclon.l);
 	}
 
+	@Override
+	protected boolean pFail(List<Node> path) {
+		// the probability is constant since the number of hops to establish
+		// a connection is constant
+		double pf = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail, 6);
+		return CommonState.r.nextDouble() < pf;
+	}
+
 	public void periodicCall() {
 		if (this.isUp() && this.partialView.size() > 0) {
 			this.partialView.incrementAge();
