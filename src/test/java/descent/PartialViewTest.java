@@ -1,6 +1,6 @@
 package descent;
 
-import descent.spray.PartialView;
+import descent.scamp.PartialView;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -26,9 +26,9 @@ public class PartialViewTest extends TestCase {
     public void testContains() {
 
         final PartialView pv = new PartialView();
-        pv.add(Helper.createNode(1));
-        pv.add(Helper.createNode(2));
-        pv.add(Helper.createNode(3));
+        pv.addNeighbor(Helper.createNode(1));
+        pv.addNeighbor(Helper.createNode(2));
+        pv.addNeighbor(Helper.createNode(3));
 
         assertFalse(pv.contains(Helper.createNode(4)));
         assertTrue(pv.contains(Helper.createNode(1)));

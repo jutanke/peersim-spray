@@ -1,5 +1,7 @@
 package descent.observers;
 
+import descent.observers.program.DebugProgram;
+import descent.observers.program.DuplicatesCountProgram;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -24,8 +26,8 @@ public class Observer implements Control {
 		this.pid = Configuration.lookupPid(Configuration.getString(name + "."
 				+ PAR_PROTOCOL));
 
-		this.program = new VarianceAndArcCountProgram();
-		// this.program = new DebugProgram();
+		//this.program = new VarianceAndArcCountProgram();
+		this.program = new DuplicatesCountProgram();
 		// this.program = new PythonNetworkProgram();
 
 	}
