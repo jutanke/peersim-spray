@@ -1,13 +1,6 @@
 package descent.observers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 import peersim.core.Node;
 import descent.rps.IRandomPeerSampling;
@@ -99,9 +92,9 @@ public class DictGraph {
 	}
 
 	public AvgReachablePaths avgReachablePaths(long v) {
-		// Map<Long, Integer> dist = dijkstra(nodes.get(v));
+		Map<Long, Integer> dist = dijkstra(nodes.get(v));
 
-		Map<Long, Integer> dist = dijkstraUndirected(nodes.get(v).id);
+		//Map<Long, Integer> dist = dijkstraUndirected(nodes.get(v).id);
 
 		AvgReachablePaths result = new AvgReachablePaths();
 
@@ -366,6 +359,27 @@ public class DictGraph {
 			result[deg] = histogram.get(deg);
 		}
 		return result;
+	}
+
+	/**
+	 * Count how many partial views in the network have duplicates, triples, quadruples etc.
+	 * The number of duplicates does not matter, if the pv has one, that its counted as +1
+	 * @return
+	 */
+	public int countPartialViewsWithDuplicates() {
+		final Set<Long> lookup = new HashSet<Long>();
+		int duplicateCount = 0;
+		for (DictNode e : this.nodes.values()) {
+			lookup.clear();
+			for (long n : e.neighbors) {
+				if (lookup.contains(n)) {
+					duplicateCount++;
+					break;
+				}
+				lookup.add(n);
+			}
+		}
+		return duplicateCount;
 	}
 
 	public int[] duplicates() {

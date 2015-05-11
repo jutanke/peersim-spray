@@ -9,7 +9,8 @@ import descent.observers.ObserverProgram;
 public class DuplicatesCountProgram implements ObserverProgram {
 
     public void tick(long currentTick, DictGraph observer) {
-        System.out.println(print(observer.duplicates()));
+        //System.out.println(print(observer.duplicates()));
+        System.out.println(observer.countPartialViewsWithDuplicates());
     }
 
     public void onLastTick(DictGraph observer) {

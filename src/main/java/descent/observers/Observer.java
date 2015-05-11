@@ -1,13 +1,11 @@
 package descent.observers;
 
-import descent.observers.program.DebugProgram;
-import descent.observers.program.DuplicatesCountProgram;
+import descent.observers.program.*;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
-import descent.observers.program.VarianceAndArcCountProgram;
 import descent.rps.IDynamic;
 import descent.rps.IRandomPeerSampling;
 
@@ -27,8 +25,9 @@ public class Observer implements Control {
 				+ PAR_PROTOCOL));
 
 		//this.program = new VarianceAndArcCountProgram();
-		this.program = new DuplicatesCountProgram();
+		//this.program = new DuplicatesCountProgram();
 		// this.program = new PythonNetworkProgram();
+		this.program = new AvgShortestPathProgram();
 
 	}
 
