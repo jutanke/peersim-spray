@@ -5,9 +5,7 @@ import descent.observers.ObserverProgram;
 import peersim.core.CommonState;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Created by julian on 11/05/15.

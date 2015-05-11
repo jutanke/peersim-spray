@@ -15,20 +15,25 @@ import descent.rps.IRandomPeerSampling;
 public class Observer implements Control {
 
 	private static final String PAR_PROTOCOL = "protocol";
+	private static final String PROG = "program";
 
 	private int pid;
-	private final ObserverProgram program;
+	private ObserverProgram program;
 	private boolean isLast = false;
 
 	public Observer(String name) {
 		this.pid = Configuration.lookupPid(Configuration.getString(name + "."
 				+ PAR_PROTOCOL));
 
-		//this.program = new VarianceAndArcCountProgram();
-		//this.program = new DuplicatesCountProgram();
-		// this.program = new PythonNetworkProgram();
-		this.program = new AvgShortestPathProgram();
-
+		final Class<?> programClass = Configuration.getClass(name + "." + PROG);
+		try {
+			this.program = (ObserverProgram) programClass.newInstance();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Could not determine Observer program");
+		}
 	}
 
 	public boolean execute() {
