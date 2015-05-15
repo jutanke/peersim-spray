@@ -651,8 +651,9 @@ public class DictGraph {
 		for (long a : N) {
 			for (long b : N) {
 				if (a != b) {
-					if (areUndirectlyConnected(a, b)) {
-						actual += 1;
+					//if (areUndirectlyConnected(a, b)) {
+					if (hasDirectedConnection(a, b)) {
+							actual += 1;
 					}
 				}
 			}

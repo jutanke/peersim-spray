@@ -38,7 +38,7 @@ public class AvgShortestPathProgram implements ObserverProgram {
 					total += observer.avgReachablePaths(ids.get(CommonState.r
 							.nextInt(ids.size()))).avg;
 
-					System.out.println(observer.size() + " " + total / 3);
+					System.out.println(observer.size() + " " + total / 3.0);
 				}
 
 			}
