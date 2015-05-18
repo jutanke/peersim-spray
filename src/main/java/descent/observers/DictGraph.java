@@ -382,6 +382,41 @@ public class DictGraph {
 		return duplicateCount;
 	}
 
+	/**
+	 *
+	 * @return maximum pct of duplicates in a view
+	 */
+	public double maxPercDuplicatesInView() {
+
+		double max = 0;
+
+		final Map<Long, Integer> lookup = new HashMap<Long, Integer>();
+		for (DictNode e : this.nodes.values()) {
+			lookup.clear();
+			for (long n : e.neighbors) {
+				if (lookup.containsKey(n)) {
+					lookup.put(n, lookup.get(n) + 1);
+				} else {
+					lookup.put(n, 1);
+				}
+			}
+			final int size = e.neighbors.size();
+
+			double maxV = 0;
+			for (int v : lookup.values()) {
+				if (v > maxV) {
+					maxV = v;
+				}
+			}
+			double currentMax = maxV-1 / size;
+			if (currentMax > max) {
+				max = currentMax;
+			}
+		}
+
+		return max;
+	}
+
 	public int[] duplicates() {
 
 		final Map<Long, Integer> lookup = new HashMap<Long, Integer>();
