@@ -54,6 +54,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 				// #A if the chosen peer is alive, exchange
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
+                this.addToRPSCost(sample.size());
 				IMessage received = qSpray.onPeriodicCall(this.node,
 						new SprayMessage(sample));
 				List<Node> samplePrime = (List<Node>) received.getPayload();
@@ -69,6 +70,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
+        this.addToRPSCost(samplePrime.size());
 		//System.out.println(this.partialView.size()+" ,,,,, sample "+samplePrime.size());
 		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime, false);
@@ -148,4 +150,5 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			}
 		}
 	}
+
 }

@@ -38,7 +38,6 @@ public class CyclonPartialView extends AAgingPartialView {
 		int sampleSize = clone.size();
 		if (!isInitiator) { // called from the chosen peer
 			sampleSize = Math.min(sampleSize, CyclonPartialView.l);
-			sample.add(caller);
 		} else { // called from the initiating peer
 			sampleSize = Math.min(sampleSize - 1, CyclonPartialView.l - 1);
 			sampleSize = Math.max(sampleSize, 0);
