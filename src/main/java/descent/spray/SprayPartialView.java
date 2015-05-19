@@ -25,9 +25,9 @@ public class SprayPartialView extends AAgingPartialView {
 		ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
 
 		// #A if the caller in the initiator, it automatically adds itself
-		int sampleSize = (int) Math.ceil(clone.size() / 2);
+
+		int sampleSize = (int) Math.floor(clone.size() / 2.0);
 		if (isInitiator) { // called from the chosen peer
-			--sampleSize;
 			clone.remove(0);// replace an occurrence of the chosen neighbor
 			sample.add(caller); // by the initiator identity
 		}

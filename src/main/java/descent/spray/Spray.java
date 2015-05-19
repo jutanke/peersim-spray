@@ -69,6 +69,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
+		//System.out.println(this.partialView.size()+" ,,,,, sample "+samplePrime.size());
 		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime, false);
 		return new SprayMessage(samplePrime);
@@ -133,6 +134,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	private void onUnreachable(Node q) {
 		// #1 probability to NOT recreate the connection
 		double pRemove = 1.0 / this.partialView.size();
+		//double pRemove = 0.0;
 		// #2 remove all occurrences of q in our partial view and count them
 		int occ = this.partialView.removeAll(q);
 		if (this.partialView.size() > 0) {

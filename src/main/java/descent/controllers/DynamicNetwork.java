@@ -23,7 +23,9 @@ public class DynamicNetwork implements Control {
 	private static final String PAR_ADD_END = "endAdd";
 	private static final String PAR_REM_END = "endRem";
 	private static final String PAR_PROTOCOL = "protocol";
+	private static final String PAR_STEP = "stepDynamic";
 
+	public final int STEP;
 	public final int ADDING_PERCENT;
 	public final int ADDING_COUNT;
 	public final int REMOVING_COUNT;
@@ -32,7 +34,7 @@ public class DynamicNetwork implements Control {
 	public final long REMOVING_END;
 	public final long ADDING_END;
 	public final boolean IS_PERCENTAGE;
-	protected static int pid;
+	protected final int pid;
 
 	public static LinkedList<Node> graph = new LinkedList<Node>();
 	public static LinkedList<Node> availableNodes = new LinkedList<Node>();
@@ -54,10 +56,11 @@ public class DynamicNetwork implements Control {
 		this.ADDING_END = Configuration.getInt(n + "."
 				+ DynamicNetwork.PAR_ADD_END, Integer.MAX_VALUE);
 		this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
+		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP);
 
 		final int nsize = Network.size();
-		DynamicNetwork.pid = Configuration.lookupPid(Configuration.getString(n
-				+ "." + DynamicNetwork.PAR_PROTOCOL));
+		this.pid = Configuration.lookupPid(Configuration.getString(n + "."
+				+ DynamicNetwork.PAR_PROTOCOL));
 		for (int i = 0; i < nsize; i++) {
 			final Node node = Network.get(i);
 			IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
@@ -71,16 +74,20 @@ public class DynamicNetwork implements Control {
 	}
 
 	public boolean execute() {
+
 		final long currentTimestamp = CommonState.getTime();
+
 		final boolean removingElements = currentTimestamp >= this.REMOVING_START
 				&& currentTimestamp <= this.REMOVING_END;
 		final boolean addingElements = currentTimestamp >= this.ADDING_START
 				&& currentTimestamp <= this.ADDING_END;
-
-		if (removingElements) {
+		if ((((currentTimestamp - this.REMOVING_START) % this.STEP) == 0)
+				&& removingElements) {
+			System.out.println("AAA");
 			// REMOVE ELEMENTS
 			for (int i = 0; i < this.REMOVING_COUNT
 					&& DynamicNetwork.graph.size() > 0; i++) {
+
 				final int pos = CommonState.r.nextInt(DynamicNetwork.graph
 						.size());
 				final Node rem = DynamicNetwork.graph.get(pos);
@@ -95,7 +102,8 @@ public class DynamicNetwork implements Control {
 			}
 		}
 
-		if (addingElements) {
+		if ((((currentTimestamp - this.ADDING_START) % this.STEP) == 0)
+				&& addingElements) {
 			// ADD ELEMENTS
 
 			if (this.IS_PERCENTAGE) {
@@ -112,6 +120,7 @@ public class DynamicNetwork implements Control {
 				}
 
 			} else {
+				System.out.println("miaou");
 				for (int i = 0; i < this.ADDING_COUNT
 						&& DynamicNetwork.availableNodes.size() > 0; i++) {
 					insert();
