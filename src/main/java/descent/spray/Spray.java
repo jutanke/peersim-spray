@@ -50,7 +50,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			Node q = this.partialView.getOldest();
 			Spray qSpray = (Spray) q
 					.getProtocol(ARandomPeerSamplingProtocol.pid);
-			if (qSpray.isUp() && !this.pFail(null)) {
+			boolean isFailedConnection = this.pFail(null);
+			if (qSpray.isUp() && !isFailedConnection) {
 				// #A if the chosen peer is alive, exchange
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
@@ -61,7 +62,11 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 						true);
 			} else {
 				// #B run the appropriate procedure
-				this.onUnreachable(q);
+				if (!qSpray.isUp()) {
+					this.onPeerDown(q);
+				} else if (isFailedConnection) {
+					this.onArcDown(q);
+				}
 			}
 		}
 	}
@@ -69,7 +74,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
-		//System.out.println(this.partialView.size()+" ,,,,, sample "+samplePrime.size());
+		// System.out.println(this.partialView.size()+" ,,,,, sample "+samplePrime.size());
 		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime, false);
 		return new SprayMessage(samplePrime);
@@ -131,14 +136,13 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 * @param q
 	 *            the peer supposedly crashed
 	 */
-	private void onUnreachable(Node q) {
+	private void onPeerDown(Node q) {
 		// #1 probability to NOT recreate the connection
 		double pRemove = 1.0 / this.partialView.size();
-		//double pRemove = 0.0;
 		// #2 remove all occurrences of q in our partial view and count them
 		int occ = this.partialView.removeAll(q);
 		if (this.partialView.size() > 0) {
-			// #3 probabilistically doubles known connections
+			// #3 probabilistically double known connections
 			for (int i = 0; i < occ; ++i) {
 				if (CommonState.r.nextDouble() > pRemove) {
 					Node toDouble = this.partialView.getPeers().get(
@@ -146,6 +150,23 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 					this.partialView.addNeighbor(toDouble);
 				}
 			}
+		}
+	}
+
+	/**
+	 * Replace an failed arc by an existing one
+	 * 
+	 * @param q
+	 *            the destination of the arc to replace
+	 */
+	private void onArcDown(Node q) {
+		// #1 remove the unestablished link
+		this.partialView.removeNode(q);
+		// #2 double a known connection at random
+		if (this.partialView.size() > 0) {
+			Node toDouble = this.partialView.getPeers().get(
+					CommonState.r.nextInt(this.partialView.size()));
+			this.partialView.addNeighbor(toDouble);
 		}
 	}
 }
