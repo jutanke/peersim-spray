@@ -2,6 +2,7 @@ package descent.observers;
 
 import java.util.*;
 
+import peersim.core.CommonState;
 import peersim.core.Node;
 import descent.rps.IRandomPeerSampling;
 
@@ -158,6 +159,16 @@ public class DictGraph {
         }
 
         return histo;
+    }
+
+    public int[] totalOutboundCostPerTick() {
+        final int[] costs = new int[(int) CommonState.getEndTime()-1];
+        for (IRandomPeerSampling rps : this.pssList) {
+            for (int i = 0; i < rps.generatedPeerSamplingCost().length-1;i++) {
+                costs[i] += rps.generatedPeerSamplingCost()[i];
+            }
+        }
+        return costs;
     }
 
     public MeanPathLength meanPathLength() {

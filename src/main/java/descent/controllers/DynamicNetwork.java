@@ -56,7 +56,7 @@ public class DynamicNetwork implements Control {
 		this.ADDING_END = Configuration.getInt(n + "."
 				+ DynamicNetwork.PAR_ADD_END, Integer.MAX_VALUE);
 		this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
-		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP);
+		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP, 1);
 
 		final int nsize = Network.size();
 		this.pid = Configuration.lookupPid(Configuration.getString(n + "."
@@ -83,7 +83,6 @@ public class DynamicNetwork implements Control {
 				&& currentTimestamp <= this.ADDING_END;
 		if ((((currentTimestamp - this.REMOVING_START) % this.STEP) == 0)
 				&& removingElements) {
-			System.out.println("AAA");
 			// REMOVE ELEMENTS
 			for (int i = 0; i < this.REMOVING_COUNT
 					&& DynamicNetwork.graph.size() > 0; i++) {
@@ -120,7 +119,6 @@ public class DynamicNetwork implements Control {
 				}
 
 			} else {
-				System.out.println("miaou");
 				for (int i = 0; i < this.ADDING_COUNT
 						&& DynamicNetwork.availableNodes.size() > 0; i++) {
 					insert();

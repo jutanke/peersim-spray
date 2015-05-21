@@ -74,7 +74,6 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
-		// System.out.println(this.partialView.size()+" ,,,,, sample "+samplePrime.size());
 		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime, false);
 		return new SprayMessage(samplePrime);
@@ -169,4 +168,5 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			this.partialView.addNeighbor(toDouble);
 		}
 	}
+
 }

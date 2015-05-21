@@ -65,6 +65,7 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 				// #A if the chosen peer is alive, initiate the exchange
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
+				sample.add(this.node);
 				IMessage received = qCyclon.onPeriodicCall(this.node,
 						new CyclonMessage(sample));
 				List<Node> samplePrime = (List<Node>) received.getPayload();
