@@ -24,6 +24,7 @@ public class DynamicNetwork implements Control {
 	private static final String PAR_REM_END = "endRem";
 	private static final String PAR_PROTOCOL = "protocol";
 	private static final String PAR_STEP = "stepDynamic";
+	private static final String PAR_SIZE = "size";
 
 	public final int STEP;
 	public final int ADDING_PERCENT;
@@ -34,10 +35,12 @@ public class DynamicNetwork implements Control {
 	public final long REMOVING_END;
 	public final long ADDING_END;
 	public final boolean IS_PERCENTAGE;
+	public final int SIZE;
 	protected final int pid;
 
 	public static LinkedList<Node> graph = new LinkedList<Node>();
 	public static LinkedList<Node> availableNodes = new LinkedList<Node>();
+	public LinkedList<Node> localGraph = new LinkedList<Node>();
 
 	public DynamicNetwork(String n) {
 		// #A initialize all the variable from the configuration file
@@ -56,6 +59,8 @@ public class DynamicNetwork implements Control {
 		this.ADDING_END = Configuration.getInt(n + "."
 				+ DynamicNetwork.PAR_ADD_END, Integer.MAX_VALUE);
 		this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
+		this.SIZE = Configuration.getInt(n + "." + DynamicNetwork.PAR_SIZE,
+				Integer.MAX_VALUE);
 		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP, 1);
 
 		final int nsize = Network.size();
@@ -66,10 +71,6 @@ public class DynamicNetwork implements Control {
 			IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
 			d.leave();
 			availableNodes.add(node);
-			// System.err.println("Churn insert:" + this.ADDING_COUNT +
-			// " [" + this.ADDING_START + ".." + this.ADDING_END + "]");
-			// System.err.println("Churn remove:" + this.REMOVING_COUNT +
-			// " [" + this.REMOVING_START + ".." + this.REMOVING_END + "]");
 		}
 	}
 
@@ -90,7 +91,7 @@ public class DynamicNetwork implements Control {
 				final int pos = CommonState.r.nextInt(DynamicNetwork.graph
 						.size());
 				final Node rem = DynamicNetwork.graph.get(pos);
-				DynamicNetwork.removeNode(rem);
+				this.removeNode(rem);
 				ARandomPeerSamplingProtocol d = (ARandomPeerSamplingProtocol) rem
 						.getProtocol(pid);
 				if (d.isUp()) {
@@ -104,23 +105,17 @@ public class DynamicNetwork implements Control {
 		if ((((currentTimestamp - this.ADDING_START) % this.STEP) == 0)
 				&& addingElements) {
 			// ADD ELEMENTS
-
 			if (this.IS_PERCENTAGE) {
-
-				final double log10 = Math.floor(Math.log10(DynamicNetwork.graph
-						.size()));
+				final double log10 = Math.floor(Math.log10(graph.size()));
 				final double dev10 = Math.pow(10, log10);
 				int count = Math.max(1, (int) dev10 / this.ADDING_PERCENT);
-				System.err.println("QQ:" + graph.size() + "," + log10 + ","
-						+ dev10 + "," + count);
-				for (int i = 0; i < count
-						&& DynamicNetwork.availableNodes.size() > 0; i++) {
+				for (int i = 0; i < count && availableNodes.size() > 0; i++) {
 					insert();
 				}
 
 			} else {
 				for (int i = 0; i < this.ADDING_COUNT
-						&& DynamicNetwork.availableNodes.size() > 0; i++) {
+						&& availableNodes.size() > 0; i++) {
 					insert();
 				}
 			}
@@ -130,28 +125,31 @@ public class DynamicNetwork implements Control {
 	}
 
 	private void insert() {
-		final Node current = DynamicNetwork.availableNodes.poll();
-		if (graph.size() > 0) {
-			final Node contact = getNode();
-			DynamicNetwork.addNode(current, contact);
-		} else {
-			DynamicNetwork.addNode(current, null);
+		if (this.SIZE > this.localGraph.size()) {
+			final Node current = DynamicNetwork.availableNodes.poll();
+			if (localGraph.size() > 0) {
+				final Node contact = getNode();
+				this.addNode(current, contact);
+			} else {
+				this.addNode(current, null);
+			}
+			this.localGraph.add(current);
+			DynamicNetwork.graph.add(current);
 		}
-		DynamicNetwork.graph.add(current);
 	}
 
-	public static Node getNode() {
-		return DynamicNetwork.graph.get(CommonState.r
-				.nextInt(DynamicNetwork.graph.size()));
+	public Node getNode() {
+		return this.localGraph
+				.get(CommonState.r.nextInt(this.localGraph.size()));
 	}
 
-	public static void removeNode(Node leaver) {
+	public void removeNode(Node leaver) {
 		ARandomPeerSamplingProtocol leaverProtocol = (ARandomPeerSamplingProtocol) leaver
 				.getProtocol(ARandomPeerSamplingProtocol.pid);
 		leaverProtocol.leave();
 	}
 
-	public static void addNode(Node joiner, Node contact) {
+	public void addNode(Node joiner, Node contact) {
 		ARandomPeerSamplingProtocol joinerProtocol = (ARandomPeerSamplingProtocol) joiner
 				.getProtocol(ARandomPeerSamplingProtocol.pid);
 		joinerProtocol.join(joiner, contact);

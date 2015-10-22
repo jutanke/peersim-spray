@@ -720,7 +720,7 @@ public class DictGraph {
     }
 
     public double localClusterCoefficient(DictNode v) {
-        // List<DictNode> N = neighbourhood(v);
+        // List<DictNode> N = neighborhood(v);
         HashSet<Long> N = neighbors(v.id);
         if (N.size() == 0)
             return 0;

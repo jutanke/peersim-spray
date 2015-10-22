@@ -126,7 +126,8 @@ public class Scamp extends ARandomPeerSamplingProtocol implements
 
 		} else {
 			// #3B get a random alive peer from the network
-			rNeighbor = DynamicNetwork.getNode();
+			// rNeighbor = DynamicNetwork.getNode();
+			rNeighbor = null;
 		}
 		if (occ != 0) {
 			// #3C ask it to spread the subscription
