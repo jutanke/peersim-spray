@@ -25,6 +25,7 @@ public class DynamicNetwork implements Control {
 	private static final String PAR_PROTOCOL = "protocol";
 	private static final String PAR_STEP = "stepDynamic";
 	private static final String PAR_SIZE = "size";
+	private static final String PAR_NETWORK_ID = "networkId";
 
 	public final int STEP;
 	public final int ADDING_PERCENT;
@@ -37,10 +38,13 @@ public class DynamicNetwork implements Control {
 	public final boolean IS_PERCENTAGE;
 	public final int SIZE;
 	protected final int pid;
+	public final int NETWORK_ID;
 
+	public static boolean once = false;
 	public static LinkedList<Node> graph = new LinkedList<Node>();
 	public static LinkedList<Node> availableNodes = new LinkedList<Node>();
 	public LinkedList<Node> localGraph = new LinkedList<Node>();
+	public static LinkedList<LinkedList<Node>> networks = new LinkedList<LinkedList<Node>>();
 
 	public DynamicNetwork(String n) {
 		// #A initialize all the variable from the configuration file
@@ -62,16 +66,23 @@ public class DynamicNetwork implements Control {
 		this.SIZE = Configuration.getInt(n + "." + DynamicNetwork.PAR_SIZE,
 				Integer.MAX_VALUE);
 		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP, 1);
+		this.NETWORK_ID = Configuration.getInt(n + "."
+				+ DynamicNetwork.PAR_NETWORK_ID, CommonState.r.nextInt());
 
 		final int nsize = Network.size();
 		this.pid = Configuration.lookupPid(Configuration.getString(n + "."
 				+ DynamicNetwork.PAR_PROTOCOL));
-		for (int i = 0; i < nsize; i++) {
-			final Node node = Network.get(i);
-			IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
-			d.leave();
-			availableNodes.add(node);
+		if (!DynamicNetwork.once) {
+			for (int i = 0; i < nsize; i++) {
+				final Node node = Network.get(i);
+				IRandomPeerSampling d = (IRandomPeerSampling) node
+						.getProtocol(pid);
+				d.leave();
+				DynamicNetwork.availableNodes.add(node);
+			}
+			DynamicNetwork.once = true;
 		}
+		DynamicNetwork.networks.add(this.localGraph);
 	}
 
 	public boolean execute() {
