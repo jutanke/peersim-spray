@@ -12,7 +12,7 @@ import descent.rps.IPartialView;
  */
 public class PartialView implements IPartialView {
 
-	protected ArrayList<Node> partialView;
+	public ArrayList<Node> partialView;
 
 	public PartialView() {
 		this.partialView = new ArrayList<Node>();

@@ -1,5 +1,6 @@
 package descent.controllers;
 
+import descent.spray.Spray;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -30,13 +31,18 @@ public class MergeNetworks implements Control {
 					CommonState.r
 							.nextInt(DynamicNetwork.networks.get(1).size()));
 			MergeNetworks.merge(initiator, contact);
+			// #2 replace the oldest neighbor of initiator with the contact
+			Spray si = (Spray) initiator.getProtocol(pid);
+			si.partialView.partialView
+					.remove(0);
+			si.partialView.partialView.add(0,contact);
 		}
 		return false;
 	}
 
 	private static void merge(Node initiator, Node contact) {
 		// #1 replace or add a bridge between networks
-		
+
 	}
 
 }
