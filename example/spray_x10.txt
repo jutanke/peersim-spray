@@ -6,7 +6,7 @@ CYCLES 300
 
 MERGE_STEP = 30
 
-random.seed 12
+random.seed 35272059532882
 network.size SIZE
 simulation.endtime CYCLES
 simulation.logtime 1
