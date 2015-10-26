@@ -21,6 +21,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public SprayPartialView partialView;
 
 	public HashSet<Integer> networks;
+	public Integer remember;
 
 	/**
 	 * Constructor of the Spray instance
@@ -32,11 +33,13 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.networks = new HashSet<Integer>();
+		this.remember = -1;
 	}
 
 	public Spray() {
 		this.partialView = new SprayPartialView();
 		this.networks = new HashSet<Integer>();
+		this.remember = -1;
 	}
 
 	@Override
@@ -60,7 +63,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
 				IMessage received = qSpray.onPeriodicCall(this.node,
-						new SprayMessage(sample, this.networks));
+						new SprayMessage(sample, this.networks, this.remember));
 				// #1 check if must merge networks
 				if (this.isMerge((SprayMessage) received)) {
 					this.onMerge((SprayMessage) received);
@@ -83,15 +86,17 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
-		// #0 process the sample to send back
-		this.partialView.mergeSample(this.node, origin,
-				(List<Node>) message.getPayload(), samplePrime, false);
-		// #1 prepare the result to send back
-		SprayMessage result = new SprayMessage(samplePrime, this.networks);
 		// #2 check there is a network merging in progress
 		if (this.isMerge((SprayMessage) message)) {
 			this.onMerge((SprayMessage) message);
 		}
+		// #0 process the sample to send back
+		this.partialView.mergeSample(this.node, origin,
+				(List<Node>) message.getPayload(), samplePrime, false);
+		// #1 prepare the result to send back
+		SprayMessage result = new SprayMessage(samplePrime, this.networks,
+				this.remember);
+
 		return result;
 	}
 
@@ -213,13 +218,13 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
 		// #0 save the size before merge
 		this.networks.addAll(m.getNetworks());
+		this.remember = new Integer(this.partialView.size());
 		// #1 process the relative difference between sizes of networks
 		double diff = Math.abs(this.partialView.size() - sampleReceived.size()
 				* 2 - 0.5); // -0.5 because of the ceiled sent value
-		// if (m.getMergeRegister().size != -1) {
-		// diff = Math
-		// .abs(this.partialView.size() - m.getMergeRegister().size);
-		// }
+		if (m.getRemember() != -1) {
+			diff = Math.abs(this.remember - m.getRemember());
+		}
 		// #2 process probability of create duplicate
 		// #A ratio between the network sizes
 		double ratio = 1 / (Math.exp(diff) + 1);

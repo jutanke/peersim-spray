@@ -10,10 +10,13 @@ public class SprayMessage implements IMessage {
 
 	private List<Node> sample;
 	private HashSet<Integer> networks;
+	private Integer remember;
 
-	public SprayMessage(List<Node> sample, HashSet<Integer> networks) {
+	public SprayMessage(List<Node> sample, HashSet<Integer> networks,
+			Integer remember) {
 		this.sample = sample;
 		this.networks = (HashSet<Integer>) networks.clone();
+		this.remember = new Integer(remember);
 	}
 
 	public Object getPayload() {
@@ -22,5 +25,9 @@ public class SprayMessage implements IMessage {
 
 	public HashSet<Integer> getNetworks() {
 		return this.networks;
+	}
+
+	public Integer getRemember() {
+		return remember;
 	}
 }
