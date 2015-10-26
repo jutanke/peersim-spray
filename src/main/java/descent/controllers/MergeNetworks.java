@@ -29,15 +29,14 @@ public class MergeNetworks implements Control {
 
 	public boolean execute() {
 		if (CommonState.getTime() == this.DATE) {
-			// #1 find the networks
-			final Node initiator = DynamicNetwork.networks.get(0).get(
-					CommonState.r
-							.nextInt(DynamicNetwork.networks.get(0).size()));
-			final Node contact = DynamicNetwork.networks.get(1).get(
-					CommonState.r
-							.nextInt(DynamicNetwork.networks.get(1).size()));
-			// #2 choose a peer among each of them
-			// #3 initiate the merge
+			// #1 choose a peer from each network
+			final Node initiator = DynamicNetwork.networks.get(this.FROM).get(
+					CommonState.r.nextInt(DynamicNetwork.networks
+							.get(this.FROM).size()));
+			final Node contact = DynamicNetwork.networks.get(this.TO).get(
+					CommonState.r.nextInt(DynamicNetwork.networks.get(this.TO)
+							.size()));
+			// #2 initiate the merge
 			this.merge(initiator, contact);
 		}
 		return false;
@@ -45,7 +44,7 @@ public class MergeNetworks implements Control {
 
 	/**
 	 * Creates a bridge between two networks which will be used to merge them
-	 * into one.
+	 * into one. The rest of the merge is done by the spray protocol itself.
 	 * 
 	 * @param initiator
 	 *            the initiator node of the merge (from)
@@ -55,8 +54,10 @@ public class MergeNetworks implements Control {
 	private void merge(Node initiator, Node contact) {
 		// #1 replace the oldest neighbor of initiator with the contact
 		Spray si = (Spray) initiator.getProtocol(pid);
-		si.partialView.partialView.remove(0);
-		si.partialView.partialView.add(0, contact);
+		System.out.println(si.partialView.getOldest().toString());
+		si.partialView.partialView.remove((int) 0);
+		si.partialView.partialView.add((int) 0, contact);
+		System.out.println(si.partialView.getOldest().toString());
 	}
 
 }

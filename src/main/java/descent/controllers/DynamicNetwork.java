@@ -26,7 +26,6 @@ public class DynamicNetwork implements Control {
 	private static final String PAR_PROTOCOL = "protocol";
 	private static final String PAR_STEP = "stepDynamic";
 	private static final String PAR_SIZE = "size";
-	private static final String PAR_NETWORK_ID = "networkId";
 
 	public final int STEP;
 	public final int ADDING_PERCENT;
@@ -67,8 +66,8 @@ public class DynamicNetwork implements Control {
 		this.SIZE = Configuration.getInt(n + "." + DynamicNetwork.PAR_SIZE,
 				Integer.MAX_VALUE);
 		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP, 1);
-		this.NETWORK_ID = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_NETWORK_ID, CommonState.r.nextInt());
+
+		this.NETWORK_ID = DynamicNetwork.networks.size();
 
 		final int nsize = Network.size();
 		this.pid = Configuration.lookupPid(Configuration.getString(n + "."
