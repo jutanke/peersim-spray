@@ -1,5 +1,6 @@
 package descent.spray;
 
+import java.util.HashSet;
 import java.util.List;
 
 import peersim.core.Node;
@@ -8,20 +9,18 @@ import descent.rps.IMessage;
 public class SprayMessage implements IMessage {
 
 	private List<Node> sample;
-	private MergeRegister register;
+	private HashSet<Integer> networks;
 
-	public SprayMessage(List<Node> sample, MergeRegister register) {
+	public SprayMessage(List<Node> sample, HashSet<Integer> networks) {
 		this.sample = sample;
-		this.register = new MergeRegister();
-		this.register.networks = register.networks;
-		this.register.size = new Integer(register.size);
+		this.networks = (HashSet<Integer>) networks.clone();
 	}
 
 	public Object getPayload() {
 		return this.sample;
 	}
 
-	public MergeRegister getMergeRegister() {
-		return this.register;
+	public HashSet<Integer> getNetworks() {
+		return this.networks;
 	}
 }

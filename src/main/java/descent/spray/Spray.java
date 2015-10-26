@@ -1,5 +1,6 @@
 package descent.spray;
 
+import java.util.HashSet;
 import java.util.List;
 
 import peersim.core.CommonState;
@@ -19,7 +20,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	// #C local variables
 	public SprayPartialView partialView;
 
-	public MergeRegister register;
+	public HashSet<Integer> networks;
 
 	/**
 	 * Constructor of the Spray instance
@@ -30,12 +31,12 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public Spray(String prefix) {
 		super(prefix);
 		this.partialView = new SprayPartialView();
-		this.register = new MergeRegister();
+		this.networks = new HashSet<Integer>();
 	}
 
 	public Spray() {
 		this.partialView = new SprayPartialView();
-		this.register = new MergeRegister();
+		this.networks = new HashSet<Integer>();
 	}
 
 	@Override
@@ -59,7 +60,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
 				IMessage received = qSpray.onPeriodicCall(this.node,
-						new SprayMessage(sample, this.register));
+						new SprayMessage(sample, this.networks));
 				// #1 check if must merge networks
 				if (this.isMerge((SprayMessage) received)) {
 					this.onMerge((SprayMessage) received);
@@ -82,14 +83,16 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
-		// #0 check there is a network merging in progress
+		// #0 process the sample to send back
+		this.partialView.mergeSample(this.node, origin,
+				(List<Node>) message.getPayload(), samplePrime, false);
+		// #1 prepare the result to send back
+		SprayMessage result = new SprayMessage(samplePrime, this.networks);
+		// #2 check there is a network merging in progress
 		if (this.isMerge((SprayMessage) message)) {
 			this.onMerge((SprayMessage) message);
 		}
-		// #1 process the sample to send back
-		this.partialView.mergeSample(this.node, origin,
-				(List<Node>) message.getPayload(), samplePrime, false);
-		return new SprayMessage(samplePrime, this.register);
+		return result;
 	}
 
 	public void join(Node joiner, Node contact) {
@@ -196,8 +199,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 * @return true if it is a merge, false otherwise
 	 */
 	private boolean isMerge(SprayMessage m) {
-		return !(this.register.networks
-				.containsAll(m.getMergeRegister().networks));
+		return !(this.networks.containsAll(m.getNetworks()));
 	}
 
 	/**
@@ -210,20 +212,20 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	private boolean onMerge(SprayMessage m) {
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
 		// #0 save the size before merge
-		this.register.networks.addAll(m.getMergeRegister().networks);
-		this.register.size = this.partialView.size();
+		this.networks.addAll(m.getNetworks());
 		// #1 process the relative difference between sizes of networks
-		Integer diff = Math.abs(this.partialView.size() - sampleReceived.size()
-				* 2);
-		if (m.getMergeRegister().size != -1) {
-			diff = Math
-					.abs(this.partialView.size() - m.getMergeRegister().size);
-		}
+		double diff = Math.abs(this.partialView.size() - sampleReceived.size()
+				* 2 - 0.5); // -0.5 because of the ceiled sent value
+		// if (m.getMergeRegister().size != -1) {
+		// diff = Math
+		// .abs(this.partialView.size() - m.getMergeRegister().size);
+		// }
 		// #2 process probability of create duplicate
 		// #A ratio between the network sizes
-		double ratio = 1 / (Math.exp((double) diff) + 1);
+		double ratio = 1 / (Math.exp(diff) + 1);
 		double p = (ratio - 1) * Math.log(1 - ratio) - ratio * Math.log(ratio);
 		boolean duplicate = false;
+		// #B duplicate an entry at random
 		if (CommonState.r.nextDouble() < p) {
 			duplicate = true;
 			Node toDouble = this.partialView.getPeers().get(
