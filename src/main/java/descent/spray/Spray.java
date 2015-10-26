@@ -107,9 +107,15 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 
 	public void onSubscription(Node origin) {
 		List<Node> aliveNeighbors = this.getAliveNeighbors();
-		for (Node neighbor : aliveNeighbors) {
-			Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
-			neighborSpray.addNeighbor(origin);
+		if (aliveNeighbors.size() > 0) {
+			// #1 if the contact peer has neighbors
+			for (Node neighbor : aliveNeighbors) {
+				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
+				neighborSpray.addNeighbor(origin);
+			}
+		} else {
+			// #2 otherwise it takes the advertisement for itself
+			this.addNeighbor(origin);
 		}
 	}
 
