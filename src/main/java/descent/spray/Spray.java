@@ -4,7 +4,6 @@ import java.util.List;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.cyclon.Cyclon;
 import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IMessage;
 import descent.rps.IRandomPeerSampling;
@@ -98,7 +97,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			this.node = joiner;
 		}
 		if (contact != null) { // the very first join does not have any contact
-			Spray contactSpray = (Spray) contact.getProtocol(Cyclon.pid);
+			Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
 			this.partialView.clear();
 			this.partialView.addNeighbor(contact);
 			contactSpray.onSubscription(this.node);

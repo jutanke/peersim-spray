@@ -1,4 +1,4 @@
-package descent.scamp;
+package descent.spray;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package descent;
 
-import descent.scamp.PartialView;
+import descent.spray.PartialView;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
