@@ -54,10 +54,8 @@ public class MergeNetworks implements Control {
 	private void merge(Node initiator, Node contact) {
 		// #1 replace the oldest neighbor of initiator with the contact
 		Spray si = (Spray) initiator.getProtocol(pid);
-		System.out.println(si.partialView.getOldest().toString());
 		si.partialView.partialView.remove((int) 0);
 		si.partialView.partialView.add((int) 0, contact);
-		System.out.println(si.partialView.getOldest().toString());
 	}
 
 }
