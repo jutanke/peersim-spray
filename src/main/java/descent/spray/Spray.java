@@ -20,8 +20,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	// #C local variables
 	public SprayPartialView partialView;
 
-	public HashSet<Integer> networks;
-	public Integer remember;
+	public HashSet<Integer> from; // network id before the merge
+	public Integer remember; // pv size before the merge
+	public HashSet<Integer> to; // network id after the merge
 
 	/**
 	 * Constructor of the Spray instance
@@ -32,14 +33,16 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public Spray(String prefix) {
 		super(prefix);
 		this.partialView = new SprayPartialView();
-		this.networks = new HashSet<Integer>();
+		this.from = new HashSet<Integer>();
 		this.remember = -1;
+		this.to = new HashSet<Integer>();
 	}
 
 	public Spray() {
 		this.partialView = new SprayPartialView();
-		this.networks = new HashSet<Integer>();
+		this.from = new HashSet<Integer>();
 		this.remember = -1;
+		this.to = new HashSet<Integer>();
 	}
 
 	@Override
@@ -63,7 +66,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 				List<Node> sample = this.partialView.getSample(this.node, q,
 						true);
 				IMessage received = qSpray.onPeriodicCall(this.node,
-						new SprayMessage(sample, this.networks, this.remember));
+						new SprayMessage(sample, this.from, this.remember,
+								this.to));
 				// #1 check if must merge networks
 				if (this.isMerge((SprayMessage) received)) {
 					this.onMerge((SprayMessage) received);
@@ -94,8 +98,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime, false);
 		// #1 prepare the result to send back
-		SprayMessage result = new SprayMessage(samplePrime, this.networks,
-				this.remember);
+		SprayMessage result = new SprayMessage(samplePrime, this.from,
+				this.remember, this.to);
 
 		return result;
 	}
@@ -204,7 +208,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 * @return true if it is a merge, false otherwise
 	 */
 	private boolean isMerge(SprayMessage m) {
-		return !(this.networks.containsAll(m.getNetworks()));
+		return false;// (!(this.networks.containsAll(m.getNetworks())))
+		// (!(this.networks.contains(m.getOrigin())))
+		// && (this.origin != m.getOrigin());
 	}
 
 	/**
@@ -214,11 +220,17 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 *            the received message
 	 * @return true if it adds an arc, false otherwise
 	 */
+	public static int test = 0;
+
 	private boolean onMerge(SprayMessage m) {
+		++test;
+		System.out.println("test = " + test);
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
 		// #0 save the size before merge
-		this.networks.addAll(m.getNetworks());
-		this.remember = new Integer(this.partialView.size());
+		// this.networks.addAll(m.getNetworks());
+		// (TODO)
+		//this.networks.add(m.getOrigin());
+		//this.remember = new Integer(this.partialView.size());
 		// #1 process the relative difference between sizes of networks
 		double diff = Math.abs(this.partialView.size() - sampleReceived.size()
 				* 2 - 0.5); // -0.5 because of the ceiled sent value

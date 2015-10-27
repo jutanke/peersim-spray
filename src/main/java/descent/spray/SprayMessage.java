@@ -9,25 +9,31 @@ import descent.rps.IMessage;
 public class SprayMessage implements IMessage {
 
 	private List<Node> sample;
-	private HashSet<Integer> networks;
+	private HashSet<Integer> from;
 	private Integer remember;
+	private HashSet<Integer> to;
 
-	public SprayMessage(List<Node> sample, HashSet<Integer> networks,
-			Integer remember) {
+	public SprayMessage(List<Node> sample, HashSet<Integer> from,
+			Integer remember, HashSet<Integer> to) {
 		this.sample = sample;
-		this.networks = (HashSet<Integer>) networks.clone();
+		this.from = (HashSet<Integer>) from.clone();
 		this.remember = new Integer(remember);
+		this.to = (HashSet<Integer>) to.clone();
 	}
 
 	public Object getPayload() {
 		return this.sample;
 	}
 
-	public HashSet<Integer> getNetworks() {
-		return this.networks;
+	public HashSet<Integer> getFrom() {
+		return this.from;
 	}
 
 	public Integer getRemember() {
-		return remember;
+		return this.remember;
+	}
+
+	public HashSet<Integer> getTo() {
+		return this.to;
 	}
 }
