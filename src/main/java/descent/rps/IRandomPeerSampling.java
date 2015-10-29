@@ -16,7 +16,7 @@ public interface IRandomPeerSampling {
      * sent from this peer (the metric simply adds up the number of peers that were sent
      * for exchange with other nodes)
      */
-    int[] generatedPeerSamplingCost();
+     // int[] generatedPeerSamplingCost();
 
     /**
      * Function called every delta time. It generally corresponds to a protocol

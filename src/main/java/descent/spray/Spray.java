@@ -69,6 +69,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 						new SprayMessage(sample, this.from, this.remember,
 								this.to));
 				// #1 check if must merge networks
+				this.isFutureMerge((SprayMessage) received);
 				if (this.isMerge((SprayMessage) received)) {
 					this.onMerge((SprayMessage) received);
 				}
@@ -91,6 +92,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
 		// #2 check there is a network merging in progress
+		this.isFutureMerge((SprayMessage) message);
 		if (this.isMerge((SprayMessage) message)) {
 			this.onMerge((SprayMessage) message);
 		}
@@ -147,6 +149,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			Spray sprayClone = new Spray();
 			sprayClone.partialView = (SprayPartialView) this.partialView
 					.clone();
+			sprayClone.from = (HashSet<Integer>) this.from.clone();
+			sprayClone.remember = new Integer(this.remember);
+			sprayClone.to = (HashSet<Integer>) this.to.clone();
 			return sprayClone;
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
@@ -200,6 +205,28 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		}
 	}
 
+	public boolean mustMerge = false;
+
+	public void isFutureMerge(SprayMessage m) {
+		// boolean areInTheSameNetworkNow = this.to.containsAll(m.getTo())
+		// && m.getTo().containsAll(this.to);
+		boolean isAlreadyMergeWithNetwork = this.to.containsAll(m.getTo());
+
+		// if (!areInTheSameNetworkNow && !isAlreadyMergeWithNetwork) {
+		if (!isAlreadyMergeWithNetwork) {
+			this.mustMerge = true;
+			// System.out.println("===========================");
+			// System.out.println("this from = " + this.from.toString());
+			// System.out.println("this to   = " + this.to.toString());
+			// System.out.println("m    from = " + m.getFrom().toString());
+			// System.out.println("m    to   = " + m.getTo().toString());
+			this.from = this.to;
+			this.remember = new Integer(this.partialView.size());
+			this.to = (HashSet<Integer>) this.to.clone();
+			this.to.addAll(m.getTo());
+		}
+	}
+
 	/**
 	 * Check if the received message should lead to a merge of networks
 	 * 
@@ -207,10 +234,32 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 *            the received message
 	 * @return true if it is a merge, false otherwise
 	 */
-	private boolean isMerge(SprayMessage m) {
-		return false;// (!(this.networks.containsAll(m.getNetworks())))
-		// (!(this.networks.contains(m.getOrigin())))
-		// && (this.origin != m.getOrigin());
+	public boolean isMerge(SprayMessage m) {
+		HashSet<Integer> thisFrom = this.from;
+		HashSet<Integer> mFrom = m.getFrom();
+		if (this.from.isEmpty()) {
+			thisFrom = this.to;
+		}
+		if (m.getFrom().isEmpty()) {
+			mFrom = m.getTo();
+		}
+		boolean comeFromTheSameNetwork = (this.to.containsAll(mFrom) && mFrom
+				.containsAll(this.to))
+				|| (thisFrom.containsAll(m.getTo()) && m.getTo().containsAll(
+						thisFrom));
+
+		boolean isMerge = (this.mustMerge && !comeFromTheSameNetwork);
+		 if (isMerge) {
+		 System.out.println("this from = " + this.from.toString());
+		 System.out.println("this to   = " + this.to.toString());
+		 System.out.println("m    from = " + m.getFrom().toString());
+		 System.out.println("m    to   = " + m.getTo().toString());
+		// System.out.println("very first merge = " + isVeryFirstMerge);
+		// System.out.println("come from same network = "
+		// + comeFromTheSameNetwork);
+		 }
+
+		return isMerge;
 	}
 
 	/**
@@ -223,14 +272,19 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public static int test = 0;
 
 	private boolean onMerge(SprayMessage m) {
-		++test;
-		System.out.println("test = " + test);
+		// ++test;
+		// System.out.println("test = " + test);
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
+		this.mustMerge = false;
 		// #0 save the size before merge
+		// this.from = this.to;
+		// this.remember = new Integer(this.partialView.size());
+		// this.to = (HashSet<Integer>) this.to.clone();
+		// this.to.addAll(m.getTo());
 		// this.networks.addAll(m.getNetworks());
 		// (TODO)
-		//this.networks.add(m.getOrigin());
-		//this.remember = new Integer(this.partialView.size());
+		// this.networks.add(m.getOrigin());
+		// this.remember = new Integer(this.partialView.size());
 		// #1 process the relative difference between sizes of networks
 		double diff = Math.abs(this.partialView.size() - sampleReceived.size()
 				* 2 - 0.5); // -0.5 because of the ceiled sent value

@@ -32,7 +32,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	/**
 	 * The outbound costs per each step
 	 */
-	private final int[] costs;
+//	private final int[] costs;
 
 	/**
 	 * Constructor of the class
@@ -49,11 +49,11 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 				+ ARandomPeerSamplingProtocol.PAR_START);
 		ARandomPeerSamplingProtocol.fail = Configuration.getDouble(prefix + "."
 				+ ARandomPeerSamplingProtocol.PAR_FAIL, 0.0);
-		this.costs = new int[(int)CommonState.getEndTime()];
+//		this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	public ARandomPeerSamplingProtocol() {
-		this.costs = new int[(int)CommonState.getEndTime()];
+//		this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	// must be implemented in the child class
@@ -126,9 +126,9 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		return result;
 	}
 
-	public final int[] generatedPeerSamplingCost() {
-		return this.costs;
-	}
+//	public final int[] generatedPeerSamplingCost() {
+//		return this.costs;
+//	}
 
 	public void pack() {
 	}

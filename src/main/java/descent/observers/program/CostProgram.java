@@ -14,9 +14,9 @@ public class CostProgram implements ObserverProgram {
 
     public void onLastTick(DictGraph observer) {
 
-        for (int i = 0; i < observer.totalOutboundCostPerTick().length; i++) {
-            System.out.println(observer.totalOutboundCostPerTick()[i]);
-        }
+  //      for (int i = 0; i < observer.totalOutboundCostPerTick().length; i++) {
+  //          System.out.println(observer.totalOutboundCostPerTick()[i]);
+  //     }
 
     }
 }

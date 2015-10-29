@@ -170,15 +170,15 @@ public class DictGraph {
 		return histo;
 	}
 
-	public int[] totalOutboundCostPerTick() {
-		final int[] costs = new int[(int) CommonState.getEndTime() - 1];
-		for (IRandomPeerSampling rps : this.pssList) {
-			for (int i = 0; i < rps.generatedPeerSamplingCost().length - 1; i++) {
-				costs[i] += rps.generatedPeerSamplingCost()[i];
-			}
-		}
-		return costs;
-	}
+//	public int[] totalOutboundCostPerTick() {
+//		final int[] costs = new int[(int) CommonState.getEndTime() - 1];
+//		for (IRandomPeerSampling rps : this.pssList) {
+//			for (int i = 0; i < rps.generatedPeerSamplingCost().length - 1; i++) {
+//				costs[i] += rps.generatedPeerSamplingCost()[i];
+//			}
+//		}
+//		return costs;
+//	}
 
 	public MeanPathLength meanPathLength() {
 		MeanPathLength result = new MeanPathLength();
