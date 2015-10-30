@@ -24,6 +24,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public Integer remember; // pv size before the merge
 	public HashSet<Integer> to; // network id after the merge
 
+	public boolean mustMerge = false;
+
 	/**
 	 * Constructor of the Spray instance
 	 * 
@@ -205,21 +207,13 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		}
 	}
 
-	public boolean mustMerge = false;
-
 	public void isFutureMerge(SprayMessage m) {
-		// boolean areInTheSameNetworkNow = this.to.containsAll(m.getTo())
-		// && m.getTo().containsAll(this.to);
+		// #1 check if there is a new merging process currently running
 		boolean isAlreadyMergeWithNetwork = this.to.containsAll(m.getTo());
-
-		// if (!areInTheSameNetworkNow && !isAlreadyMergeWithNetwork) {
 		if (!isAlreadyMergeWithNetwork) {
+			// #A save the fact that the peer must process a merge asap
 			this.mustMerge = true;
-			// System.out.println("===========================");
-			// System.out.println("this from = " + this.from.toString());
-			// System.out.println("this to   = " + this.to.toString());
-			// System.out.println("m    from = " + m.getFrom().toString());
-			// System.out.println("m    to   = " + m.getTo().toString());
+			// #B save informations
 			this.from = this.to;
 			this.remember = new Integer(this.partialView.size());
 			this.to = (HashSet<Integer>) this.to.clone();
@@ -237,12 +231,15 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public boolean isMerge(SprayMessage m) {
 		HashSet<Integer> thisFrom = this.from;
 		HashSet<Integer> mFrom = m.getFrom();
+		// #1 handle the first merge of network
 		if (this.from.isEmpty()) {
 			thisFrom = this.to;
 		}
 		if (m.getFrom().isEmpty()) {
 			mFrom = m.getTo();
 		}
+		// #2 check if the sender and receiver of the message come from the
+		// same network. In such case, don't merge
 		boolean comeFromTheSameNetwork = (this.to.containsAll(mFrom) && mFrom
 				.containsAll(this.to))
 				|| (thisFrom.containsAll(m.getTo()) && m.getTo().containsAll(
@@ -250,19 +247,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 				|| (thisFrom.containsAll(mFrom) && mFrom.containsAll(thisFrom)
 						&& this.to.containsAll(m.getTo()) && this.from
 							.containsAll(m.getFrom()));
-
-		boolean isMerge = (this.mustMerge && !comeFromTheSameNetwork);
-		//if (isMerge) {
-			// System.out.println("this from = " + this.from.toString());
-			// System.out.println("this to   = " + this.to.toString());
-			// System.out.println("m    from = " + m.getFrom().toString());
-			// System.out.println("m    to   = " + m.getTo().toString());
-			// System.out.println("very first merge = " + isVeryFirstMerge);
-			// System.out.println("come from same network = "
-			// + comeFromTheSameNetwork);
-		//}
-
-		return isMerge;
+		return this.mustMerge && !comeFromTheSameNetwork;
 	}
 
 	/**
@@ -272,12 +257,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 *            the received message
 	 * @return true if it adds an arc, false otherwise
 	 */
-	public static int test = 0;
-
 	private boolean onMerge(SprayMessage m) {
-		//++test;
-		//System.out.println("test = " + test);
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
+		// #0 reset the must merge value
 		this.mustMerge = false;
 		// #1 process the relative difference between sizes of networks
 		double diff = Math.abs(this.partialView.size() - sampleReceived.size()

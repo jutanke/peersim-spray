@@ -2,11 +2,11 @@
 SIZE 100000
 
 # parameters of periodic execution
-CYCLES 300
+CYCLES 1000
 
-MERGE_STEP = 30
+MERGE_STEP = 100
 
-random.seed 35272059532882
+random.seed 4096
 network.size SIZE
 simulation.endtime CYCLES
 simulation.logtime 1
