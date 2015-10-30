@@ -246,18 +246,21 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		boolean comeFromTheSameNetwork = (this.to.containsAll(mFrom) && mFrom
 				.containsAll(this.to))
 				|| (thisFrom.containsAll(m.getTo()) && m.getTo().containsAll(
-						thisFrom));
+						thisFrom))
+				|| (thisFrom.containsAll(mFrom) && mFrom.containsAll(thisFrom)
+						&& this.to.containsAll(m.getTo()) && this.from
+							.containsAll(m.getFrom()));
 
 		boolean isMerge = (this.mustMerge && !comeFromTheSameNetwork);
-		 if (isMerge) {
-		 System.out.println("this from = " + this.from.toString());
-		 System.out.println("this to   = " + this.to.toString());
-		 System.out.println("m    from = " + m.getFrom().toString());
-		 System.out.println("m    to   = " + m.getTo().toString());
-		// System.out.println("very first merge = " + isVeryFirstMerge);
-		// System.out.println("come from same network = "
-		// + comeFromTheSameNetwork);
-		 }
+		//if (isMerge) {
+			// System.out.println("this from = " + this.from.toString());
+			// System.out.println("this to   = " + this.to.toString());
+			// System.out.println("m    from = " + m.getFrom().toString());
+			// System.out.println("m    to   = " + m.getTo().toString());
+			// System.out.println("very first merge = " + isVeryFirstMerge);
+			// System.out.println("come from same network = "
+			// + comeFromTheSameNetwork);
+		//}
 
 		return isMerge;
 	}
@@ -272,19 +275,10 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public static int test = 0;
 
 	private boolean onMerge(SprayMessage m) {
-		// ++test;
-		// System.out.println("test = " + test);
+		//++test;
+		//System.out.println("test = " + test);
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
 		this.mustMerge = false;
-		// #0 save the size before merge
-		// this.from = this.to;
-		// this.remember = new Integer(this.partialView.size());
-		// this.to = (HashSet<Integer>) this.to.clone();
-		// this.to.addAll(m.getTo());
-		// this.networks.addAll(m.getNetworks());
-		// (TODO)
-		// this.networks.add(m.getOrigin());
-		// this.remember = new Integer(this.partialView.size());
 		// #1 process the relative difference between sizes of networks
 		double diff = Math.abs(this.partialView.size() - sampleReceived.size()
 				* 2 - 0.5); // -0.5 because of the ceiled sent value
