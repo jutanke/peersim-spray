@@ -1,11 +1,10 @@
-package descent.spray;
+package descent.rps;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.rps.IPartialView;
 
 /**
  * Implementation of a basic partial view.

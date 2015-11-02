@@ -73,7 +73,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 				// #1 check if must merge networks
 				this.isFutureMerge((SprayMessage) received);
 				if (this.isMerge((SprayMessage) received)) {
-					this.onMerge((SprayMessage) received);
+					this.onMerge((SprayMessage) received, q);
 				}
 				// #2 merge the received sample with current partial view
 				List<Node> samplePrime = (List<Node>) received.getPayload();
@@ -96,7 +96,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		// #2 check there is a network merging in progress
 		this.isFutureMerge((SprayMessage) message);
 		if (this.isMerge((SprayMessage) message)) {
-			this.onMerge((SprayMessage) message);
+			this.onMerge((SprayMessage) message, origin);
 		}
 		// #0 process the sample to send back
 		this.partialView.mergeSample(this.node, origin,
@@ -255,9 +255,11 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	 * 
 	 * @param m
 	 *            the received message
+	 * @param sender
+	 *            the node that created the message
 	 * @return true if it adds an arc, false otherwise
 	 */
-	private boolean onMerge(SprayMessage m) {
+	private boolean onMerge(SprayMessage m, Node sender) {
 		List<Node> sampleReceived = (List<Node>) m.getPayload();
 		// #0 reset the must merge value
 		this.mustMerge = false;
@@ -272,12 +274,12 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		double ratio = 1 / (Math.exp(diff) + 1);
 		double p = (ratio - 1) * Math.log(1 - ratio) - ratio * Math.log(ratio);
 		boolean duplicate = false;
-		// #B duplicate an entry at random
+		// #B create an entry on the senders
 		if (CommonState.r.nextDouble() < p) {
 			duplicate = true;
-			Node toDouble = this.partialView.getPeers().get(
-					CommonState.r.nextInt(this.partialView.size()));
-			this.partialView.addNeighbor(toDouble);
+			// this.partialView.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView.size())
+			// )); // sp_*
+			this.partialView.addNeighbor(sender); // spr_*
 		}
 		return duplicate;
 	}
