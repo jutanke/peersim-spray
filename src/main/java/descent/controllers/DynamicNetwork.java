@@ -139,7 +139,7 @@ public class DynamicNetwork implements Control {
 		if (this.SIZE > this.localGraph.size()) {
 			final Node current = DynamicNetwork.availableNodes.poll();
 			Spray s = (Spray) current.getProtocol(pid); // only work for spray
-			s.to.add(new Integer(this.NETWORK_ID));
+			s.register.to.add(new Integer(this.NETWORK_ID));
 			if (localGraph.size() > 0) {
 				final Node contact = getNode();
 				this.addNode(current, contact);
