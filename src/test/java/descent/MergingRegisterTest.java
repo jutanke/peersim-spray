@@ -26,13 +26,13 @@ public class MergingRegisterTest extends TestCase {
 		SprayMessage m = new SprayMessage(null, r1.networks, r1.size);
 
 		assertTrue(r2.waiting.isEmpty());
-		assertTrue(r2.newNetworkDetected(m));
+		assertTrue(r2.newNetworkDetected(m,1));
 		assertFalse(r2.waiting.isEmpty());
 
 		SprayMessage n = new SprayMessage(null, r2.networks, r2.size);
 
 		assertTrue(r1.waiting.isEmpty());
-		assertTrue(r1.newNetworkDetected(n));
+		assertTrue(r1.newNetworkDetected(n,1));
 		assertFalse(r1.waiting.isEmpty());
 	}
 
@@ -44,7 +44,7 @@ public class MergingRegisterTest extends TestCase {
 		SprayMessage m = new SprayMessage(null, r1.networks, -1);
 
 		assertTrue(r2.waiting.isEmpty());
-		assertFalse(r2.newNetworkDetected(m));
+		assertFalse(r2.newNetworkDetected(m,1));
 		assertTrue(r2.waiting.isEmpty());
 	}
 
@@ -56,18 +56,18 @@ public class MergingRegisterTest extends TestCase {
 
 		SprayMessage m = new SprayMessage(null, r1.networks, -1);
 
-		r2.newNetworkDetected(m);
+		r2.newNetworkDetected(m,1);
 
 		SprayMessage n = new SprayMessage(null, r2.networks, -1);
 
-		assertTrue(r3.newNetworkDetected(n));
+		assertTrue(r3.newNetworkDetected(n,1));
 		assertTrue(r3.waiting.size() == 2);
 		assertTrue(r3.networks.getFirst().size() == 2);
 		assertTrue(r3.flattenNetworks.size() == 3);
 
 		SprayMessage o = new SprayMessage(null, r3.networks, -1);
 
-		assertTrue(r1.newNetworkDetected(o));
+		assertTrue(r1.newNetworkDetected(o,1));
 		assertTrue(r1.waiting.size() == 2);
 		assertTrue(r1.networks.getFirst().size() == 2);
 		assertTrue(r1.flattenNetworks.size() == 3);
@@ -80,7 +80,7 @@ public class MergingRegisterTest extends TestCase {
 
 		SprayMessage m = new SprayMessage(null, r1.networks, 4);
 
-		r2.newNetworkDetected(m);
+		r2.newNetworkDetected(m,1);
 		assertTrue(r2.keepSize(m));
 		assertTrue(r2.got.get(r2.networks.getFirst()) == 4);
 	}
@@ -92,7 +92,7 @@ public class MergingRegisterTest extends TestCase {
 
 		SprayMessage m = new SprayMessage(null, r1.networks, 4);
 
-		r2.newNetworkDetected(m);
+		r2.newNetworkDetected(m,1);
 		assertFalse(r2.keepSize(m));
 		assertTrue(r2.got.isEmpty());
 	}
@@ -105,13 +105,13 @@ public class MergingRegisterTest extends TestCase {
 
 		SprayMessage m = new SprayMessage(null, r1.networks, 1);
 
-		r2.newNetworkDetected(m);
+		r2.newNetworkDetected(m,1);
 		assertTrue(r2.keepSize(m));
 		assertEquals(1, r2.got.size());
 
 		SprayMessage n = new SprayMessage(null, r2.networks, 2);
 
-		r3.newNetworkDetected(n);
+		r3.newNetworkDetected(n,1);
 		assertTrue(r3.keepSize(n));
 		assertEquals(1, r3.got.size());
 		HashSet<Integer> key = r3.got.keySet().iterator().next();
@@ -176,8 +176,13 @@ public class MergingRegisterTest extends TestCase {
 				new HashSet<HashSet<Integer>>());
 		assertNotNull(result);
 	}
-	
-	public void testIsMerge1(){
+
+	public void testIsMerge1() {
 		MergingRegister r1 = new MergingRegister(0);
+		MergingRegister r2 = new MergingRegister(1);
+
+		SprayMessage m = new SprayMessage(null, r1.networks, 1);
+
+		assertEquals(0.69, r2.isMerge(m, 1), 0.1);
 	}
 }

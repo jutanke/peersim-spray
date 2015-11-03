@@ -21,6 +21,18 @@ public class SprayMessage implements IMessage {
 		this.size = new Integer(size);
 	}
 
+	public SprayMessage(List<Node> sample,
+			LinkedList<HashSet<Integer>> networks, Integer size,
+			Integer replaceSize) {
+		this.sample = sample;
+		this.networks = (LinkedList<HashSet<Integer>>) networks.clone();
+		if (size == -1) {
+			this.size = new Integer(replaceSize);
+		} else {
+			this.size = new Integer(size);
+		}
+	}
+
 	public Object getPayload() {
 		return this.sample;
 	}
