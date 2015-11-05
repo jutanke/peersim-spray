@@ -4,7 +4,7 @@ SIZE 10000
 # parameters of periodic execution
 CYCLES 1000
 
-MERGE_STEP = 100
+MERGE_STEP 200
 
 random.seed 26
 network.size SIZE
@@ -24,7 +24,7 @@ protocol.rps.fail 0.000
 ## networks
 control.n0 descent.controllers.DynamicNetwork
 control.n0.protocol rps
-control.n0.size SIZE/10
+control.n0.size SIZE/5
 control.n0.FINAL
 control.n0.step 1
 control.n0.addingPerStep 100000
@@ -96,13 +96,6 @@ control.n8.step 1
 control.n8.addingPerStep 100000
 control.n8.startAdd 0
 
-control.n9 descent.controllers.DynamicNetwork
-control.n9.protocol rps
-control.n9.size SIZE/10
-control.n9.FINAL
-control.n9.step 1
-control.n9.addingPerStep 100000
-control.n9.startAdd 0
 
 ## merging
 control.m0 descent.controllers.MergeNetworks
@@ -115,7 +108,7 @@ control.m0.step 1
 
 control.m1 descent.controllers.MergeNetworks
 control.m1.protocol rps
-control.m1.date MERGE_STEP*2
+control.m1.date MERGE_STEP*1
 control.m1.from 0
 control.m1.to 2
 control.m1.FINAL
@@ -123,7 +116,7 @@ control.m1.step 1
 
 control.m2 descent.controllers.MergeNetworks
 control.m2.protocol rps
-control.m2.date MERGE_STEP*3
+control.m2.date MERGE_STEP*2
 control.m2.from 0
 control.m2.to 3
 control.m2.FINAL
@@ -131,7 +124,7 @@ control.m2.step 1
 
 control.m3 descent.controllers.MergeNetworks
 control.m3.protocol rps
-control.m3.date MERGE_STEP*4
+control.m3.date MERGE_STEP*2
 control.m3.from 0
 control.m3.to 4
 control.m3.FINAL
@@ -139,7 +132,7 @@ control.m3.step 1
 
 control.m4 descent.controllers.MergeNetworks
 control.m4.protocol rps
-control.m4.date MERGE_STEP*5
+control.m4.date MERGE_STEP*3
 control.m4.from 0
 control.m4.to 5
 control.m4.FINAL
@@ -147,7 +140,7 @@ control.m4.step 1
 
 control.m5 descent.controllers.MergeNetworks
 control.m5.protocol rps
-control.m5.date MERGE_STEP*6
+control.m5.date MERGE_STEP*3
 control.m5.from 0
 control.m5.to 6
 control.m5.FINAL
@@ -155,7 +148,7 @@ control.m5.step 1
 
 control.m6 descent.controllers.MergeNetworks
 control.m6.protocol rps
-control.m6.date MERGE_STEP*7
+control.m6.date MERGE_STEP*4
 control.m6.from 0
 control.m6.to 7
 control.m6.FINAL
@@ -163,19 +156,12 @@ control.m6.step 1
 
 control.m7 descent.controllers.MergeNetworks
 control.m7.protocol rps
-control.m7.date MERGE_STEP*8
+control.m7.date MERGE_STEP*4
 control.m7.from 0
 control.m7.to 8
 control.m7.FINAL
 control.m7.step 1
 
-control.m8 descent.controllers.MergeNetworks
-control.m8.protocol rps
-control.m8.date MERGE_STEP*9
-control.m8.from 0
-control.m8.to 9
-control.m8.FINAL
-control.m8.step 1
 
 ################### initialization ======================
 

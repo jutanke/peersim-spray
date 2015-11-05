@@ -71,6 +71,10 @@ public class MergingRegister {
 		HashSet<HashSet<Integer>> permutation = this.permutations(
 				(HashSet<Integer>) this.waiting.clone(),
 				new HashSet<HashSet<Integer>>());
+		//if (this.waiting.size() > 5 && this.got.keySet().size() > 5
+		//		&& permutation == null) {
+		//	System.out.println(this.toString());
+		//}
 
 		if (permutation == null) {
 			return 0.0; // (TODO) un-uglify this kind of code
@@ -104,8 +108,9 @@ public class MergingRegister {
 		if (objective.isEmpty()) {
 			return current;
 		}
+		HashSet<HashSet<Integer>> result = null;
 		Iterator<HashSet<Integer>> iNetworks = this.got.keySet().iterator();
-		while (iNetworks.hasNext()) {
+		while (iNetworks.hasNext() && result == null) {
 			HashSet<Integer> networkExamined = iNetworks.next();
 			if (objective.containsAll(networkExamined)) {
 				HashSet<Integer> cloneObjective = (HashSet<Integer>) objective
@@ -114,21 +119,21 @@ public class MergingRegister {
 				HashSet<HashSet<Integer>> cloneCurrent = (HashSet<HashSet<Integer>>) current
 						.clone();
 				cloneCurrent.add(networkExamined);
-				HashSet<HashSet<Integer>> result = this.permutations(
-						cloneObjective, cloneCurrent);
-				if (result != null) {
-					return result;
-				}
+				result = this.permutations(cloneObjective, cloneCurrent);
 			}
 		}
-		return null;
+		return result;
 	}
 
 	public boolean keepSize(SprayMessage m) {
 		// #1 handle the very first merge case
-		HashSet<Integer> idNetworkSize = m.networks.getFirst();
-		if (m.networks.size() > 1) {
-			idNetworkSize = m.networks.get(1);
+		HashSet<Integer> idNetworkSize = new HashSet<Integer>();
+		if (m.networks.size() == 1) {
+			idNetworkSize.addAll(m.networks.getFirst());
+		} else {
+			for (int i = 1; i < m.networks.size(); ++i) {
+				idNetworkSize.addAll(m.networks.get(i));
+			}
 		}
 		// #2 the size may be interesting for future merge, save it
 		if (this.waiting.containsAll(idNetworkSize)
@@ -165,7 +170,20 @@ public class MergingRegister {
 	}
 
 	private void flush() {
+		// System.out.println(this.toString());
 		this.waiting = new HashSet<Integer>();
 		this.got = new HashMap<HashSet<Integer>, Integer>();
+	}
+
+	@Override
+	public String toString() {
+		String result = "";
+		result += "===============\n";
+		result += "networks: " + this.networks.toString() + "\n";
+		result += "flat: " + this.flattenNetworks.toString() + "\n";
+		result += " + waiting: " + this.waiting.toString() + "\n";
+		result += " + got: " + this.got.toString() + "\n";
+		result += "===============\n";
+		return result;
 	}
 }

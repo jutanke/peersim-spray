@@ -62,10 +62,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 						new SprayMessage(sample, this.register.networks,
 								this.register.size, this.partialView.size()));
 				// #1 check if must merge networks
-				if (CommonState.r.nextDouble() < this.register.isMerge(
-						(SprayMessage) received, this.partialView.size())) {
-					this.onMerge(q);
-				}
+				this.onMerge(this.register.isMerge((SprayMessage) received,
+						this.partialView.size()), q);
 				// #2 merge the received sample with current partial view
 				List<Node> samplePrime = (List<Node>) received.getPayload();
 				this.partialView.mergeSample(this.node, q, samplePrime, sample,
@@ -85,10 +83,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
 				false);
 		// #2 check there is a network merging in progress
-		if (CommonState.r.nextDouble() < this.register.isMerge(
-				(SprayMessage) message, this.partialView.size())) {
-			this.onMerge(origin);
-		}
+		this.onMerge(
+				this.register.isMerge((SprayMessage) message,
+						this.partialView.size()), origin);
 		// #0 process the sample to send back
 		this.partialView.mergeSample(this.node, origin,
 				(List<Node>) message.getPayload(), samplePrime, false);
@@ -197,9 +194,18 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		}
 	}
 
-	private void onMerge(Node sender) {
-		this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
-				.size()))); // sp_*
-		// this.addNeighbor(sender); // spr_*
+	private void onMerge(Double ratio, Node sender) {
+		// #1 process the mandatory added arc when its over 1
+		while (ratio >= 1) {
+			this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
+					.size()))); // sp_*
+			// this.addNeighbor(sender); // spr_*
+			--ratio;
+		}
+		// #2 process the random arcs
+		if (CommonState.r.nextDouble() < ratio) {
+			this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
+					.size()))); // sp_*
+		}
 	}
 }
