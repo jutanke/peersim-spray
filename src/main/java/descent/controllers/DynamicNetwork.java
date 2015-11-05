@@ -47,6 +47,7 @@ public class DynamicNetwork implements Control {
 	public static LinkedList<LinkedList<Node>> networks = new LinkedList<LinkedList<Node>>();
 
 	public DynamicNetwork(String n) {
+		 System.err.close();
 		// #A initialize all the variable from the configuration file
 		this.ADDING_COUNT = Configuration.getInt(n + "."
 				+ DynamicNetwork.PAR_ADD_COUNT, -1);

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import peersim.core.CommonState;
 import peersim.core.Node;
 import descent.controllers.DynamicNetwork;
 import descent.rps.IRandomPeerSampling;
@@ -170,15 +169,15 @@ public class DictGraph {
 		return histo;
 	}
 
-//	public int[] totalOutboundCostPerTick() {
-//		final int[] costs = new int[(int) CommonState.getEndTime() - 1];
-//		for (IRandomPeerSampling rps : this.pssList) {
-//			for (int i = 0; i < rps.generatedPeerSamplingCost().length - 1; i++) {
-//				costs[i] += rps.generatedPeerSamplingCost()[i];
-//			}
-//		}
-//		return costs;
-//	}
+	// public int[] totalOutboundCostPerTick() {
+	// final int[] costs = new int[(int) CommonState.getEndTime() - 1];
+	// for (IRandomPeerSampling rps : this.pssList) {
+	// for (int i = 0; i < rps.generatedPeerSamplingCost().length - 1; i++) {
+	// costs[i] += rps.generatedPeerSamplingCost()[i];
+	// }
+	// }
+	// return costs;
+	// }
 
 	public MeanPathLength meanPathLength() {
 		MeanPathLength result = new MeanPathLength();
@@ -332,14 +331,12 @@ public class DictGraph {
 			Node starter = DynamicNetwork.networks.get(n).get(0);
 			this.toExplore.add(starter.getID());
 			int count = 0;
-			int i = 0;
 			while (this.toExplore.size() > 0) {
 				count += countArcsInNetwork2();
-				i += 1;
 			}
-			return explored.size()+" "+count;
+			return explored.size() + " " + count;
 		} else {
-			return 0+" "+0;
+			return 0 + " " + 0;
 		}
 	}
 
@@ -678,7 +675,7 @@ public class DictGraph {
 	}
 
 	public enum NetworkX {
-		Connectedness, Graph
+		Connectedness, Graph, Draw
 	}
 
 	public String networkxDigraph(NetworkX type) {
@@ -692,6 +689,12 @@ public class DictGraph {
 
 		if (importNetworkX) {
 			sb.append("import networkx as nx\n");
+		}
+		if (type == NetworkX.Draw && importNetworkX) {
+			sb.append("import matplotlib.pyplot as plt\n");
+			sb.append("from random import random\n");
+			sb.append("colors=[(random(), random(), random()) for _i in range("
+					+ DynamicNetwork.networks.size() + ")]\n");
 		}
 
 		final String progName = "exec" + graph;
@@ -747,10 +750,39 @@ public class DictGraph {
 			sb.append("()");
 			break;
 		case Graph:
+			break;
+		case Draw:
+			int i = 0;
+			for (LinkedList<Node> nodes : DynamicNetwork.networks) {
+				if (nodes.size() > 0) {
+					sb.append("\tlistNodes" + i + "= [");
+					int j = 0;
+					for (Node node : nodes) {
+						sb.append(node.getID());
+						++j;
+						if (j < nodes.size()) {
+							sb.append(',');
+						}
+					}
+					sb.append("]\n");
+				}
+				++i;
+			}
 
+			sb.append("\tpos = nx.spectral_layout(");
+			sb.append(graph);
+			sb.append(", scale = 2)\n");
+			for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
+				sb.append("\tnx.draw(" + graph + ",pos , nodelist= listNodes"
+						+ (DynamicNetwork.networks.size()-i-1) + ", node_size=40, node_color=colors[" + i
+						+ "], with_labels=False)\n");
+			}
+			sb.append("\tplt.savefig('" + graph + "',dpi=75)\n");
+			sb.append("\tplt.clf()\n");
 			break;
 		}
-
+		sb.append(progName);
+		sb.append("()\n");
 		return sb.toString();
 	}
 
