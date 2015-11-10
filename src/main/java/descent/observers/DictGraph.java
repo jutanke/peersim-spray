@@ -302,6 +302,33 @@ public class DictGraph {
 		return sb.toString();
 	}
 
+	public double modularityCoefficient() {
+		Integer m = this.countArcs();
+		Double sum = 0.0;
+		for (Long origin : this.nodes.keySet()) {
+			for (Long destination : this.nodes.keySet()) {
+				Double adjacent = 0.;
+				if (this.nodes.get(origin).neighbors.contains(destination)) {
+					adjacent = 1.;
+				}
+				Double modularity = adjacent
+						- (this.nodes.get(origin).neighbors.size()
+						* (this.nodes.get(destination).neighbors.size()) / (2 * m));
+				// 2 networks only (XXX)
+				Integer sO = -1;
+				Integer sD = -1;
+				if (DynamicNetwork.networks.getFirst().contains(origin)) {
+					sO = 1;
+				}
+				if (DynamicNetwork.networks.getFirst().contains(destination)) {
+					sD = 1;
+				}
+				sum += modularity * sO * sD;
+			}
+		}
+		return sum / ((double) 2 * m);
+	}
+
 	public double meanClusterCoefficient() {
 		double sum = 0;
 		for (DictNode e : this.nodes.values()) {
