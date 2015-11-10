@@ -8,11 +8,13 @@ import descent.observers.ObserverProgram;
  */
 public class ClusteringCoefficientProgram implements ObserverProgram {
 
-    public void tick(long currentTick, DictGraph observer) {
-        System.out.println(observer.meanPartialViewSize() + " " + observer.meanClusterCoefficient());
-    }
+	public void tick(long currentTick, DictGraph observer) {
+		System.out.println(observer.countArcs() + " "
+				+ observer.meanClusterCoefficient() + " "
+				+ observer.globalClusterCoefficient());
+	}
 
-    public void onLastTick(DictGraph observer) {
+	public void onLastTick(DictGraph observer) {
 
-    }
+	}
 }

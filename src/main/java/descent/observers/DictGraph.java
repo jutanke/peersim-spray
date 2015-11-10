@@ -310,6 +310,35 @@ public class DictGraph {
 		return sum / this.nodes.size();
 	}
 
+	public double globalClusterCoefficient() {
+		// directed graph
+		Integer closed2Paths = 0;
+		Integer open2Paths = 0;
+		for (Long origin : this.nodes.keySet()) {
+			for (Long second : this.nodes.get(origin).neighbors) {
+				for (Long third : this.nodes.get(second).neighbors) {
+					if (third != origin) {
+						boolean found = false;
+						int i = 0;
+						while (!found
+								&& i < this.nodes.get(third).neighbors.size()) {
+							if (this.nodes.get(third).neighbors.get(i) == origin) {
+								found = true;
+							}
+							++i;
+						}
+						if (found) {
+							++closed2Paths;
+						} else {
+							++open2Paths;
+						}
+					}
+				}
+			}
+		}
+		return (double) closed2Paths / (double) open2Paths;
+	}
+
 	// =========
 
 	public int countArcs() {
@@ -693,7 +722,7 @@ public class DictGraph {
 		if (type == NetworkX.Draw && importNetworkX) {
 			sb.append("import matplotlib.pyplot as plt\n");
 			sb.append("from random import random\n");
-			sb.append("colors=[(random(), random(), random()) for _i in range("
+			sb.append("colors=[(random(),random(),random()) for _i in range("
 					+ DynamicNetwork.networks.size() + ")]\n");
 		}
 
@@ -769,15 +798,15 @@ public class DictGraph {
 				++i;
 			}
 
-			sb.append("\tpos = nx.spectral_layout(");
-			sb.append(graph);
-			sb.append(", scale = 2)\n");
+			sb.append("\tpos = nx.spring_layout(" + graph + ")\n");
 			for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
-				sb.append("\tnx.draw(" + graph + ",pos , nodelist= listNodes"
-						+ (DynamicNetwork.networks.size()-i-1) + ", node_size=40, node_color=colors[" + i
+				sb.append("\tnx.draw(" + graph
+						+ ",pos , edge_color='#A9A9A9', nodelist= listNodes"
+						+ (DynamicNetwork.networks.size() - i - 1)
+						+ ", node_size=40, node_color=colors[" + i
 						+ "], with_labels=False)\n");
 			}
-			sb.append("\tplt.savefig('" + graph + "',dpi=75)\n");
+			sb.append("\tplt.savefig('" + graph + "',dpi=225)\n");
 			sb.append("\tplt.clf()\n");
 			break;
 		}
