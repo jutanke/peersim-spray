@@ -304,7 +304,17 @@ public class DictGraph {
 
 	public double modularityCoefficient() {
 		Integer m = this.countArcs();
+		Double norm = ((double) m); // directed
+		// Double norm = (double)2*m); // undirected
 		Double sum = 0.0;
+		LinkedList<HashSet<Long>> networksDB = new LinkedList<HashSet<Long>>();
+		for (int i = 0; i < DynamicNetwork.networks.size(); ++i) {
+			HashSet<Long> hs = new HashSet<Long>();
+			for (int j = 0; j < DynamicNetwork.networks.get(i).size(); ++j) {
+				hs.add(DynamicNetwork.networks.get(i).get(j).getID());
+			}
+			networksDB.add(hs);
+		}
 		for (Long origin : this.nodes.keySet()) {
 			for (Long destination : this.nodes.keySet()) {
 				Double adjacent = 0.;
@@ -312,21 +322,24 @@ public class DictGraph {
 					adjacent = 1.;
 				}
 				Double modularity = adjacent
-						- (this.nodes.get(origin).neighbors.size()
-						* (this.nodes.get(destination).neighbors.size()) / (2 * m));
-				// 2 networks only (XXX)
-				Integer sO = -1;
-				Integer sD = -1;
-				if (DynamicNetwork.networks.getFirst().contains(origin)) {
-					sO = 1;
+						- this.nodes.get(origin).neighbors.size()
+						* this.nodes.get(destination).neighbors.size() / norm;
+				boolean found = false;
+				int i = 0;
+				Double delta = 0.;
+				while (!found && i < networksDB.size()) {
+					if (networksDB.get(i).contains(origin)) {
+						found = true;
+						if (networksDB.get(i).contains(destination)) {
+							delta = 1.;
+						}
+					}
+					++i;
 				}
-				if (DynamicNetwork.networks.getFirst().contains(destination)) {
-					sD = 1;
-				}
-				sum += modularity * sO * sD;
+				sum += modularity * delta;
 			}
 		}
-		return sum / ((double) 2 * m);
+		return sum / norm;
 	}
 
 	public double meanClusterCoefficient() {

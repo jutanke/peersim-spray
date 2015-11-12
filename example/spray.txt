@@ -4,7 +4,7 @@ SIZE 1000
 # parameters of periodic execution
 CYCLES 300
 
-random.seed 4
+random.seed 1
 network.size SIZE
 simulation.endtime CYCLES
 simulation.logtime 1
