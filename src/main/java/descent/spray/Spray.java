@@ -197,9 +197,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	private void onMerge(Double ratio, Node sender) {
 		// #1 process the mandatory added arc when its over 1
 		while (ratio >= 1) {
-			this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
-					.size()))); // sp_*
-			// this.addNeighbor(sender); // spr_*
+			//this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
+			//		.size()))); // sp_*
+			 this.addNeighbor(sender); // spr_*
 			--ratio;
 		}
 		// #2 process the random arcs

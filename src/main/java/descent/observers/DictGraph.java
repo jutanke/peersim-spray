@@ -302,18 +302,22 @@ public class DictGraph {
 		return sb.toString();
 	}
 
+	private static LinkedList<HashSet<Long>> networksDB = new LinkedList<HashSet<Long>>();
+
 	public double modularityCoefficient() {
 		Integer m = this.countArcs();
 		Double norm = ((double) m); // directed
 		// Double norm = (double)2*m); // undirected
 		Double sum = 0.0;
-		LinkedList<HashSet<Long>> networksDB = new LinkedList<HashSet<Long>>();
-		for (int i = 0; i < DynamicNetwork.networks.size(); ++i) {
-			HashSet<Long> hs = new HashSet<Long>();
-			for (int j = 0; j < DynamicNetwork.networks.get(i).size(); ++j) {
-				hs.add(DynamicNetwork.networks.get(i).get(j).getID());
+		if (DictGraph.networksDB.size() == 0
+				&& DynamicNetwork.networks.get(0).size() > 0) {
+			for (int i = 0; i < DynamicNetwork.networks.size(); ++i) {
+				HashSet<Long> hs = new HashSet<Long>();
+				for (int j = 0; j < DynamicNetwork.networks.get(i).size(); ++j) {
+					hs.add(DynamicNetwork.networks.get(i).get(j).getID());
+				}
+				DictGraph.networksDB.add(hs);
 			}
-			networksDB.add(hs);
 		}
 		for (Long origin : this.nodes.keySet()) {
 			for (Long destination : this.nodes.keySet()) {
@@ -327,10 +331,10 @@ public class DictGraph {
 				boolean found = false;
 				int i = 0;
 				Double delta = 0.;
-				while (!found && i < networksDB.size()) {
-					if (networksDB.get(i).contains(origin)) {
+				while (!found && i < DictGraph.networksDB.size()) {
+					if (DictGraph.networksDB.get(i).contains(origin)) {
 						found = true;
-						if (networksDB.get(i).contains(destination)) {
+						if (DictGraph.networksDB.get(i).contains(destination)) {
 							delta = 1.;
 						}
 					}
