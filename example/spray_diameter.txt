@@ -18,7 +18,8 @@ protocol.rps.step 1
 protocol.rps.start 2
 protocol.rps.linkable link
 protocol.rps.fail 0.000
-protocol.rps.c 0.415
+protocol.rps.c 19
+#protocol.rps.c 0.415
 
 ## networks
 control.n0 descent.controllers.DynamicNetwork

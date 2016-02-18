@@ -35,7 +35,7 @@ public class MergingRegister {
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException {
 		MergingRegister clone = new MergingRegister();
 		clone.networks = (LinkedList<HashSet<Integer>>) this.networks.clone();
 		clone.flattenNetworks = (HashSet<Integer>) this.flattenNetworks.clone();

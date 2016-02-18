@@ -117,7 +117,7 @@ public class SprayPartialView extends AAgingPartialView {
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException {
 		SprayPartialView spv = new SprayPartialView();
 		spv.partialView = new ArrayList<Node>(this.partialView);
 		spv.ages = new ArrayList<Integer>(this.ages);

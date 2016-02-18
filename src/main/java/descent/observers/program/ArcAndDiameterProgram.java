@@ -21,7 +21,9 @@ public class ArcAndDiameterProgram implements ObserverProgram {
 	 */
 	public void tick(long currentTick, DictGraph observer) {
 		System.out.println(observer.size() + " " + observer.countArcs() + " "
-				+ observer.diameter());
+				+ observer.diameter() + " "
+				+ observer.maxPercDuplicatesInView() + " "
+				+ observer.meanPathLength().avg);
 	}
 
 	/**

@@ -18,11 +18,11 @@ public class PartialView implements IPartialView {
 	}
 
 	public List<Node> getPeers() {
-		return this.partialView;
+		return (List<Node>) this.partialView.clone();
 	}
 
 	public List<Node> getPeers(int k) {
-		ArrayList<Node> sample;
+		ArrayList<Node> sample = new ArrayList<Node>();
 		if (this.partialView.size() == k || k == Integer.MAX_VALUE) {
 			sample = new ArrayList<Node>(this.partialView);
 		} else {
@@ -80,7 +80,7 @@ public class PartialView implements IPartialView {
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException {
 		PartialView pv = new PartialView();
 		pv.partialView = new ArrayList<Node>(this.partialView);
 		return pv;
