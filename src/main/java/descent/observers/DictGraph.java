@@ -215,6 +215,26 @@ public class DictGraph {
 		}
 	}
 
+	public Integer diameter() {
+
+		// id1_id2 : Distance between 1 and 2
+		Map<String, Integer> d = new HashMap<String, Integer>();
+
+		Map<Long, Map<Long, Integer>> lookup = new HashMap<Long, Map<Long, Integer>>();
+
+		for (DictNode e : this.nodes.values()) {
+			lookup.put(e.id, dijkstra(e));
+		}
+
+		Integer diameter = 0;
+		for (Long source : lookup.keySet()) {
+			for (Long arrival : lookup.get(source).keySet()) {
+				diameter = Math.max(diameter, lookup.get(source).get(arrival));
+			}
+		}
+		return diameter;
+	}
+
 	public double averagePathLength() {
 
 		// id1_id2 : Distance between 1 and 2

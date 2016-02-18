@@ -2,6 +2,7 @@ package descent.spray;
 
 import java.util.List;
 
+import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import descent.rps.ARandomPeerSamplingProtocol;
@@ -13,6 +14,10 @@ import descent.rps.IRandomPeerSampling;
  */
 public class Spray extends ARandomPeerSamplingProtocol implements
 		IRandomPeerSampling {
+
+	// #0 additional arcs to inject
+	private static final String PAR_C = "c";
+	private static Double C = 0.;
 
 	// #A no configuration needed, everything is adaptive
 	// #B no values from the configuration file of peersim
@@ -31,6 +36,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
+
+		Spray.C = Configuration.getDouble(prefix + "." + Spray.PAR_C, 0);
 	}
 
 	public Spray() {
@@ -122,6 +129,16 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			// #2 otherwise it takes the advertisement for itself
 			this.addNeighbor(origin);
 		}
+		// #3 (Optional) inject additional arcs to ensure additional
+		// properties
+		Double c = Spray.C;
+		for (Integer i = 0; i < Spray.C - 1; ++i) {
+			this.addNeighbor(origin);
+			c -= 1;
+		}
+		if (CommonState.r.nextDouble() < c) {
+			this.addNeighbor(origin);
+		}
 	}
 
 	public void leave() {
@@ -197,9 +214,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	private void onMerge(Double ratio, Node sender) {
 		// #1 process the mandatory added arc when its over 1
 		while (ratio >= 1) {
-			//this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
-			//		.size()))); // sp_*
-			 this.addNeighbor(sender); // spr_*
+			// this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
+			// .size()))); // sp_*
+			this.addNeighbor(sender); // spr_*
 			--ratio;
 		}
 		// #2 process the random arcs
