@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import peersim.core.Node;
 import descent.controllers.DynamicNetwork;
+import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IRandomPeerSampling;
+import peersim.core.CommonState;
+import peersim.core.Node;
 
 /**
  * Created by julian on 26/01/15.
@@ -137,8 +139,7 @@ public class DictGraph {
 
 		@Override
 		public String toString() {
-			return "avg:" + avg + "| %:" + reachQuota + " |count:" + this.count
-					+ " |total:" + total;
+			return "avg:" + avg + "| %:" + reachQuota + " |count:" + this.count + " |total:" + total;
 		}
 	}
 
@@ -210,8 +211,7 @@ public class DictGraph {
 
 		@Override
 		public String toString() {
-			return "avg:" + avg + "| %:" + reachQuota + "| min%:"
-					+ minReachQuota + "| max%:" + maxReachQuota;
+			return "avg:" + avg + "| %:" + reachQuota + "| min%:" + minReachQuota + "| max%:" + maxReachQuota;
 		}
 	}
 
@@ -329,8 +329,7 @@ public class DictGraph {
 		Double norm = ((double) m); // directed
 		// Double norm = (double)2*m); // undirected
 		Double sum = 0.0;
-		if (DictGraph.networksDB.size() == 0
-				&& DynamicNetwork.networks.get(0).size() > 0) {
+		if (DictGraph.networksDB.size() == 0 && DynamicNetwork.networks.get(0).size() > 0) {
 			for (int i = 0; i < DynamicNetwork.networks.size(); ++i) {
 				HashSet<Long> hs = new HashSet<Long>();
 				for (int j = 0; j < DynamicNetwork.networks.get(i).size(); ++j) {
@@ -346,8 +345,7 @@ public class DictGraph {
 					adjacent = 1.;
 				}
 				Double modularity = adjacent
-						- this.nodes.get(origin).neighbors.size()
-						* this.nodes.get(destination).neighbors.size() / norm;
+						- this.nodes.get(origin).neighbors.size() * this.nodes.get(destination).neighbors.size() / norm;
 				boolean found = false;
 				int i = 0;
 				Double delta = 0.;
@@ -384,8 +382,7 @@ public class DictGraph {
 					if (third != origin) {
 						boolean found = false;
 						int i = 0;
-						while (!found
-								&& i < this.nodes.get(third).neighbors.size()) {
+						while (!found && i < this.nodes.get(third).neighbors.size()) {
 							if (this.nodes.get(third).neighbors.get(i) == origin) {
 								found = true;
 							}
@@ -419,8 +416,7 @@ public class DictGraph {
 	public String countArcsInNetwork(Integer n) {
 		this.explored = new HashSet<Long>();
 		this.toExplore = new Stack<Long>();
-		if (DynamicNetwork.networks.size() > n
-				&& DynamicNetwork.networks.get(n).size() > 1) {
+		if (DynamicNetwork.networks.size() > n && DynamicNetwork.networks.get(n).size() > 1) {
 			Node starter = DynamicNetwork.networks.get(n).get(0);
 			this.toExplore.add(starter.getID());
 			int count = 0;
@@ -449,10 +445,75 @@ public class DictGraph {
 		}
 	}
 
+	public class DeliveryRateAndMsg {
+		public final double rate;
+		public final double nbMsg;
+
+		public DeliveryRateAndMsg(double r, double msg) {
+			this.rate = r;
+			this.nbMsg = msg;
+		}
+	}
+
+	public DeliveryRateAndMsg deliveryRate(Integer N, Integer fanout) {
+		double sumOfResult = 0;
+		ArrayList<Long> upNode = new ArrayList<Long>();
+		for (Integer i = 0; i < DynamicNetwork.graph.size(); ++i) {
+			ARandomPeerSamplingProtocol rps = (ARandomPeerSamplingProtocol) DynamicNetwork.graph.get(i)
+					.getProtocol(ARandomPeerSamplingProtocol.pid);
+			if (rps.isUp()) {
+				upNode.add(DynamicNetwork.graph.get(i).getID());
+			}
+		}
+
+		Integer nbMsg = 0;
+
+		for (Integer i = 0; i < N; ++i) {
+			HashSet<Long> explored = new HashSet<Long>();
+			Stack<Long> toExplore = new Stack<Long>();
+
+			Long starterId = upNode.get(CommonState.r.nextInt(upNode.size()));
+			toExplore.add(starterId);
+			while (toExplore.size() > 0) {
+				Long nodeId = toExplore.pop();
+				explored.add(nodeId);
+				DictNode currentNode = this.nodes.get(nodeId);
+				if (fanout > 0) {
+					// #A explore $fanout$ neighbors at random
+					ArrayList<Long> neighbors = new ArrayList<Long>(currentNode.neighbors);
+					Integer j = 0;
+					while (j < fanout && neighbors.size() > 0) {
+						Integer randomIndex = CommonState.r.nextInt(neighbors.size());
+						Long neighbor = neighbors.get(randomIndex);
+						neighbors.remove((int) randomIndex);
+						if (upNode.contains(neighbor)) {
+							++nbMsg;
+							if (!explored.contains(neighbor)) {
+								toExplore.push(neighbor);
+							}
+						}
+						++j;
+					}
+				} else {
+					// #B explore all
+					for (Long neighbor : currentNode.neighbors) {
+						if (upNode.contains(neighbor)) {
+							++nbMsg;
+							if (!explored.contains(neighbor)) {
+								toExplore.push(neighbor);
+							}
+						}
+					}
+				}
+			}
+			sumOfResult += (double) explored.size() / (double) upNode.size();
+		}
+		return new DeliveryRateAndMsg(sumOfResult / (double) N, nbMsg / (double) N);
+	}
+
 	public int[] inDegrees() {
 		// ====== #1 Count the in-degree of all peers ======
-		Map<Long, Integer> lookup = new HashMap<Long, Integer>(
-				this.nodes.size());
+		Map<Long, Integer> lookup = new HashMap<Long, Integer>(this.nodes.size());
 		for (DictNode e : this.nodes.values()) {
 			lookup.put(e.id, 0);
 		}
@@ -475,8 +536,7 @@ public class DictGraph {
 
 	public int[] outDegreeAsHistogram() {
 		// ====== #1 Count the in-degree of all peers ======
-		Map<Long, Integer> lookup = new HashMap<Long, Integer>(
-				this.nodes.size());
+		Map<Long, Integer> lookup = new HashMap<Long, Integer>(this.nodes.size());
 		for (DictNode e : this.nodes.values()) {
 			lookup.put(e.id, 0);
 		}
@@ -549,8 +609,7 @@ public class DictGraph {
 
 		@Override
 		public String toString() {
-			return Max + " ~" + MeanPartialViewSize + " " + MaxCount + "/"
-					+ MaxSize + " +" + NodeCount;
+			return Max + " ~" + MeanPartialViewSize + " " + MaxCount + "/" + MaxSize + " +" + NodeCount;
 		}
 	}
 
@@ -593,8 +652,7 @@ public class DictGraph {
 			}
 		}
 
-		return new MaxPercResult(max, mean / this.nodes.size(), maxCount,
-				maxSize, this.nodes.size());
+		return new MaxPercResult(max, mean / this.nodes.size(), maxCount, maxSize, this.nodes.size());
 	}
 
 	public int[] duplicates() {
@@ -643,8 +701,7 @@ public class DictGraph {
 	public int[] inDegreeAsHistogram() {
 
 		// ====== #1 Count the in-degree of all peers ======
-		Map<Long, Integer> lookup = new HashMap<Long, Integer>(
-				this.nodes.size());
+		Map<Long, Integer> lookup = new HashMap<Long, Integer>(this.nodes.size());
 		for (DictNode e : this.nodes.values()) {
 			lookup.put(e.id, 0);
 		}
@@ -692,8 +749,7 @@ public class DictGraph {
 	}
 
 	public ClusterResult countClusters() {
-		final HashMap<Long, DictNode> lookup = new HashMap<Long, DictNode>(
-				this.nodes);
+		final HashMap<Long, DictNode> lookup = new HashMap<Long, DictNode>(this.nodes);
 		int clusterCount = 0;
 		int maxClusterSize = 0;
 		int deadLinks = 0;
@@ -715,8 +771,7 @@ public class DictGraph {
 		return new ClusterResult(clusterCount, maxClusterSize, deadLinks);
 	}
 
-	private void dfsMarking(final DictNode node,
-			final HashSet<Long> currentCluster) {
+	private void dfsMarking(final DictNode node, final HashSet<Long> currentCluster) {
 		final Stack<DictNode> stack = new Stack<DictNode>();
 		stack.push(node);
 		while (!stack.isEmpty()) {
@@ -736,8 +791,7 @@ public class DictGraph {
 
 	}
 
-	private void dfsMarkingRec(final DictNode n,
-			final HashSet<Long> currentCluster) {
+	private void dfsMarkingRec(final DictNode n, final HashSet<Long> currentCluster) {
 		if (!currentCluster.contains(n.id)) {
 			currentCluster.add(n.id);
 			for (long neighbor : n.neighbors) {
@@ -762,8 +816,7 @@ public class DictGraph {
 
 		@Override
 		public String toString() {
-			return "Cluster result:" + this.count + ", max cluster size:"
-					+ maxClusterSize;
+			return "Cluster result:" + this.count + ", max cluster size:" + maxClusterSize;
 		}
 	}
 
@@ -775,8 +828,7 @@ public class DictGraph {
 		return this.networkxDigraph(type, "graph", true);
 	}
 
-	public String networkxDigraph(NetworkX type, String graph,
-			boolean importNetworkX) {
+	public String networkxDigraph(NetworkX type, String graph, boolean importNetworkX) {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -786,8 +838,8 @@ public class DictGraph {
 		if (type == NetworkX.Draw && importNetworkX) {
 			sb.append("import matplotlib.pyplot as plt\n");
 			sb.append("from random import random\n");
-			sb.append("colors=[(random(),random(),random()) for _i in range("
-					+ DynamicNetwork.networks.size() + ")]\n");
+			sb.append(
+					"colors=[(random(),random(),random()) for _i in range(" + DynamicNetwork.networks.size() + ")]\n");
 		}
 
 		final String progName = "exec" + graph;
@@ -864,10 +916,8 @@ public class DictGraph {
 
 			sb.append("\tpos = nx.spring_layout(" + graph + ")\n");
 			for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
-				sb.append("\tnx.draw(" + graph
-						+ ",pos , edge_color='#A9A9A9', nodelist= listNodes"
-						+ (DynamicNetwork.networks.size() - i - 1)
-						+ ", node_size=40, node_color=colors[" + i
+				sb.append("\tnx.draw(" + graph + ",pos , edge_color='#A9A9A9', nodelist= listNodes"
+						+ (DynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
 						+ "], with_labels=False)\n");
 			}
 			sb.append("\tplt.savefig('" + graph + "',dpi=225)\n");
@@ -1050,8 +1100,7 @@ public class DictGraph {
 	}
 
 	private HashSet<Long> neighbors(final long id) {
-		final HashSet<Long> result = new HashSet<Long>(
-				this.nodes.get(id).neighbors);
+		final HashSet<Long> result = new HashSet<Long>(this.nodes.get(id).neighbors);
 		for (DictNode e : this.nodes.values()) {
 			if (e.id != id && !result.contains(e.id)) {
 				for (long n : e.neighbors) {
