@@ -2,14 +2,13 @@ package descent.controllers;
 
 import java.util.LinkedList;
 
+import descent.rps.ARandomPeerSamplingProtocol;
+import descent.rps.IRandomPeerSampling;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
-import descent.rps.ARandomPeerSamplingProtocol;
-import descent.rps.IRandomPeerSampling;
-import descent.spray.Spray;
 
 /**
  * Controller that add and/or remove peers from the network over time
@@ -47,37 +46,27 @@ public class DynamicNetwork implements Control {
 	public static LinkedList<LinkedList<Node>> networks = new LinkedList<LinkedList<Node>>();
 
 	public DynamicNetwork(String n) {
-		 //System.err.close();
+		// System.err.close();
 		// #A initialize all the variable from the configuration file
-		this.ADDING_COUNT = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_ADD_COUNT, -1);
-		this.ADDING_PERCENT = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_ADD_PERC, -1);
-		this.REMOVING_COUNT = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_REM_COUNT, 0);
-		this.ADDING_START = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_ADD_START, Integer.MAX_VALUE);
-		this.REMOVING_START = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_REM_START, Integer.MAX_VALUE);
-		this.REMOVING_END = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_REM_END, Integer.MAX_VALUE);
-		this.ADDING_END = Configuration.getInt(n + "."
-				+ DynamicNetwork.PAR_ADD_END, Integer.MAX_VALUE);
+		this.ADDING_COUNT = Configuration.getInt(n + "." + DynamicNetwork.PAR_ADD_COUNT, -1);
+		this.ADDING_PERCENT = Configuration.getInt(n + "." + DynamicNetwork.PAR_ADD_PERC, -1);
+		this.REMOVING_COUNT = Configuration.getInt(n + "." + DynamicNetwork.PAR_REM_COUNT, 0);
+		this.ADDING_START = Configuration.getInt(n + "." + DynamicNetwork.PAR_ADD_START, Integer.MAX_VALUE);
+		this.REMOVING_START = Configuration.getInt(n + "." + DynamicNetwork.PAR_REM_START, Integer.MAX_VALUE);
+		this.REMOVING_END = Configuration.getInt(n + "." + DynamicNetwork.PAR_REM_END, Integer.MAX_VALUE);
+		this.ADDING_END = Configuration.getInt(n + "." + DynamicNetwork.PAR_ADD_END, Integer.MAX_VALUE);
 		this.IS_PERCENTAGE = this.ADDING_PERCENT != -1;
-		this.SIZE = Configuration.getInt(n + "." + DynamicNetwork.PAR_SIZE,
-				Integer.MAX_VALUE);
+		this.SIZE = Configuration.getInt(n + "." + DynamicNetwork.PAR_SIZE, Integer.MAX_VALUE);
 		this.STEP = Configuration.getInt(n + "." + DynamicNetwork.PAR_STEP, 1);
 
 		this.NETWORK_ID = DynamicNetwork.networks.size();
 
 		final int nsize = Network.size();
-		this.pid = Configuration.lookupPid(Configuration.getString(n + "."
-				+ DynamicNetwork.PAR_PROTOCOL));
+		this.pid = Configuration.lookupPid(Configuration.getString(n + "." + DynamicNetwork.PAR_PROTOCOL));
 		if (!DynamicNetwork.once) {
 			for (int i = 0; i < nsize; i++) {
 				final Node node = Network.get(i);
-				IRandomPeerSampling d = (IRandomPeerSampling) node
-						.getProtocol(pid);
+				IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
 				d.leave();
 				DynamicNetwork.availableNodes.add(node);
 			}
@@ -92,20 +81,15 @@ public class DynamicNetwork implements Control {
 
 		final boolean removingElements = currentTimestamp >= this.REMOVING_START
 				&& currentTimestamp <= this.REMOVING_END;
-		final boolean addingElements = currentTimestamp >= this.ADDING_START
-				&& currentTimestamp <= this.ADDING_END;
-		if ((((currentTimestamp - this.REMOVING_START) % this.STEP) == 0)
-				&& removingElements) {
+		final boolean addingElements = currentTimestamp >= this.ADDING_START && currentTimestamp <= this.ADDING_END;
+		if ((((currentTimestamp - this.REMOVING_START) % this.STEP) == 0) && removingElements) {
 			// REMOVE ELEMENTS
-			for (int i = 0; i < this.REMOVING_COUNT
-					&& DynamicNetwork.graph.size() > 0; i++) {
+			for (int i = 0; i < this.REMOVING_COUNT && DynamicNetwork.graph.size() > 0; i++) {
 
-				final int pos = CommonState.r.nextInt(DynamicNetwork.graph
-						.size());
+				final int pos = CommonState.r.nextInt(DynamicNetwork.graph.size());
 				final Node rem = DynamicNetwork.graph.get(pos);
 				this.removeNode(rem);
-				ARandomPeerSamplingProtocol d = (ARandomPeerSamplingProtocol) rem
-						.getProtocol(pid);
+				ARandomPeerSamplingProtocol d = (ARandomPeerSamplingProtocol) rem.getProtocol(pid);
 				if (d.isUp()) {
 					d.leave();
 				}
@@ -114,8 +98,7 @@ public class DynamicNetwork implements Control {
 			}
 		}
 
-		if ((((currentTimestamp - this.ADDING_START) % this.STEP) == 0)
-				&& addingElements) {
+		if ((((currentTimestamp - this.ADDING_START) % this.STEP) == 0) && addingElements) {
 			// ADD ELEMENTS
 			if (this.IS_PERCENTAGE) {
 				final double log10 = Math.floor(Math.log10(graph.size()));
@@ -126,8 +109,7 @@ public class DynamicNetwork implements Control {
 				}
 
 			} else {
-				for (int i = 0; i < this.ADDING_COUNT
-						&& availableNodes.size() > 0; i++) {
+				for (int i = 0; i < this.ADDING_COUNT && availableNodes.size() > 0; i++) {
 					insert();
 				}
 			}
@@ -137,11 +119,12 @@ public class DynamicNetwork implements Control {
 	}
 
 	private void insert() {
-		if (this.SIZE > this.localGraph.size()) {
+		if (this.SIZE > DynamicNetwork.graph.size()) {
 			final Node current = DynamicNetwork.availableNodes.poll();
-			//Spray s = (Spray) current.getProtocol(pid); // only work for spray
-			//s.register.initialize(this.NETWORK_ID);
-			if (localGraph.size() > 0) {
+			// Spray s = (Spray) current.getProtocol(pid); // only work for
+			// spray
+			// s.register.initialize(this.NETWORK_ID);
+			if (DynamicNetwork.graph.size() > 0) {
 				final Node contact = getNode();
 				this.addNode(current, contact);
 			} else {
@@ -153,8 +136,7 @@ public class DynamicNetwork implements Control {
 	}
 
 	public Node getNode() {
-		return this.localGraph
-				.get(CommonState.r.nextInt(this.localGraph.size()));
+		return this.graph.get(CommonState.r.nextInt(graph.size()));
 	}
 
 	public void removeNode(Node leaver) {

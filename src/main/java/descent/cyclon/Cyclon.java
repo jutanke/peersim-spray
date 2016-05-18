@@ -14,8 +14,7 @@ import descent.rps.IRandomPeerSampling;
 /**
  * The Cyclon protocol
  */
-public class Cyclon extends ARandomPeerSamplingProtocol implements
-		IRandomPeerSampling {
+public class Cyclon extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
 	private static final String PAR_C = "c"; // max partial view size
@@ -59,17 +58,13 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 		if (this.isUp() && this.partialView.size() > 0) {
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			Cyclon qCyclon = (Cyclon) q
-					.getProtocol(ARandomPeerSamplingProtocol.pid);
+			Cyclon qCyclon = (Cyclon) q.getProtocol(ARandomPeerSamplingProtocol.pid);
 			if (qCyclon.isUp() && !this.pFail(null)) {
 				// #A if the chosen peer is alive, initiate the exchange
-				List<Node> sample = this.partialView.getSample(this.node, q,
-						true);
-				IMessage received = qCyclon.onPeriodicCall(this.node,
-						new CyclonMessage(sample));
+				List<Node> sample = this.partialView.getSample(this.node, q, true);
+				IMessage received = qCyclon.onPeriodicCall(this.node, new CyclonMessage(sample));
 				List<Node> samplePrime = (List<Node>) received.getPayload();
-				this.partialView.mergeSample(this.node, q, samplePrime, sample,
-						true);
+				this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
 			} else {
 				// #B if the chosen peer is dead, remove it from the view
 				this.partialView.removeNode(q);
@@ -78,10 +73,8 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
-		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
-				false);
-		this.partialView.mergeSample(this.node, origin,
-				(List<Node>) message.getPayload(), samplePrime, false);
+		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
+		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		return new CyclonMessage(samplePrime);
 	}
 
@@ -99,12 +92,16 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 	}
 
 	public void onSubscription(Node origin) {
-		List<Node> aliveNeighbors = this.getAliveNeighbors();
-		Collections.shuffle(aliveNeighbors, CommonState.r);
-		int nbRndWalk = Math.min(Cyclon.c - 1, aliveNeighbors.size());
+		if (this.partialView.size() > 0) {
+			List<Node> aliveNeighbors = this.getAliveNeighbors();
+			Collections.shuffle(aliveNeighbors, CommonState.r);
+			int nbRndWalk = Math.min(Cyclon.c - 1, aliveNeighbors.size());
 
-		for (int i = 0; i < nbRndWalk; ++i) {
-			randomWalk(origin, aliveNeighbors.get(i), Cyclon.RND_WALK);
+			for (int i = 0; i < nbRndWalk; ++i) {
+				randomWalk(origin, aliveNeighbors.get(i), Cyclon.RND_WALK);
+			}
+		} else {
+			this.addNeighbor(origin);
 		}
 	}
 
@@ -150,16 +147,14 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements
 		if (aliveNeighbors.size() > 0) {
 			// #A1 if the ttl is greater than 0, continue the random walk
 			if (ttl > 0) {
-				final Node next = aliveNeighbors.get(CommonState.r
-						.nextInt(aliveNeighbors.size()));
+				final Node next = aliveNeighbors.get(CommonState.r.nextInt(aliveNeighbors.size()));
 				randomWalk(origin, next, ttl);
 			} else {
 				// #B if the ttl is greater than 0 or the partial view is empty,
 				// then
 				// accept the subscription and stop forwarding it
 				if (origin.getID() != current.getID()) {
-					Iterator<Node> iPeers = currentCyclon.getPeers(1)
-							.iterator();
+					Iterator<Node> iPeers = currentCyclon.getPeers(1).iterator();
 					if (iPeers.hasNext()) {
 						Node chosen = iPeers.next();
 						currentCyclon.partialView.removeNode(chosen);

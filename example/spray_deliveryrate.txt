@@ -1,11 +1,10 @@
 # network size
-SIZE 10000
-DEGREE 7
+SIZE 1000
 
 # parameters of periodic execution
-CYCLES 1600
+CYCLES 1000
 
-random.seed 1237567890
+random.seed 1237560
 network.size SIZE
 simulation.endtime CYCLES
 simulation.logtime 1
@@ -13,9 +12,7 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.rps descent.cyclon.Cyclon
-protocol.rps.c DEGREE
-protocol.rps.l 3
+protocol.rps descent.spray.Spray
 protocol.rps.delta 1
 protocol.rps.step 1
 protocol.rps.start 1

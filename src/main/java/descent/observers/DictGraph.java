@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import descent.controllers.DynamicNetwork;
+import descent.cyclon.Cyclon;
 import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IRandomPeerSampling;
 import peersim.core.CommonState;
@@ -446,12 +447,16 @@ public class DictGraph {
 	}
 
 	public class DeliveryRateAndMsg {
-		public final double rate;
+		public final double softRate;
 		public final double nbMsg;
+		public final Integer nbNodes;
+		public final double hardRate;
 
-		public DeliveryRateAndMsg(double r, double msg) {
-			this.rate = r;
+		public DeliveryRateAndMsg(double sr, double hr, double msg, Integer n) {
+			this.softRate = sr;
+			this.hardRate = hr;
 			this.nbMsg = msg;
+			this.nbNodes = n;
 		}
 	}
 
@@ -466,49 +471,56 @@ public class DictGraph {
 			}
 		}
 
+		Integer failFullDelivery = 0;
+
 		Integer nbMsg = 0;
+		if (upNode.size() > 0) {
+			for (Integer i = 0; i < N; ++i) {
+				HashSet<Long> explored = new HashSet<Long>();
+				Stack<Long> toExplore = new Stack<Long>();
 
-		for (Integer i = 0; i < N; ++i) {
-			HashSet<Long> explored = new HashSet<Long>();
-			Stack<Long> toExplore = new Stack<Long>();
-
-			Long starterId = upNode.get(CommonState.r.nextInt(upNode.size()));
-			toExplore.add(starterId);
-			while (toExplore.size() > 0) {
-				Long nodeId = toExplore.pop();
-				explored.add(nodeId);
-				DictNode currentNode = this.nodes.get(nodeId);
-				if (fanout > 0) {
-					// #A explore $fanout$ neighbors at random
-					ArrayList<Long> neighbors = new ArrayList<Long>(currentNode.neighbors);
-					Integer j = 0;
-					while (j < fanout && neighbors.size() > 0) {
-						Integer randomIndex = CommonState.r.nextInt(neighbors.size());
-						Long neighbor = neighbors.get(randomIndex);
-						neighbors.remove((int) randomIndex);
-						if (upNode.contains(neighbor)) {
-							++nbMsg;
-							if (!explored.contains(neighbor)) {
-								toExplore.push(neighbor);
+				Long starterId = upNode.get(CommonState.r.nextInt(upNode.size()));
+				toExplore.add(starterId);
+				while (toExplore.size() > 0) {
+					Long nodeId = toExplore.pop();
+					explored.add(nodeId);
+					DictNode currentNode = this.nodes.get(nodeId);
+					if (fanout > 0) {
+						// #A explore $fanout$ neighbors at random
+						ArrayList<Long> neighbors = new ArrayList<Long>(currentNode.neighbors);
+						Integer j = 0;
+						while (j < fanout && neighbors.size() > 0) {
+							Integer randomIndex = CommonState.r.nextInt(neighbors.size());
+							Long neighbor = neighbors.get(randomIndex);
+							neighbors.remove((int) randomIndex);
+							if (upNode.contains(neighbor)) {
+								++nbMsg;
+								if (!explored.contains(neighbor)) {
+									toExplore.push(neighbor);
+								}
 							}
+							++j;
 						}
-						++j;
-					}
-				} else {
-					// #B explore all
-					for (Long neighbor : currentNode.neighbors) {
-						if (upNode.contains(neighbor)) {
-							++nbMsg;
-							if (!explored.contains(neighbor)) {
-								toExplore.push(neighbor);
+					} else {
+						// #B explore all
+						for (Long neighbor : currentNode.neighbors) {
+							if (upNode.contains(neighbor)) {
+								++nbMsg;
+								if (!explored.contains(neighbor)) {
+									toExplore.push(neighbor);
+								}
 							}
 						}
 					}
 				}
+				if (upNode.size() != explored.size()) {
+					failFullDelivery += 1;
+				}
+				sumOfResult += (double) explored.size() / (double) upNode.size();
 			}
-			sumOfResult += (double) explored.size() / (double) upNode.size();
 		}
-		return new DeliveryRateAndMsg(sumOfResult / (double) N, nbMsg / (double) N);
+		return new DeliveryRateAndMsg(sumOfResult / (double) N, 1. - (failFullDelivery / (double) N),
+				nbMsg / (double) N, upNode.size());
 	}
 
 	public int[] inDegrees() {
