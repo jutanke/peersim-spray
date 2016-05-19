@@ -21,7 +21,7 @@ public class DeliveryRateProgram implements ObserverProgram {
 	public Function<Integer, Integer> divFanout = new Function<Integer, Integer>() {
 		public Integer apply(Integer rpsView) {
 			// #2 adapts to a subset of the view
-			return (int) Math.ceil(rpsView / 6);
+			return (int) Math.ceil(rpsView / 6.);
 		}
 	};
 	public Function<Integer, Integer> allFanout = new Function<Integer, Integer>() {
@@ -35,7 +35,7 @@ public class DeliveryRateProgram implements ObserverProgram {
 	int tick = 0;
 
 	public DeliveryRateProgram() {
-		System.out.println("#nbNode nbMsgSent softRate hardRate fanout");
+		System.out.println("#nbNode nbMsgSent fanout softRate hardRate >0 >=99 >=99.9");
 	}
 
 	/**
@@ -48,14 +48,15 @@ public class DeliveryRateProgram implements ObserverProgram {
 	public void tick(long currentTick, DictGraph observer) {
 		if (this.lastSize < observer.size()) {
 			this.tick += 1;
-			if (this.tick >= 20) {
+			if (this.tick >= 18) {
 				this.tick = 0;
 				this.lastSize = observer.size();
 				if (observer.size() % ((Math.pow(10, Math.ceil(Math.log10(observer.size())))) / 2) == 0) {
 					// #A cheap measure
-					DeliveryRateAndMsg result = observer.deliveryRate(constantFanout, 100);
-					System.out.println(
-							result.nbNodes + " " + result.nbMsg + " " + result.softRate + " " + result.hardRate + " "+ result.fanout);
+					DeliveryRateAndMsg result = observer.deliveryRate(divFanout, 1000);
+					System.out.println(result.nbNodes + " " + result.nbMsg + " " + result.fanout + " " + result.softRate
+							+ " " + result.hardRate + " " + result.atLeastOne + " " + +result.lesserThanLessHardRate
+							+ " " + result.lessHardRate);
 				}
 			}
 		}
@@ -70,10 +71,12 @@ public class DeliveryRateProgram implements ObserverProgram {
 		// #B longer measurement
 		// DeliveryRateAndMsg result = observer.deliveryRate(divFanout, 100);//
 		// this.FANOUT);
-		DeliveryRateAndMsg result = observer.deliveryRate(constantFanout, 100);
+		// DeliveryRateAndMsg result = observer.deliveryRate(constantFanout,
+		// 100);
 		// DeliveryRateAndMsg result = observer.deliveryRate(allFanout, 100);
-		System.out.println(result.nbNodes + " " + result.nbMsg + " " + result.softRate + " " + result.hardRate + " "
-				+ result.fanout);
+		// System.out.println(result.nbNodes + " " + result.nbMsg + " " +
+		// result.softRate + " " + result.hardRate + " "
+		// + result.fanout);
 	}
 
 }

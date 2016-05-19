@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Callable;
@@ -479,18 +480,48 @@ public class DictGraph {
 	}
 
 	public class DeliveryRateAndMsg {
-		public final double softRate;
-		public final double nbMsg;
+		public final double softRate; // network coverage
+		public final double hardRate; // proba that a peer did not get at least
+										// 1 msg
+		public final double nbMsg; // nb messages broadcast and rebroadcast
+									// during the protocol of 1 msg
 		public final Integer nbNodes;
-		public final double hardRate;
-		public final double fanout;
+		public final double fanout; // avg fanout of peers
+		public final Integer nbBroadcast; // nb messages broadcast
+		public final double atLeastOne;
+		public final double lesserThanLessHardRate;
+		public final double lessHardRate;
 
-		public DeliveryRateAndMsg(double sr, double hr, double msg, Integer n, double f) {
-			this.softRate = sr;
-			this.hardRate = hr;
-			this.nbMsg = msg;
+		public DeliveryRateAndMsg(double sr, double hr, double msg, Integer n, double f, Integer br,
+				HashMap<Long, Integer> deliveries) {
+			this.softRate = sr / (double) br;
+			this.hardRate = 1 - hr / (double) br;
+			this.nbMsg = msg / (double) br;
 			this.nbNodes = n;
 			this.fanout = f;
+			this.nbBroadcast = br;
+
+			Integer ninetynine = 0;
+			Integer ninetyninedotnine = 0;
+			Integer atLeastOne = 0;
+			for (Entry<Long, Integer> keyval : deliveries.entrySet()) {
+				Integer value = keyval.getValue();
+				if (value >= (0.999 * nbBroadcast)) {
+					ninetyninedotnine += 1;
+				}
+				if (value >= (0.99 * nbBroadcast)) {
+					ninetynine += 1;
+				}
+				if (value > 1) {
+					atLeastOne += 1;
+				}
+				if (value == 0) {
+					System.out.println("SOMEONE IS DISCONNECTED OR HAS NO LUCK = " + keyval.getKey());
+				}
+			}
+			this.atLeastOne = atLeastOne / (double) this.nbNodes;
+			this.lessHardRate = ninetyninedotnine / (double) this.nbNodes;
+			this.lesserThanLessHardRate = ninetynine / (double) this.nbNodes;
 		}
 	}
 
@@ -509,6 +540,11 @@ public class DictGraph {
 		Integer sumFanout = 0;
 		Integer sumExplored = 0;
 
+		HashMap<Long, Integer> deliveries = new HashMap<Long, Integer>();
+		for (Long node : upNode) {
+			deliveries.put(node, 0);
+		}
+
 		Integer nbMsg = 0;
 		if (upNode.size() > 0) {
 			for (Integer i = 0; i < N; ++i) {
@@ -520,6 +556,7 @@ public class DictGraph {
 				while (toExplore.size() > 0) {
 					Long nodeId = toExplore.pop();
 					explored.add(nodeId);
+					deliveries.put(nodeId, deliveries.get(nodeId) + 1);
 					DictNode currentNode = this.nodes.get(nodeId);
 					Integer fanout = howMany.apply(new Integer(currentNode.neighbors.size()));
 					sumFanout += fanout;
@@ -561,8 +598,8 @@ public class DictGraph {
 				sumOfResult += (double) explored.size() / (double) upNode.size();
 			}
 		}
-		return new DeliveryRateAndMsg(sumOfResult / (double) N, 1. - (failFullDelivery / (double) N),
-				nbMsg / (double) N, upNode.size(), sumFanout / (double) sumExplored);
+		return new DeliveryRateAndMsg(sumOfResult, failFullDelivery, nbMsg, upNode.size(),
+				sumFanout / (double) sumExplored, N, deliveries);
 	}
 
 	public int[] inDegrees() {
