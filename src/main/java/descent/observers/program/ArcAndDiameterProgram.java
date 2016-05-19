@@ -1,5 +1,7 @@
 package descent.observers.program;
 
+import java.util.ArrayList;
+
 import descent.observers.DictGraph;
 import descent.observers.ObserverProgram;
 import peersim.core.CommonState;
@@ -9,8 +11,22 @@ import peersim.core.CommonState;
  */
 public class ArcAndDiameterProgram implements ObserverProgram {
 
-	final int step = 1000;
+	final int step = 10;
 	boolean isFirst = true;
+	ArrayList<Integer> checkpoint = new ArrayList<Integer>();
+	static Integer i = -1;
+
+	public ArcAndDiameterProgram() {
+		checkpoint.add(100);
+		checkpoint.add(500);
+		checkpoint.add(1000);
+		checkpoint.add(5000);
+		checkpoint.add(10000);
+		checkpoint.add(50000);
+		checkpoint.add(100000);
+		checkpoint.add(500000);
+		checkpoint.add(1000000);
+	}
 
 	/**
 	 *
@@ -20,11 +36,20 @@ public class ArcAndDiameterProgram implements ObserverProgram {
 	 *            {}
 	 */
 	public void tick(long currentTick, DictGraph observer) {
-		System.out.println(observer.size() + " " + observer.countArcs() + " "
-				+ observer.diameter() + " "
-				+ observer.maxPercDuplicatesInView() + " "
-				+ observer.meanPathLength().avg);
+		if (observer.size() == checkpoint.get(i + 1)) {
+			System.out.println(observer.size() + " " + observer.diameter());
+			i += 1;
+		}
 	}
+
+	// if ((CommonState.getTime() % step) == 0) {
+	// System.out.println(observer.size() + " " + observer.diameter());
+	// System.out.println(observer.size() + " " + observer.countArcs() +
+	// " " + observer.diameter() + " "
+	// + observer.maxPercDuplicatesInView() + " " +
+	// observer.meanPathLength().avg);
+	// }
+
 
 	/**
 	 *

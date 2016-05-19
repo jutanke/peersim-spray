@@ -1,8 +1,8 @@
 # network size
-SIZE 1000
+SIZE 10000
 
 # parameters of periodic execution
-CYCLES 1000
+CYCLES 1600
 
 random.seed 1237560
 network.size SIZE

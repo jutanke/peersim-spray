@@ -25,7 +25,7 @@ public class DeliveryRateProgram implements ObserverProgram {
 	 *            {}
 	 */
 	public void tick(long currentTick, DictGraph observer) {
-		DeliveryRateAndMsg result = observer.deliveryRate(100, 5);// this.FANOUT);
+		DeliveryRateAndMsg result = observer.deliveryRate(25, 5);// this.FANOUT);
 		System.out.println(result.nbNodes + " " + result.nbMsg + " " + result.softRate + " " + result.hardRate);
 		// System.out.println(observer.size() + " " + observer.countArcs() + " "
 		// + observer.diameter() + " "
