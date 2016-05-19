@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import descent.controllers.DynamicNetwork;
 import descent.cyclon.Cyclon;
@@ -411,6 +413,22 @@ public class DictGraph {
 		return count;
 	}
 
+	public int countArcsNoDuplicates() {
+		int count = 0;
+		for (DictNode node : this.nodes.values()) {
+			count += node.neighbors.size();
+			ArrayList<Long> distinct = new ArrayList<Long>();
+			for (Long neigbhors : node.neighbors) {
+				if (distinct.contains(neigbhors)) {
+					count -= 1;
+				} else {
+					distinct.add(neigbhors);
+				}
+			}
+		}
+		return count;
+	}
+
 	private HashSet<Long> explored;
 	private Stack<Long> toExplore;
 
@@ -446,21 +464,37 @@ public class DictGraph {
 		}
 	}
 
+	public ArrayList<Integer> distributionOfMinPaths() {
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		for (Long node : this.nodes.keySet()) {
+			Map<Long, Integer> distances = dijkstra(nodes.get(node));
+			for (Integer distance : distances.values()) {
+				while (result.size() < distance) {
+					result.add(0);
+				}
+				result.set(distance, result.get(distance) + 1);
+			}
+		}
+		return result;
+	}
+
 	public class DeliveryRateAndMsg {
 		public final double softRate;
 		public final double nbMsg;
 		public final Integer nbNodes;
 		public final double hardRate;
+		public final double fanout;
 
-		public DeliveryRateAndMsg(double sr, double hr, double msg, Integer n) {
+		public DeliveryRateAndMsg(double sr, double hr, double msg, Integer n, double f) {
 			this.softRate = sr;
 			this.hardRate = hr;
 			this.nbMsg = msg;
 			this.nbNodes = n;
+			this.fanout = f;
 		}
 	}
 
-	public DeliveryRateAndMsg deliveryRate(Integer N, Integer fanout) {
+	public DeliveryRateAndMsg deliveryRate(Function<Integer, Integer> howMany, Integer N) {
 		double sumOfResult = 0;
 		ArrayList<Long> upNode = new ArrayList<Long>();
 		for (Integer i = 0; i < DynamicNetwork.graph.size(); ++i) {
@@ -472,6 +506,8 @@ public class DictGraph {
 		}
 
 		Integer failFullDelivery = 0;
+		Integer sumFanout = 0;
+		Integer sumExplored = 0;
 
 		Integer nbMsg = 0;
 		if (upNode.size() > 0) {
@@ -485,6 +521,8 @@ public class DictGraph {
 					Long nodeId = toExplore.pop();
 					explored.add(nodeId);
 					DictNode currentNode = this.nodes.get(nodeId);
+					Integer fanout = howMany.apply(new Integer(currentNode.neighbors.size()));
+					sumFanout += fanout;
 					if (fanout > 0) {
 						// #A explore $fanout$ neighbors at random
 						ArrayList<Long> neighbors = new ArrayList<Long>(currentNode.neighbors);
@@ -495,7 +533,7 @@ public class DictGraph {
 							neighbors.remove((int) randomIndex);
 							if (upNode.contains(neighbor)) {
 								++nbMsg;
-								if (!explored.contains(neighbor)) {
+								if (!explored.contains(neighbor) && !toExplore.contains(neighbor)) {
 									toExplore.push(neighbor);
 								}
 							}
@@ -506,21 +544,25 @@ public class DictGraph {
 						for (Long neighbor : currentNode.neighbors) {
 							if (upNode.contains(neighbor)) {
 								++nbMsg;
-								if (!explored.contains(neighbor)) {
+								if (!explored.contains(neighbor) && !toExplore.contains(neighbor)) {
 									toExplore.push(neighbor);
 								}
 							}
 						}
 					}
 				}
+				sumExplored += explored.size();
 				if (upNode.size() != explored.size()) {
 					failFullDelivery += 1;
+					// HashSet<Long> meow = new HashSet<Long>(upNode);
+					// meow.removeAll(explored);
+					// System.out.println(meow.toString());
 				}
 				sumOfResult += (double) explored.size() / (double) upNode.size();
 			}
 		}
 		return new DeliveryRateAndMsg(sumOfResult / (double) N, 1. - (failFullDelivery / (double) N),
-				nbMsg / (double) N, upNode.size());
+				nbMsg / (double) N, upNode.size(), sumFanout / (double) sumExplored);
 	}
 
 	public int[] inDegrees() {

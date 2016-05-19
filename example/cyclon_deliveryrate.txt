@@ -1,9 +1,9 @@
 # network size
-SIZE 10000
-DEGREE 7
+SIZE 50000
+DEGREE 30
 
 # parameters of periodic execution
-CYCLES 1600
+CYCLES 2010
 
 random.seed 1237567890
 network.size SIZE
@@ -15,124 +15,20 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.rps descent.cyclon.Cyclon
 protocol.rps.c DEGREE
-protocol.rps.l 3
+protocol.rps.l 12
 protocol.rps.delta 1
 protocol.rps.step 1
 protocol.rps.start 1
 protocol.rps.linkable link
 protocol.rps.fail 0.000
 
-control.o1 descent.controllers.DynamicNetwork
-control.o1.protocol rps
-control.o1.FINAL
-control.o1.step 1
-control.o1.addingPerStep 100
-control.o1.startAdd 100
-control.o1.endAdd 100
-
-control.o2 descent.controllers.DynamicNetwork
-control.o2.protocol rps
-control.o2.FINAL
-control.o2.step 1
-control.o2.addingPerStep 400
-control.o2.startAdd 300
-control.o2.endAdd 300
-
-control.o3 descent.controllers.DynamicNetwork
-control.o3.protocol rps
-control.o3.FINAL
-control.o3.step 1
-control.o3.addingPerStep 500
-control.o3.startAdd 400
-control.o3.endAdd 400
-
-control.o4 descent.controllers.DynamicNetwork
-control.o4.protocol rps
-control.o4.FINAL
-control.o4.step 1
-control.o4.addingPerStep 800
-control.o4.startAdd 500
-control.o4.endAdd 500
-
-control.o5 descent.controllers.DynamicNetwork
-control.o5.protocol rps
-control.o5.FINAL
-control.o5.step 1
-control.o5.addingPerStep 1900
-control.o5.startAdd 600
-control.o5.endAdd 600
-
-control.o6 descent.controllers.DynamicNetwork
-control.o6.protocol rps
-control.o6.FINAL
-control.o6.step 1
-control.o6.addingPerStep 6000
-control.o6.startAdd 700
-control.o6.endAdd 700
-
-control.o7 descent.controllers.DynamicNetwork
-control.o7.protocol rps
-control.o7.FINAL
-control.o7.step 1
-control.o7.addingPerStep 300
-control.o7.startAdd 800
-control.o7.endAdd 800
-
-control.o8 descent.controllers.DynamicNetwork
-control.o8.protocol rps
-control.o8.FINAL
-control.o8.step 1
-control.o8.removingPerStep 4000
-control.o8.startRem 900
-control.o8.endRem 900
-
-control.o9 descent.controllers.DynamicNetwork
-control.o9.protocol rps
-control.o9.FINAL
-control.o9.step 1
-control.o9.removingPerStep 1500
-control.o9.startRem 1000
-control.o9.endRem 1000
-
-control.o10 descent.controllers.DynamicNetwork
-control.o10.protocol rps
-control.o10.FINAL
-control.o10.step 1
-control.o10.removingPerStep 900
-control.o10.startRem 1100
-control.o10.endRem 1100
-
-control.o11 descent.controllers.DynamicNetwork
-control.o11.protocol rps
-control.o11.FINAL
-control.o11.step 1
-control.o11.removingPerStep 400
-control.o11.startRem 1200
-control.o11.endRem 1200
-
-control.o12 descent.controllers.DynamicNetwork
-control.o12.protocol rps
-control.o12.FINAL
-control.o12.step 1
-control.o12.removingPerStep 100
-control.o12.startRem 1300
-control.o12.endRem 1300
-
-control.o13 descent.controllers.DynamicNetwork
-control.o13.protocol rps
-control.o13.FINAL
-control.o13.step 1
-control.o13.addingPerStep 100
-control.o13.startAdd 1400
-control.o13.endAdd 1400
-
-control.o14 descent.controllers.DynamicNetwork
-control.o14.protocol rps
-control.o14.FINAL
-control.o14.step 1
-control.o14.removingPerStep 100
-control.o14.startRem 1500
-control.o14.endRem 1500
+control.o0 descent.controllers.DynamicNetwork
+control.o0.protocol rps
+control.o0.FINAL
+control.o0.size SIZE
+control.o0.step 1
+control.o0.addingPerStep 25
+control.o0.startAdd 0
 
 ################### initialization ======================
 

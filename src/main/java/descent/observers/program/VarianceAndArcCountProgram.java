@@ -13,6 +13,10 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
 	int lastCountTemp = 0;
 	double firstVar = -1;
 
+	public VarianceAndArcCountProgram() {
+		System.out.println("#arcCount arcCountNoDuplicates variance avgPartialView nbPeer lastVariance lastArcCount");
+	}
+
 	public void tick(long currentTick, DictGraph observer) {
 
 		if (this.lastSize != observer.size()) {
@@ -22,14 +26,13 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
 			lastCountTemp = observer.countArcs();
 		}
 
-		System.out.println(observer.countArcs() + " "
-				+ observer.variancePartialView() + " "
-				+ observer.meanPartialViewSize() + " " + observer.size() + " "
+		System.out.println(observer.countArcs() + " " + observer.countArcsNoDuplicates() + " "
+				+ +observer.variancePartialView() + " " + observer.meanPartialViewSize() + " " + observer.size() + " "
 				+ firstVar + " " + lastCount);
 
 	}
 
 	public void onLastTick(DictGraph observer) {
-		System.out.println("LAST");
+		// System.out.println("LAST");
 	}
 }

@@ -1,5 +1,8 @@
 package descent.observers.program;
 
+import java.util.ArrayList;
+import java.util.function.Function;
+
 import descent.observers.DictGraph;
 import descent.observers.DictGraph.DeliveryRateAndMsg;
 import descent.observers.ObserverProgram;
@@ -9,12 +12,30 @@ import descent.observers.ObserverProgram;
  */
 public class DeliveryRateProgram implements ObserverProgram {
 
-	// private static final String PAR_FANOUT = "fanout";
+	public Function<Integer, Integer> constantFanout = new Function<Integer, Integer>() {
+		public Integer apply(Integer whatever) {
+			// #1 nothing is adaptive
+			return 5;
+		}
+	};
+	public Function<Integer, Integer> divFanout = new Function<Integer, Integer>() {
+		public Integer apply(Integer rpsView) {
+			// #2 adapts to a subset of the view
+			return (int) Math.ceil(rpsView / 6);
+		}
+	};
+	public Function<Integer, Integer> allFanout = new Function<Integer, Integer>() {
+		public Integer apply(Integer rpsView) {
+			// #3 use everything
+			return rpsView;
+		}
+	};
 
-	public final Integer FANOUT;
+	int lastSize = 0;
+	int tick = 0;
 
 	public DeliveryRateProgram() {
-		this.FANOUT = -1;
+		System.out.println("#nbNode nbMsgSent softRate hardRate fanout");
 	}
 
 	/**
@@ -25,12 +46,19 @@ public class DeliveryRateProgram implements ObserverProgram {
 	 *            {}
 	 */
 	public void tick(long currentTick, DictGraph observer) {
-		DeliveryRateAndMsg result = observer.deliveryRate(25, 5);// this.FANOUT);
-		System.out.println(result.nbNodes + " " + result.nbMsg + " " + result.softRate + " " + result.hardRate);
-		// System.out.println(observer.size() + " " + observer.countArcs() + " "
-		// + observer.diameter() + " "
-		// + observer.maxPercDuplicatesInView() + " " +
-		// observer.meanPathLength().avg);
+		if (this.lastSize < observer.size()) {
+			this.tick += 1;
+			if (this.tick >= 20) {
+				this.tick = 0;
+				this.lastSize = observer.size();
+				if (observer.size() % ((Math.pow(10, Math.ceil(Math.log10(observer.size())))) / 2) == 0) {
+					// #A cheap measure
+					DeliveryRateAndMsg result = observer.deliveryRate(constantFanout, 100);
+					System.out.println(
+							result.nbNodes + " " + result.nbMsg + " " + result.softRate + " " + result.hardRate + " "+ result.fanout);
+				}
+			}
+		}
 	}
 
 	/**
@@ -39,14 +67,13 @@ public class DeliveryRateProgram implements ObserverProgram {
 	 *            {}
 	 */
 	public void onLastTick(DictGraph observer) {
-		/*
-		 * System.out.println("#=================START=================== step:"
-		 * + CommonState.getTime());
-		 * System.out.println(observer.networkxDigraph(
-		 * DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()),
-		 * true));
-		 * System.out.println("#=================END===================");
-		 */
+		// #B longer measurement
+		// DeliveryRateAndMsg result = observer.deliveryRate(divFanout, 100);//
+		// this.FANOUT);
+		DeliveryRateAndMsg result = observer.deliveryRate(constantFanout, 100);
+		// DeliveryRateAndMsg result = observer.deliveryRate(allFanout, 100);
+		System.out.println(result.nbNodes + " " + result.nbMsg + " " + result.softRate + " " + result.hardRate + " "
+				+ result.fanout);
 	}
 
 }

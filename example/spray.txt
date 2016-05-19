@@ -1,8 +1,8 @@
 # network size
-SIZE 10000
+SIZE 100000
 
 # parameters of periodic execution
-CYCLES 300
+CYCLES 110000
 
 random.seed 3
 network.size SIZE
@@ -19,33 +19,22 @@ protocol.rps.start 2
 protocol.rps.linkable link
 protocol.rps.fail 0.000
 
-## networks
-control.n0 descent.controllers.DynamicNetwork
-control.n0.protocol rps
-control.n0.size 5000
-control.n0.FINAL
-control.n0.step 1
-control.n0.addingPerStep 100000
-#control.n0.addingPerStepPerc 1
-control.n0.startAdd 0
-#control.n0.endAdd 90
-
 control.n1 descent.controllers.DynamicNetwork
 control.n1.protocol rps
-control.n1.size 5000
+control.n1.size 100000
 control.n1.FINAL
 control.n1.step 1
-control.n1.addingPerStep 100000
+control.n1.addingPerStep 50
 control.n1.startAdd 0
 
 ## merging
-control.m0 descent.controllers.MergeNetworks
-control.m0.protocol rps
-control.m0.date 100
-control.m0.from 1
-control.m0.to 0
-control.m0.FINAL
-control.m0.step 1
+#control.m0 descent.controllers.MergeNetworks
+#control.m0.protocol rps
+#control.m0.date 100
+#control.m0.from 1
+#control.m0.to 0
+#control.m0.FINAL
+#control.m0.step 1
 
 ################### initialization ======================
 
@@ -57,9 +46,10 @@ init.sch.randstart
 
 control.0 descent.observers.Observer
 #control.0.program descent.observers.program.ClusteringCoefficientProgram
-control.0.program descent.observers.program.ModularityCoefficientProgram
+#control.0.program descent.observers.program.ModularityCoefficientProgram
 #control.0.program descent.observers.program.ArcCountProgram
 #control.0.program descent.observers.program.PythonNetworkProgram
+control.0.program descent.observers.program.VarianceAndArcCountProgram
 control.0.protocol rps
 control.0.FINAL
 control.0.step 1

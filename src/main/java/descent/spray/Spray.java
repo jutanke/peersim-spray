@@ -12,8 +12,7 @@ import descent.rps.IRandomPeerSampling;
 /**
  * The Spray protocol
  */
-public class Spray extends ARandomPeerSamplingProtocol implements
-		IRandomPeerSampling {
+public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
 
 	// #0 additional arcs to inject
 	private static final String PAR_C = "c";
@@ -58,23 +57,18 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			// #1 choose the peer to exchange with
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			Spray qSpray = (Spray) q
-					.getProtocol(ARandomPeerSamplingProtocol.pid);
+			Spray qSpray = (Spray) q.getProtocol(ARandomPeerSamplingProtocol.pid);
 			boolean isFailedConnection = this.pFail(null);
 			if (qSpray.isUp() && !isFailedConnection) {
 				// #A if the chosen peer is alive, exchange
-				List<Node> sample = this.partialView.getSample(this.node, q,
-						true);
+				List<Node> sample = this.partialView.getSample(this.node, q, true);
 				IMessage received = qSpray.onPeriodicCall(this.node,
-						new SprayMessage(sample, this.register.networks,
-								this.register.size, this.partialView.size()));
+						new SprayMessage(sample, this.register.networks, this.register.size, this.partialView.size()));
 				// #1 check if must merge networks
-				this.onMerge(this.register.isMerge((SprayMessage) received,
-						this.partialView.size()), q);
+				this.onMerge(this.register.isMerge((SprayMessage) received, this.partialView.size()), q);
 				// #2 merge the received sample with current partial view
 				List<Node> samplePrime = (List<Node>) received.getPayload();
-				this.partialView.mergeSample(this.node, q, samplePrime, sample,
-						true);
+				this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
 			} else {
 				// #B run the appropriate procedure
 				if (!qSpray.isUp()) {
@@ -87,18 +81,13 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
-		List<Node> samplePrime = this.partialView.getSample(this.node, origin,
-				false);
+		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
 		// #2 check there is a network merging in progress
-		this.onMerge(
-				this.register.isMerge((SprayMessage) message,
-						this.partialView.size()), origin);
+		this.onMerge(this.register.isMerge((SprayMessage) message, this.partialView.size()), origin);
 		// #0 process the sample to send back
-		this.partialView.mergeSample(this.node, origin,
-				(List<Node>) message.getPayload(), samplePrime, false);
+		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #1 prepare the result to send back
-		SprayMessage result = new SprayMessage(samplePrime,
-				this.register.networks, this.register.size,
+		SprayMessage result = new SprayMessage(samplePrime, this.register.networks, this.register.size,
 				this.partialView.size());
 
 		return result;
@@ -113,6 +102,17 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			this.partialView.clear();
 			this.partialView.addNeighbor(contact);
 			contactSpray.onSubscription(this.node);
+
+			// #3 (Optional) inject additional arcs to ensure additional
+			// properties
+			Double c = Spray.C;
+			for (Integer i = 0; i < (Spray.C - 1); ++i) {
+				this.addNeighbor(contact);
+				c -= 1;
+			}
+			if (CommonState.r.nextDouble() < c) {
+				this.addNeighbor(contact);
+			}
 		}
 		this.isUp = true;
 	}
@@ -129,16 +129,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			// #2 otherwise it takes the advertisement for itself
 			this.addNeighbor(origin);
 		}
-		// #3 (Optional) inject additional arcs to ensure additional
-		// properties
-		Double c = Spray.C;
-		for (Integer i = 0; i < Spray.C - 1; ++i) {
-			this.addNeighbor(origin);
-			c -= 1;
-		}
-		if (CommonState.r.nextDouble() < c) {
-			this.addNeighbor(origin);
-		}
+
 	}
 
 	public void leave() {
@@ -155,8 +146,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 	public IRandomPeerSampling clone() {
 		try {
 			Spray sprayClone = new Spray();
-			sprayClone.partialView = (SprayPartialView) this.partialView
-					.clone();
+			sprayClone.partialView = (SprayPartialView) this.partialView.clone();
 			sprayClone.register = (MergingRegister) this.register.clone();
 			return sprayClone;
 		} catch (CloneNotSupportedException e) {
@@ -186,8 +176,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 			// #3 probabilistically double known connections
 			for (int i = 0; i < occ; ++i) {
 				if (CommonState.r.nextDouble() > pRemove) {
-					Node toDouble = this.partialView.getPeers().get(
-							CommonState.r.nextInt(this.partialView.size()));
+					Node toDouble = this.partialView.getPeers().get(CommonState.r.nextInt(this.partialView.size()));
 					this.partialView.addNeighbor(toDouble);
 				}
 			}
@@ -205,8 +194,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		this.partialView.removeNode(q);
 		// #2 double a known connection at random
 		if (this.partialView.size() > 0) {
-			Node toDouble = this.partialView.getPeers().get(
-					CommonState.r.nextInt(this.partialView.size()));
+			Node toDouble = this.partialView.getPeers().get(CommonState.r.nextInt(this.partialView.size()));
 			this.partialView.addNeighbor(toDouble);
 		}
 	}
@@ -221,8 +209,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
 		}
 		// #2 process the random arcs
 		if (CommonState.r.nextDouble() < ratio) {
-			this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
-					.size()))); // sp_*
+			this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView.size()))); // sp_*
 		}
 	}
 }

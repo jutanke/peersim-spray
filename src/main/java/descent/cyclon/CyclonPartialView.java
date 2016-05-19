@@ -67,12 +67,12 @@ public class CyclonPartialView extends AAgingPartialView {
 				removedAge.add(this.ages.get(index));
 				this.partialView.remove(index);
 				this.ages.remove(index);
+			} else if (isInitiator && old.getID()==me.getID()){
+				// #2 remove the chosen neighbor
+				this.removeNode(other);
 			}
 		}
-
-		// #2 remove the chosen neighbor
-		this.removeNode(other);
-
+		
 		// #3 insert the new sample
 		for (Node fresh : newSample) {
 			if (!this.contains(fresh) && fresh.getID() != me.getID()) {
