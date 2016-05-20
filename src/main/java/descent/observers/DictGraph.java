@@ -10,11 +10,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import descent.controllers.DynamicNetwork;
-import descent.cyclon.Cyclon;
 import descent.rps.ARandomPeerSamplingProtocol;
 import descent.rps.IRandomPeerSampling;
 import peersim.core.CommonState;
@@ -563,18 +561,22 @@ public class DictGraph {
 					if (fanout > 0) {
 						// #A explore $fanout$ neighbors at random
 						ArrayList<Long> neighbors = new ArrayList<Long>(currentNode.neighbors);
+						ArrayList<Long> chosen = new ArrayList<Long>(); // distinct
 						Integer j = 0;
 						while (j < fanout && neighbors.size() > 0) {
 							Integer randomIndex = CommonState.r.nextInt(neighbors.size());
 							Long neighbor = neighbors.get(randomIndex);
 							neighbors.remove((int) randomIndex);
-							if (upNode.contains(neighbor)) {
-								++nbMsg;
-								if (!explored.contains(neighbor) && !toExplore.contains(neighbor)) {
-									toExplore.push(neighbor);
+							if (!chosen.contains(neighbor)) {
+								chosen.add(neighbor);
+								if (upNode.contains(neighbor)) {
+									++nbMsg;
+									if (!explored.contains(neighbor) && !toExplore.contains(neighbor)) {
+										toExplore.push(neighbor);
+									}
 								}
+								++j;
 							}
-							++j;
 						}
 					} else {
 						// #B explore all

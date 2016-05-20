@@ -1,5 +1,5 @@
 # network size
-SIZE 100000
+SIZE 2000
 DEGREE 30
 
 # parameters of periodic execution
@@ -27,7 +27,7 @@ control.o0.protocol rps
 control.o0.FINAL
 control.o0.size SIZE
 control.o0.step 20
-control.o0.addingPerStep 50
+control.o0.addingPerStep 1
 control.o0.startAdd 0
 
 ################### initialization ======================

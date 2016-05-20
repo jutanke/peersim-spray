@@ -16,7 +16,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 
 	// #0 additional arcs to inject
 	private static final String PAR_C = "c";
-	private static Double C = 0.;
+	private static Double C = 1.;
 
 	// #A no configuration needed, everything is adaptive
 	// #B no values from the configuration file of peersim
@@ -36,7 +36,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 
-		Spray.C = Configuration.getDouble(prefix + "." + Spray.PAR_C, 0);
+		Spray.C = Configuration.getDouble(prefix + "." + Spray.PAR_C, 1);
 	}
 
 	public Spray() {
@@ -169,7 +169,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 	 */
 	private void onPeerDown(Node q) {
 		// #1 probability to NOT recreate the connection
-		double pRemove = 1.0 / this.partialView.size();
+		double pRemove = Spray.C / this.partialView.size();
 		// #2 remove all occurrences of q in our partial view and count them
 		int occ = this.partialView.removeAll(q);
 		if (this.partialView.size() > 0) {
