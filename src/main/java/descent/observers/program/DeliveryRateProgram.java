@@ -15,13 +15,13 @@ public class DeliveryRateProgram implements ObserverProgram {
 	public Function<Integer, Integer> constantFanout = new Function<Integer, Integer>() {
 		public Integer apply(Integer whatever) {
 			// #1 nothing is adaptive
-			return 6;
+			return 10;
 		}
 	};
 	public Function<Integer, Integer> divFanout = new Function<Integer, Integer>() {
 		public Integer apply(Integer rpsView) {
 			// #2 adapts to a subset of the view
-			return (int) Math.ceil(rpsView / 6.) + 1;
+			return (int) Math.ceil(rpsView / 6.) + 5;
 		}
 	};
 	public Function<Integer, Integer> allFanout = new Function<Integer, Integer>() {

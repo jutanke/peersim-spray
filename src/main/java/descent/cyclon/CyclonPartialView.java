@@ -72,9 +72,11 @@ public class CyclonPartialView extends AAgingPartialView {
 				this.removeNode(other);
 			}
 		}
+		//System.out.println("rem " + removedPeer.size());
 		
 		// #3 insert the new sample
 		for (Node fresh : newSample) {
+			if (this.size() >= this.c){break;}
 			if (!this.contains(fresh) && fresh.getID() != me.getID()) {
 				this.partialView.add(fresh);
 				// #A look into the removing if it existed

@@ -36,7 +36,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 
-		Spray.C = Configuration.getDouble(prefix + "." + Spray.PAR_C, 1);
+		Spray.C = Configuration.getDouble(prefix + "." + Spray.PAR_C, 0);
 	}
 
 	public Spray() {

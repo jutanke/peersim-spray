@@ -19,6 +19,7 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements IRandomPeerSa
 	// #A the names of the parameters in the configuration file of peersim
 	private static final String PAR_C = "c"; // max partial view size
 	private static final String PAR_L = "l"; // shuffle size
+	private static final String PAR_RANDOM_WALK = "random_walk"; // random walk of first connexions 
 
 	// #B the values from the configuration file of peersim
 	private static int c;
@@ -38,6 +39,7 @@ public class Cyclon extends ARandomPeerSamplingProtocol implements IRandomPeerSa
 		super(prefix);
 		Cyclon.c = Configuration.getInt(prefix + "." + PAR_C);
 		Cyclon.l = Configuration.getInt(prefix + "." + PAR_L);
+		Cyclon.RND_WALK = Configuration.getInt(prefix + "." + PAR_RANDOM_WALK);
 		this.partialView = new CyclonPartialView(Cyclon.c, Cyclon.l);
 	}
 
