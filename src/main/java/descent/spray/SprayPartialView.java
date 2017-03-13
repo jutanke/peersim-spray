@@ -1,11 +1,12 @@
 package descent.spray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import descent.rps.AAgingPartialView;
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.rps.AAgingPartialView;
 
 /**
  * Aging partial view of the Spray random peer sampling protocol. It can contain
@@ -71,10 +72,13 @@ public class SprayPartialView extends AAgingPartialView {
 		return result;
 	}
 
-	public void mergeSample(Node caller, Node neighbor, List<Node> newSample,
-			List<Node> oldSample, boolean isInitiator) {
-		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) replace(oldSample,
-				caller, neighbor); // opposite transformation of the getSample
+	public void mergeSample(Node caller, Node neighbor, List<Node> newSample, List<Node> oldSample,
+			boolean isInitiator) {
+		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) replace(oldSample, caller, neighbor); // opposite
+																									// transformation
+																									// of
+																									// the
+																									// getSample
 
 		// #A remove the original sample
 		for (Node toRemoveNeighbor : oldSampleInitial) {
@@ -83,7 +87,23 @@ public class SprayPartialView extends AAgingPartialView {
 
 		// #B add the received sample
 		for (Node toAddNeighbor : newSample) {
-			this.addNeighbor(toAddNeighbor);
+			boolean found = false;
+			int i = 0;
+			if (this.partialView.contains(toAddNeighbor)) {
+				// #1 search for a removed peer that is not duplicate
+				while (!found && oldSampleInitial.size() > i) {
+					if (!this.partialView.contains(oldSampleInitial.get(i))) {
+						found = true;
+					} else {
+						++i;
+					}
+				}
+			}
+			if (!found) {
+				this.addNeighbor(toAddNeighbor);
+			} else {
+				this.addNeighbor(oldSampleInitial.get(i));
+			}
 		}
 	}
 
@@ -114,6 +134,38 @@ public class SprayPartialView extends AAgingPartialView {
 			}
 		}
 		return occ;
+	}
+
+	public Integer count(Node nodeToCount) {
+		Integer result = 0;
+		for (Node node : this.partialView) {
+			if (nodeToCount.equals(node)) {
+				++result;
+			}
+		}
+		return result;
+	}
+
+	public Node getLowestOcc() {
+		// ugly but whatever
+		HashMap<Node, Integer> occurences = new HashMap<Node, Integer>();
+		for (Node n : this.partialView) {
+			if (n.isUp()) {
+				if (!occurences.containsKey(n)) {
+					occurences.put(n, 0);
+				}
+				occurences.put(n, occurences.get(n) + 1);
+			}
+		}
+		Integer min = Integer.MAX_VALUE;
+		Node result = null;
+		for (Node k : occurences.keySet()) {
+			if (occurences.get(k) < min) {
+				min = occurences.get(k);
+				result = k;
+			}
+		}
+		return result;
 	}
 
 	@Override

@@ -9,8 +9,7 @@ import descent.observers.ObserverProgram;
 public class ClusteringCoefficientProgram implements ObserverProgram {
 
 	public void tick(long currentTick, DictGraph observer) {
-		System.out.println(observer.countArcs() +" "
-				+ observer.meanClusterCoefficient()+" "
+		System.out.println(observer.countArcs() + " " + observer.meanClusterCoefficient() + " "
 				+ observer.globalClusterCoefficient());
 	}
 

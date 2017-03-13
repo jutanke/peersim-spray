@@ -8,11 +8,11 @@ import descent.observers.ObserverProgram;
  */
 public class PartialViewSizeProgram implements ObserverProgram {
 
-    public void tick(long currentTick, DictGraph observer) {
-        System.out.println(observer.meanPartialViewSize());
-    }
+	public void tick(long currentTick, DictGraph observer) {
+		System.out.println(observer.getViewSizeStats().mean);
+	}
 
-    public void onLastTick(DictGraph observer) {
+	public void onLastTick(DictGraph observer) {
 
-    }
+	}
 }

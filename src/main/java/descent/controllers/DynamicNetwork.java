@@ -125,7 +125,7 @@ public class DynamicNetwork implements Control {
 			// spray
 			// s.register.initialize(this.NETWORK_ID);
 			if (DynamicNetwork.graph.size() > 0) {
-				final Node contact = getNode();
+				final Node contact = getNode(0);
 				this.addNode(current, contact);
 			} else {
 				this.addNode(current, null);
@@ -135,8 +135,12 @@ public class DynamicNetwork implements Control {
 		}
 	}
 
-	public Node getNode() {
-		return this.graph.get(CommonState.r.nextInt(graph.size()));
+	public Node getNode(Integer limit) {
+		if (graph.size() > limit) {
+			return graph.get(CommonState.r.nextInt(graph.size() - limit));
+		} else {
+			return graph.get(CommonState.r.nextInt(graph.size()));
+		}
 	}
 
 	public void removeNode(Node leaver) {

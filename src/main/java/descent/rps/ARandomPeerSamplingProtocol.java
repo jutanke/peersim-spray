@@ -10,8 +10,7 @@ import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 
-public abstract class ARandomPeerSamplingProtocol implements IDynamic,
-		Linkable, CDProtocol, IRandomPeerSampling {
+public abstract class ARandomPeerSamplingProtocol implements IDynamic, Linkable, CDProtocol, IRandomPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
 	public static final String PAR_PROT = "rps"; // name of the protocol
@@ -32,7 +31,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	/**
 	 * The outbound costs per each step
 	 */
-//	private final int[] costs;
+	// private final int[] costs;
 
 	/**
 	 * Constructor of the class
@@ -41,19 +40,16 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 	 *            configuration of peersim
 	 */
 	public ARandomPeerSamplingProtocol(String prefix) {
-		ARandomPeerSamplingProtocol.pid = Configuration
-				.lookupPid(ARandomPeerSamplingProtocol.PAR_PROT);
-		ARandomPeerSamplingProtocol.delta = Configuration.getInt(prefix + "."
-				+ ARandomPeerSamplingProtocol.PAR_DELTA);
-		ARandomPeerSamplingProtocol.start = Configuration.getInt(prefix + "."
-				+ ARandomPeerSamplingProtocol.PAR_START);
-		ARandomPeerSamplingProtocol.fail = Configuration.getDouble(prefix + "."
-				+ ARandomPeerSamplingProtocol.PAR_FAIL, 0.0);
-//		this.costs = new int[(int)CommonState.getEndTime()];
+		ARandomPeerSamplingProtocol.pid = Configuration.lookupPid(ARandomPeerSamplingProtocol.PAR_PROT);
+		ARandomPeerSamplingProtocol.delta = Configuration.getInt(prefix + "." + ARandomPeerSamplingProtocol.PAR_DELTA);
+		ARandomPeerSamplingProtocol.start = Configuration.getInt(prefix + "." + ARandomPeerSamplingProtocol.PAR_START);
+		ARandomPeerSamplingProtocol.fail = Configuration.getDouble(prefix + "." + ARandomPeerSamplingProtocol.PAR_FAIL,
+				0.0);
+		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	public ARandomPeerSamplingProtocol() {
-//		this.costs = new int[(int)CommonState.getEndTime()];
+		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	// must be implemented in the child class
@@ -84,8 +80,7 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 			this.node = node;
 		}
 		// #2 call the periodic function of the node every Delta time
-		if (isUp()
-				&& CommonState.getTime() >= ARandomPeerSamplingProtocol.start
+		if (isUp() && CommonState.getTime() >= ARandomPeerSamplingProtocol.start
 				&& CommonState.getTime() % ARandomPeerSamplingProtocol.delta == 0) {
 			this.periodicCall();
 		}
@@ -126,9 +121,25 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		return result;
 	}
 
-//	public final int[] generatedPeerSamplingCost() {
-//		return this.costs;
-//	}
+	/**
+	 * Getter of the list of dead neighbors
+	 * 
+	 * @return a list of nodes
+	 */
+	public List<Node> getDeadNeighbors() {
+		List<Node> neighbors = this.getPeers(Integer.MAX_VALUE);
+		ArrayList<Node> result = new ArrayList<Node>();
+		for (Node neighbor : neighbors) {
+			if (!neighbor.isUp()) {
+				result.add(neighbor);
+			}
+		}
+		return result;
+	}
+
+	// public final int[] generatedPeerSamplingCost() {
+	// return this.costs;
+	// }
 
 	public void pack() {
 	}

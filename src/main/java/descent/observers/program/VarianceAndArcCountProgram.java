@@ -14,7 +14,7 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
 	double firstVar = -1;
 
 	public VarianceAndArcCountProgram() {
-		System.out.println("#arcCount arcCountNoDuplicates variance avgPartialView nbPeer lastVariance lastArcCount");
+		System.out.println("#nbPeers arcCount arcCountNoDuplicates stdDeviation avg|P| min|P| max|P|");
 	}
 
 	public void tick(long currentTick, DictGraph observer) {
@@ -26,9 +26,9 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
 			lastCountTemp = observer.countArcs();
 		}
 
-		System.out.println(observer.countArcs() + " " + observer.countArcsNoDuplicates() + " "
-				+ +observer.variancePartialView() + " " + observer.meanPartialViewSize() + " " + observer.size() + " "
-				+ firstVar + " " + lastCount);
+		System.out.println(observer.size() + " " + observer.countArcs() + " " + observer.countArcsNoDuplicates() + " "
+				+ +observer.stdDeviationPartialView() + " " + observer.getViewSizeStats().toString() + " ");
+		// + " " + firstVar + " " + lastCount);
 
 	}
 

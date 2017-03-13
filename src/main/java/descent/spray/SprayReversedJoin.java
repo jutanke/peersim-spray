@@ -2,17 +2,17 @@ package descent.spray;
 
 import java.util.List;
 
-import descent.rps.ARandomPeerSamplingProtocol;
-import descent.rps.IMessage;
-import descent.rps.IRandomPeerSampling;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
+import descent.rps.ARandomPeerSamplingProtocol;
+import descent.rps.IMessage;
+import descent.rps.IRandomPeerSampling;
 
 /**
  * The Spray protocol
  */
-public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
+public class SprayReversedJoin extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
 
 	// #0 additional arcs to inject
 	private static final String PAR_C = "c";
@@ -31,15 +31,15 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 	 * @param prefix
 	 *            the peersim configuration
 	 */
-	public Spray(String prefix) {
+	public SprayReversedJoin(String prefix) {
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 
-		Spray.C = Configuration.getDouble(prefix + "." + Spray.PAR_C, 0);
+		SprayReversedJoin.C = Configuration.getDouble(prefix + "." + SprayReversedJoin.PAR_C, 0);
 	}
 
-	public Spray() {
+	public SprayReversedJoin() {
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 	}
@@ -57,7 +57,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 			// #1 choose the peer to exchange with
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			Spray qSpray = (Spray) q.getProtocol(ARandomPeerSamplingProtocol.pid);
+			SprayReversedJoin qSpray = (SprayReversedJoin) q.getProtocol(ARandomPeerSamplingProtocol.pid);
 			boolean isFailedConnection = this.pFail(null);
 			if (qSpray.isUp() && !isFailedConnection) {
 				// #A if the chosen peer is alive, exchange
@@ -98,42 +98,32 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 			this.node = joiner;
 		}
 		if (contact != null) { // the very first join does not have any contact
-			Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
+			SprayReversedJoin contactSpray = (SprayReversedJoin) contact.getProtocol(SprayReversedJoin.pid);
 			this.partialView.clear();
-			this.partialView.addNeighbor(contact);
-			contactSpray.onSubscription(this.node);
-
-			// #3 (Optional) inject additional arcs to ensure additional
-			// properties
-			Double c = Spray.C;
-			for (Integer i = 0; i < (Spray.C - 1); ++i) {
-				this.addNeighbor(contact);
-				c -= 1;
-			}
-			if (CommonState.r.nextDouble() < c) {
-				this.addNeighbor(contact);
-			}
+			// this.partialView.addNeighbor(contact);
+			contactSpray.onSubscription(this.node); // contact node will handle
+													// everything
 		}
 		this.isUp = true;
 	}
 
 	public void onSubscription(Node origin) {
-		List<Node> deadNeighbors = this.getDeadNeighbors();
-		for (Node deadNeighbor : deadNeighbors) {
-			this.onPeerDown(deadNeighbor);
-		}
-
 		List<Node> aliveNeighbors = this.getAliveNeighbors();
+		SprayReversedJoin originSpray = (SprayReversedJoin) origin.getProtocol(SprayReversedJoin.pid);
 		if (aliveNeighbors.size() > 0) {
 			// #1 if the contact peer has neighbors
 			for (Node neighbor : aliveNeighbors) {
-				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
-				neighborSpray.addNeighbor(origin);
+				// SprayReversedJoin neighborSpray = (SprayReversedJoin)
+				// neighbor.getProtocol(SprayReversedJoin.pid);
+				originSpray.addNeighbor(neighbor);
 			}
 		} else {
-			// #2 otherwise it takes the advertisement for itself
-			this.addNeighbor(origin);
+			// #2 advertises himself to joiner
+			originSpray.addNeighbor(this.node);
 		}
+		// in any case, keep the joiner in our neighborhood
+		this.addNeighbor(origin);
+
 	}
 
 	public void leave() {
@@ -149,7 +139,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 	@Override
 	public IRandomPeerSampling clone() {
 		try {
-			Spray sprayClone = new Spray();
+			SprayReversedJoin sprayClone = new SprayReversedJoin();
 			sprayClone.partialView = (SprayPartialView) this.partialView.clone();
 			sprayClone.register = (MergingRegister) this.register.clone();
 			return sprayClone;
@@ -176,16 +166,14 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 		// double pRemove = Spray.C / this.partialView.size();
 		double pRemove = 1. / this.partialView.size();
 		// #2 remove all occurrences of q in our partial view and count them
-		 int occ = this.partialView.removeAll(q);
-		// int occ = 1;
-		// this.partialView.removeNode(q);
+		// int occ = this.partialView.removeAll(q);
+		int occ = 1;
+		this.partialView.removeNode(q);
 		if (this.partialView.size() > 0) {
 			// #3 probabilistically double known connections
 			for (int i = 0; i < occ; ++i) {
 				if (CommonState.r.nextDouble() > pRemove) {
-					// Node toDouble =
-					// this.partialView.getPeers().get(CommonState.r.nextInt(this.partialView.size()));
-					Node toDouble = this.partialView.getLowestOcc();
+					Node toDouble = this.partialView.getPeers().get(CommonState.r.nextInt(this.partialView.size()));
 					this.partialView.addNeighbor(toDouble);
 				}
 			}

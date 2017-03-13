@@ -827,18 +827,19 @@ public class DictGraph {
 		return result;
 	}
 
-	/**
-	 * @return
-	 */
 	public double variancePartialView() {
 		double var = 0;
-		final double mean = this.meanPartialViewSize();
+		final double mean = this.getViewSizeStats().mean;
 		final Collection<DictNode> N = this.nodes.values();
 		for (DictNode n : N) {
 			final double c = n.neighbors.size() - mean;
 			var += c * c;
 		}
 		return var / N.size();
+	}
+
+	public double stdDeviationPartialView() {
+		return Math.sqrt(this.variancePartialView());
 	}
 
 	public ClusterResult countClusters() {
@@ -1054,13 +1055,39 @@ public class DictGraph {
 		return actual / possible;
 	}
 
-	public double meanPartialViewSize() {
-		double mean = 0;
+	public class ViewSizeStats {
+		public final double mean;
+		public final Integer min;
+		public final Integer max;
+
+		public ViewSizeStats(double mean, Integer min, Integer max) {
+			this.mean = mean;
+			this.min = min;
+			this.max = max;
+		}
+
+		@Override
+		public String toString() {
+
+			return this.mean + " " + this.min + " " + this.max;
+		}
+	}
+
+	public ViewSizeStats getViewSizeStats() {
+		double mean = 0.;
+		Integer max = 0;
+		Integer min = Integer.MAX_VALUE;
 		final Collection<DictNode> N = this.nodes.values();
 		for (DictNode n : N) {
 			mean += n.neighbors.size();
+			if (max < n.neighbors.size()) {
+				max = n.neighbors.size();
+			}
+			if (min > n.neighbors.size()) {
+				min = n.neighbors.size();
+			}
 		}
-		return mean / N.size();
+		return new ViewSizeStats(mean / N.size(), min, max);
 	}
 
 	private boolean areUndirectlyConnected(long a, long b) {
