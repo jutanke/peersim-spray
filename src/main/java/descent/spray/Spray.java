@@ -61,31 +61,35 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	}
 
 	public void periodicCall() {
-		if (this.isUp && this.partialView.size() > 0) {
-			// #1 Choose the peer to exchange with
-			this.partialView.incrementAge();
-			Node q = this.partialView.getOldest();
-			Spray qSpray = (Spray) q.getProtocol(APeerSamplingProtocol.pid);
-			boolean isFailedConnection = this.pFail(null);
-			if (qSpray.isUp() && !isFailedConnection) {
-				// #A If the chosen peer is alive, exchange
-				List<Node> sample = this.partialView.getSample(this.node, q, true);
-				IMessage received = qSpray.onPeriodicCall(this.node,
-						new SprayMessage(sample, this.register.networks, this.register.size, this.partialView.size()));
-				// #1 Check if must merge networks
-				this.onMerge(this.register.isMerge((SprayMessage) received, this.partialView.size()), q);
-				// #2 Merge the received sample with current partial view
-				List<Node> samplePrime = (List<Node>) received.getPayload();
-				this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
-			} else {
-				// #B Run the appropriate procedure
-				if (!qSpray.isUp()) {
-					this.onPeerDown(q);
-				} else if (isFailedConnection) {
-					this.onArcDown(q);
-				}
-			}
+		if (!this.isUp || this.partialView.size() <= 0) {
+			return;
 		}
+		// #1 Choose the peer to exchange with
+		this.partialView.incrementAge();
+		Node q = this.partialView.getOldest();
+		Spray qSpray = (Spray) q.getProtocol(APeerSamplingProtocol.pid);
+		// #A Peer is down: departed or left
+		if (!qSpray.isUp) {
+			this.onPeerDown(q);
+			return;
+		}
+		// #B Arc did not properly established
+		boolean isFailedConnection = this.pFail(null);
+		if (isFailedConnection) {
+			this.onArcDown(q);
+			return;
+		}
+
+		// #2 Create a sample
+		List<Node> sample = this.partialView.getSample(this.node, q, true);
+		IMessage received = qSpray.onPeriodicCall(this.node,
+				new SprayMessage(sample, this.register.networks, this.register.size, this.partialView.size()));
+		// #3 Check if must merge networks
+		this.onMerge(this.register.isMerge((SprayMessage) received, this.partialView.size()), q);
+		// #4 Merge the received sample with current partial view
+		List<Node> samplePrime = (List<Node>) received.getPayload();
+		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
+
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {

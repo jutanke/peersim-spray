@@ -29,22 +29,70 @@ public class TManPartialView extends HashSet<Node> {
 		return result;
 	}
 
-	List<Node> getSample(final TMan other, double size) {
-		ArrayList<Node> sample = new ArrayList<Node>();
-		
-		Comparator<IDescriptor> ranking = new Comparator<IDescriptor>()  {
+	List<Node> getSample(final TMan other, List<Node> randomPeers, double size) {
+		ArrayList<Node> rank = new ArrayList<Node>(this);
+		rank.addAll(randomPeers);
 
-			public int compare(IDescriptor o1, IDescriptor o2) {
-				if (other.descriptor.ranking(o1) < other.descriptor.ranking(o2))
-				return 0;
+		Comparator<Node> ranking = new Comparator<Node>() {
+
+			public int compare(Node o1, Node o2) {
+				IDescriptor o1Desc = ((TMan) o1.getProtocol(TMan.pid)).descriptor;
+				IDescriptor o2Desc = ((TMan) o2.getProtocol(TMan.pid)).descriptor;
+
+				if (other.descriptor.ranking(o1Desc) < other.descriptor.ranking(o2Desc)) {
+					return -1;
+				} else if (other.descriptor.ranking(o1Desc) > other.descriptor.ranking(o2Desc)) {
+					return 1;
+				} else {
+					return 0;
+				}
 			}
-			
+
 		};
-		
-		Collections.sort(sample, );
-		
-		
-		return sample;
+
+		Collections.sort(rank, ranking);
+
+		return rank.subList(0, (int) size);
+	}
+
+	public void merge(final TMan myself, List<Node> sample, Integer size) {
+		ArrayList<Node> rank = new ArrayList<Node>(this);
+
+		for (int i = 0; i < sample.size(); ++i) {
+			if (!rank.contains(sample.get(i))) {
+				rank.add(sample.get(i));
+			}
+		}
+
+		Comparator<Node> ranking = new Comparator<Node>() {
+
+			public int compare(Node o1, Node o2) {
+				IDescriptor o1Desc = ((TMan) o1.getProtocol(TMan.pid)).descriptor;
+				IDescriptor o2Desc = ((TMan) o2.getProtocol(TMan.pid)).descriptor;
+
+				if (myself.descriptor.ranking(o1Desc) < myself.descriptor.ranking(o2Desc)) {
+					return -1;
+				} else if (myself.descriptor.ranking(o1Desc) > myself.descriptor.ranking(o2Desc)) {
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+
+		};
+
+		Collections.sort(rank, ranking);
+
+		List<Node> toKeep = rank.subList(0, size);
+		List<Node> toThrow = rank.subList(size, rank.size());
+
+		for (int i = 0; i < toKeep.size(); ++i) {
+			this.add(toKeep.get(i));
+		}
+
+		for (int i = 0; i < toThrow.size(); ++i) {
+			this.remove(toThrow.get(i));
+		}
 	}
 
 }

@@ -12,6 +12,10 @@ public class Descriptor implements IDescriptor {
 	public Descriptor(double x) {
 		this.x = x;
 	}
+	
+	public Descriptor(Descriptor d){
+		this.x = d.x;
+	}
 
 	public static IDescriptor get() {
 		++Descriptor.NUMBER;
