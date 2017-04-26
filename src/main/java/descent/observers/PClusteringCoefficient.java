@@ -1,12 +1,9 @@
-package descent.observers.program;
-
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
+package descent.observers;
 
 /**
  * Created by julian on 15/05/15.
  */
-public class ClusteringCoefficientProgram implements ObserverProgram {
+public class PClusteringCoefficient implements ObserverProgram {
 
 	public void tick(long currentTick, DictGraph observer) {
 		System.out.println(observer.countArcs() + " " + observer.meanClusterCoefficient() + " "

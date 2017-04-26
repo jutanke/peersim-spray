@@ -1,16 +1,14 @@
-package descent.observers.program;
+package descent.observers;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import peersim.core.CommonState;
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
 
 /**
  * Created by julian on 11/05/15.
  */
-public class AvgShortestPathProgram implements ObserverProgram {
+public class PAvgShortestPath implements ObserverProgram {
 
 	int lastSize = 0;
 	int tick = 0;

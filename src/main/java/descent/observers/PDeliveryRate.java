@@ -1,16 +1,14 @@
-package descent.observers.program;
+package descent.observers;
 
 import java.util.function.Function;
 
-import descent.observers.DictGraph;
 import descent.observers.DictGraph.DeliveryRateAndMsg;
 import peersim.core.CommonState;
-import descent.observers.ObserverProgram;
 
 /**
  *
  */
-public class DeliveryRateProgram implements ObserverProgram {
+public class PDeliveryRate implements ObserverProgram {
 
 	public Function<Integer, Integer> constantFanout = new Function<Integer, Integer>() {
 		public Integer apply(Integer whatever) {
@@ -34,7 +32,7 @@ public class DeliveryRateProgram implements ObserverProgram {
 	int lastSize = 0;
 	int tick = 0;
 
-	public DeliveryRateProgram() {
+	public PDeliveryRate() {
 		System.out.println("#nbNode nbMsgSent fanout softRate hardRate >0 >=99 >=99.9");
 	}
 

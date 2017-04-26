@@ -143,7 +143,7 @@ init.sch.randstart
 
 
 control.0 descent.observers.Observer
-control.0.program descent.observers.program.DeliveryRateProgram
+control.0.program descent.observers.PDeliveryRate
 control.0.protocol rps
 control.0.FINAL
 control.0.step 1

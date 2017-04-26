@@ -1,13 +1,12 @@
 package descent.observers;
 
-import descent.observers.program.*;
+import descent.rps.IDynamic;
+import descent.rps.IPeerSampling;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
-import descent.rps.IDynamic;
-import descent.rps.IPeerSampling;
 
 /**
  * Created by julian on 3/15/15.

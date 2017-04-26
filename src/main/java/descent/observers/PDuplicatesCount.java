@@ -1,7 +1,4 @@
-package descent.observers.program;
-
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
+package descent.observers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +6,7 @@ import java.util.List;
 /**
  * Created by julian on 08/05/15.
  */
-public class DuplicatesCountProgram implements ObserverProgram {
+public class PDuplicatesCount implements ObserverProgram {
 
     final List<DictGraph.MaxPercResult> maxPerc = new ArrayList<DictGraph.MaxPercResult>();
 

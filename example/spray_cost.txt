@@ -38,7 +38,7 @@ init.sch.randstart
 
 
 control.0 descent.observers.Observer
-control.0.program descent.observers.program.CostProgram
+control.0.program descent.observers.PCost
 control.0.protocol rps
 control.0.FINAL
 control.0.step 1

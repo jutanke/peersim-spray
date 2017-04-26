@@ -43,7 +43,7 @@ control.0 descent.observers.Observer
 #control.0.program descent.observers.program.ModularityCoefficientProgram
 #control.0.program descent.observers.program.ArcCountProgram
 #control.0.program descent.observers.program.PythonNetworkProgram
-control.0.program descent.observers.program.ArcAndDiameterProgram
+control.0.program descent.observers.PArcAndDiameter
 control.0.protocol rps
 control.0.FINAL
 control.0.step 1

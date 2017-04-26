@@ -1,9 +1,6 @@
-package descent.observers.program;
+package descent.observers;
 
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
-
-public class ModularityCoefficientProgram implements ObserverProgram {
+public class PModularityCoefficient implements ObserverProgram {
 
 	public void tick(long currentTick, DictGraph observer) {
 		System.out.println(observer.countArcs() + " "

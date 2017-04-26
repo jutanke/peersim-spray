@@ -1,13 +1,11 @@
-package descent.observers.program;
+package descent.observers;
 
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
 import peersim.core.CommonState;
 
 /**
  *
  */
-public class ArcCountProgram implements ObserverProgram {
+public class PArcCount implements ObserverProgram {
 
 	final int step = 1000;
 	boolean isFirst = true;

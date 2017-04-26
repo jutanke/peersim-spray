@@ -1,22 +1,20 @@
-package descent.observers.program;
+package descent.observers;
 
 import java.util.ArrayList;
 
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
 import peersim.core.CommonState;
 
 /**
  *
  */
-public class ArcAndDiameterProgram implements ObserverProgram {
+public class PArcAndDiameter implements ObserverProgram {
 
 	final int step = 10;
 	boolean isFirst = true;
 	ArrayList<Integer> checkpoint = new ArrayList<Integer>();
 	static Integer i = -1;
 
-	public ArcAndDiameterProgram() {
+	public PArcAndDiameter() {
 		checkpoint.add(100);
 		checkpoint.add(500);
 		checkpoint.add(1000);

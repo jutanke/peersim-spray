@@ -22,7 +22,7 @@ public class TManPartialView extends HashSet<Node> {
 		Iterator<Node> it = this.iterator();
 		Integer random = CommonState.r.nextInt(size);
 
-		Node result = null;
+		Node result = it.next();
 		for (int i = 0; i < random; ++i) {
 			result = it.next();
 		}
@@ -52,7 +52,7 @@ public class TManPartialView extends HashSet<Node> {
 
 		Collections.sort(rank, ranking);
 
-		return rank.subList(0, (int) size);
+		return rank.subList(0, Math.min((int) size, rank.size()));
 	}
 
 	public void merge(final TMan myself, List<Node> sample, Integer size) {
@@ -83,8 +83,8 @@ public class TManPartialView extends HashSet<Node> {
 
 		Collections.sort(rank, ranking);
 
-		List<Node> toKeep = rank.subList(0, size);
-		List<Node> toThrow = rank.subList(size, rank.size());
+		List<Node> toKeep = rank.subList(0, Math.min(size, rank.size()));
+		List<Node> toThrow = rank.subList(Math.min(size, rank.size()), rank.size());
 
 		for (int i = 0; i < toKeep.size(); ++i) {
 			this.add(toKeep.get(i));

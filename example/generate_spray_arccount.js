@@ -82,7 +82,7 @@ init.sch.randstart
 
 
 control.0 descent.observers.Observer
-control.0.program descent.observers.program.VarianceAndArcCountProgram
+control.0.program descent.observers.PVarianceAndArcCount
 control.0.protocol rps
 control.0.FINAL
 control.0.step 1`);

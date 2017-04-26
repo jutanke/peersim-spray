@@ -1,19 +1,16 @@
-package descent.observers.program;
-
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
+package descent.observers;
 
 /**
  * Created by julian on 4/29/15.
  */
-public class VarianceAndArcCountProgram implements ObserverProgram {
+public class PVarianceAndArcCount implements ObserverProgram {
 
 	int lastSize = -1;
 	int lastCount = 0;
 	int lastCountTemp = 0;
 	double firstVar = -1;
 
-	public VarianceAndArcCountProgram() {
+	public PVarianceAndArcCount() {
 		System.out.println("#nbPeers arcCount arcCountNoDuplicates stdDeviation avg|P| min|P| max|P|");
 	}
 

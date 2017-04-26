@@ -1,7 +1,5 @@
-package descent.observers.program;
+package descent.observers;
 
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
 import peersim.core.CommonState;
 import peersim.core.Network;
 
@@ -10,7 +8,7 @@ import peersim.core.Network;
  *
  * Created by julian on 02/05/15.
  */
-public class PythonNetworkProgram implements ObserverProgram {
+public class PPythonNetwork implements ObserverProgram {
 
 	final int step = 100;
 	boolean isFirst = true;

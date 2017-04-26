@@ -187,8 +187,8 @@ init.sch.randstart
 ##### Controls #####
 
 control.0 descent.observers.Observer
-#control.0.program descent.observers.program.ClusteringCoefficientProgram
-control.0.program descent.observers.program.ArcCountProgram
+#control.0.program descent.observers.PClusteringCoefficient
+control.0.program descent.observers.PArcCount
 control.0.protocol rps
 control.0.FINAL
 control.0.step 1

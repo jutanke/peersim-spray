@@ -15,7 +15,9 @@ import java.util.function.Function;
 import descent.controllers.DynamicNetwork;
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IPeerSampling;
+import descent.tman.TMan;
 import peersim.core.CommonState;
+import peersim.core.Network;
 import peersim.core.Node;
 
 /**
@@ -1247,6 +1249,52 @@ public class DictGraph {
 		// return Q.get(0);
 		// }
 		return min;
+	}
+
+	/**
+	 * Get the distribution of distances between neighbors at the given
+	 * resolution
+	 * 
+	 * @param resolution
+	 * @return distance => number of peers
+	 */
+	public HashMap<Double, Integer> getDistances(Integer resolution) {
+		HashMap<Double, Integer> results = new HashMap<Double, Integer>();
+
+		Double min = Double.POSITIVE_INFINITY;
+		Double max = Double.NEGATIVE_INFINITY;
+
+		ArrayList<Double> distances = new ArrayList<Double>();
+
+		for (int i = 0; i < Network.size(); ++i) {
+			Node n = Network.get(i);
+			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
+			for (Node neighbor : nTMan.partialViewTMan) {
+				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
+				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
+				if (min > distance) {
+					min = distance;
+				}
+				if (max < distance) {
+					max = distance;
+				}
+				distances.add(distance);
+			}
+		}
+
+		Double bucketSize = (max - min) / new Double(resolution);
+
+		for (int i = 0; i < resolution; ++i) {
+			results.put(min + (i + 1) * (bucketSize / 2), 0);
+		}
+
+		for (int i = 0; i < distances.size(); ++i) {
+			Integer bucket = (int) Math.floor((distances.get(i) - min) / bucketSize);
+
+			results.put(min + (bucket + 1) * (bucketSize / 2), results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
+		}
+
+		return results;
 	}
 
 }

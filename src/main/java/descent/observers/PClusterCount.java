@@ -1,12 +1,9 @@
-package descent.observers.program;
-
-import descent.observers.DictGraph;
-import descent.observers.ObserverProgram;
+package descent.observers;
 
 /**
  * Created by julian on 4/30/15.
  */
-public class ClusterCountProgram implements ObserverProgram {
+public class PClusterCount implements ObserverProgram {
 
     int prevSize = -1;
     final int COUNTDOWN = 30;
