@@ -7,7 +7,7 @@ import peersim.core.Control;
 import peersim.core.Network;
 import peersim.core.Node;
 import descent.rps.IDynamic;
-import descent.rps.IRandomPeerSampling;
+import descent.rps.IPeerSampling;
 
 /**
  * Created by julian on 3/15/15.
@@ -47,7 +47,7 @@ public class Observer implements Control {
 				Node n = Network.get(i);
 				IDynamic d = (IDynamic) n.getProtocol(pid);
 				if (d.isUp()) {
-					IRandomPeerSampling pss = (IRandomPeerSampling) n
+					IPeerSampling pss = (IPeerSampling) n
 							.getProtocol(pid);
 					observer.addStrict(n, pss);
 					final int size = pss.getAliveNeighbors().size();

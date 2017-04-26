@@ -10,7 +10,7 @@ import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 
-public abstract class ARandomPeerSamplingProtocol implements IDynamic, Linkable, CDProtocol, IRandomPeerSampling {
+public abstract class APeerSamplingProtocol implements IDynamic, Linkable, CDProtocol, IPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
 	public static final String PAR_PROT = "rps"; // name of the protocol
@@ -39,21 +39,21 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic, Linkable,
 	 * @param prefix
 	 *            configuration of peersim
 	 */
-	public ARandomPeerSamplingProtocol(String prefix) {
-		ARandomPeerSamplingProtocol.pid = Configuration.lookupPid(ARandomPeerSamplingProtocol.PAR_PROT);
-		ARandomPeerSamplingProtocol.delta = Configuration.getInt(prefix + "." + ARandomPeerSamplingProtocol.PAR_DELTA);
-		ARandomPeerSamplingProtocol.start = Configuration.getInt(prefix + "." + ARandomPeerSamplingProtocol.PAR_START);
-		ARandomPeerSamplingProtocol.fail = Configuration.getDouble(prefix + "." + ARandomPeerSamplingProtocol.PAR_FAIL,
+	public APeerSamplingProtocol(String prefix) {
+		APeerSamplingProtocol.pid = Configuration.lookupPid(APeerSamplingProtocol.PAR_PROT);
+		APeerSamplingProtocol.delta = Configuration.getInt(prefix + "." + APeerSamplingProtocol.PAR_DELTA);
+		APeerSamplingProtocol.start = Configuration.getInt(prefix + "." + APeerSamplingProtocol.PAR_START);
+		APeerSamplingProtocol.fail = Configuration.getDouble(prefix + "." + APeerSamplingProtocol.PAR_FAIL,
 				0.0);
 		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
-	public ARandomPeerSamplingProtocol() {
+	public APeerSamplingProtocol() {
 		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	// must be implemented in the child class
-	public abstract IRandomPeerSampling clone();
+	public abstract IPeerSampling clone();
 
 	public abstract boolean addNeighbor(Node peer);
 
@@ -80,8 +80,8 @@ public abstract class ARandomPeerSamplingProtocol implements IDynamic, Linkable,
 			this.node = node;
 		}
 		// #2 call the periodic function of the node every Delta time
-		if (isUp() && CommonState.getTime() >= ARandomPeerSamplingProtocol.start
-				&& CommonState.getTime() % ARandomPeerSamplingProtocol.delta == 0) {
+		if (isUp() && CommonState.getTime() >= APeerSamplingProtocol.start
+				&& CommonState.getTime() % APeerSamplingProtocol.delta == 0) {
 			this.periodicCall();
 		}
 	}

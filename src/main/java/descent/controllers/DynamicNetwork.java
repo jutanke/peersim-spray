@@ -2,8 +2,8 @@ package descent.controllers;
 
 import java.util.LinkedList;
 
-import descent.rps.ARandomPeerSamplingProtocol;
-import descent.rps.IRandomPeerSampling;
+import descent.rps.APeerSamplingProtocol;
+import descent.rps.IPeerSampling;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -66,7 +66,7 @@ public class DynamicNetwork implements Control {
 		if (!DynamicNetwork.once) {
 			for (int i = 0; i < nsize; i++) {
 				final Node node = Network.get(i);
-				IRandomPeerSampling d = (IRandomPeerSampling) node.getProtocol(pid);
+				IPeerSampling d = (IPeerSampling) node.getProtocol(pid);
 				d.leave();
 				DynamicNetwork.availableNodes.add(node);
 			}
@@ -89,7 +89,7 @@ public class DynamicNetwork implements Control {
 				final int pos = CommonState.r.nextInt(DynamicNetwork.graph.size());
 				final Node rem = DynamicNetwork.graph.get(pos);
 				this.removeNode(rem);
-				ARandomPeerSamplingProtocol d = (ARandomPeerSamplingProtocol) rem.getProtocol(pid);
+				APeerSamplingProtocol d = (APeerSamplingProtocol) rem.getProtocol(pid);
 				if (d.isUp()) {
 					d.leave();
 				}
@@ -144,14 +144,14 @@ public class DynamicNetwork implements Control {
 	}
 
 	public void removeNode(Node leaver) {
-		ARandomPeerSamplingProtocol leaverProtocol = (ARandomPeerSamplingProtocol) leaver
-				.getProtocol(ARandomPeerSamplingProtocol.pid);
+		APeerSamplingProtocol leaverProtocol = (APeerSamplingProtocol) leaver
+				.getProtocol(APeerSamplingProtocol.pid);
 		leaverProtocol.leave();
 	}
 
 	public void addNode(Node joiner, Node contact) {
-		ARandomPeerSamplingProtocol joinerProtocol = (ARandomPeerSamplingProtocol) joiner
-				.getProtocol(ARandomPeerSamplingProtocol.pid);
+		APeerSamplingProtocol joinerProtocol = (APeerSamplingProtocol) joiner
+				.getProtocol(APeerSamplingProtocol.pid);
 		joinerProtocol.join(joiner, contact);
 	}
 

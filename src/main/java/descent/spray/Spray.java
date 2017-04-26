@@ -2,9 +2,9 @@ package descent.spray;
 
 import java.util.List;
 
-import descent.rps.ARandomPeerSamplingProtocol;
+import descent.rps.APeerSamplingProtocol;
 import descent.rps.IMessage;
-import descent.rps.IRandomPeerSampling;
+import descent.rps.IPeerSampling;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
@@ -13,9 +13,9 @@ import peersim.core.Node;
  * Random peer-sampling protocol that self-adapts its functioning to the size of
  * the network using local knowledge only.
  */
-public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
+public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 
-	// #A No values from the configuration file of peersim
+	// #A Configuration from peersim
 	// In average, the number of arcs should be ~ a*ln(N)+b
 	private static final String PAR_A = "a";
 	private static Double A = 1.;
@@ -47,6 +47,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 	 * Empty constructor
 	 */
 	public Spray() {
+		super();
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 	}
@@ -55,7 +56,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 	protected boolean pFail(List<Node> path) {
 		// The probability is constant since the number of hops to establish
 		// a connection is constant: p1 -> bridge -> p2 -> bridge -> p1
-		double pf = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail, 6);
+		double pf = 1 - Math.pow(1 - APeerSamplingProtocol.fail, 6);
 		return CommonState.r.nextDouble() < pf;
 	}
 
@@ -64,7 +65,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 			// #1 Choose the peer to exchange with
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			Spray qSpray = (Spray) q.getProtocol(ARandomPeerSamplingProtocol.pid);
+			Spray qSpray = (Spray) q.getProtocol(APeerSamplingProtocol.pid);
 			boolean isFailedConnection = this.pFail(null);
 			if (qSpray.isUp() && !isFailedConnection) {
 				// #A If the chosen peer is alive, exchange
@@ -175,7 +176,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements IRandomPeerSam
 	}
 
 	@Override
-	public IRandomPeerSampling clone() {
+	public IPeerSampling clone() {
 		try {
 			Spray sprayClone = new Spray();
 			sprayClone.partialView = (SprayPartialView) this.partialView.clone();

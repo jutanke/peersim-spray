@@ -7,7 +7,7 @@ import peersim.core.Node;
 /**
  * Basic functions composing the random peer sampling protocol.
  */
-public interface IRandomPeerSampling {
+public interface IPeerSampling {
 
     /**
      * Get the total outbound cost of tick rounds
@@ -77,6 +77,6 @@ public interface IRandomPeerSampling {
      *
      * @return a clone of the instance calling it
      */
-    IRandomPeerSampling clone();
+    IPeerSampling clone();
 
 }

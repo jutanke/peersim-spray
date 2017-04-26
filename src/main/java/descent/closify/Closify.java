@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import peersim.core.Node;
-import descent.rps.ARandomPeerSamplingProtocol;
+import descent.rps.APeerSamplingProtocol;
 import descent.rps.IMessage;
-import descent.rps.IRandomPeerSampling;
+import descent.rps.IPeerSampling;
 import descent.spray.MergingRegister;
 import descent.spray.Spray;
 import descent.spray.SprayPartialView;
@@ -35,7 +35,7 @@ public class Closify extends Spray {
 	public void periodicCall() {
 		Node oldest = this.partialView.getOldest();
 		Closify qClosify = (Closify) oldest
-				.getProtocol(ARandomPeerSamplingProtocol.pid);
+				.getProtocol(APeerSamplingProtocol.pid);
 		super.periodicCall();
 		IMessage send = new ClosifyMessage(
 				this.additionnalView.getPeers(30 / 100 * this.additionnalView
@@ -68,7 +68,7 @@ public class Closify extends Spray {
 	}
 
 	@Override
-	public IRandomPeerSampling clone() {
+	public IPeerSampling clone() {
 		try {
 			Closify closifyClone = new Closify();
 			closifyClone.partialView = (SprayPartialView) this.partialView

@@ -5,14 +5,14 @@ import java.util.List;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.rps.ARandomPeerSamplingProtocol;
+import descent.rps.APeerSamplingProtocol;
 import descent.rps.IMessage;
-import descent.rps.IRandomPeerSampling;
+import descent.rps.IPeerSampling;
 
 /**
  * The Spray protocol
  */
-public class SprayReversedJoin extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
+public class SprayReversedJoin extends APeerSamplingProtocol implements IPeerSampling {
 
 	// #0 additional arcs to inject
 	private static final String PAR_C = "c";
@@ -48,7 +48,7 @@ public class SprayReversedJoin extends ARandomPeerSamplingProtocol implements IR
 	protected boolean pFail(List<Node> path) {
 		// the probability is constant since the number of hops to establish
 		// a connection is constant
-		double pf = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail, 6);
+		double pf = 1 - Math.pow(1 - APeerSamplingProtocol.fail, 6);
 		return CommonState.r.nextDouble() < pf;
 	}
 
@@ -57,7 +57,7 @@ public class SprayReversedJoin extends ARandomPeerSamplingProtocol implements IR
 			// #1 choose the peer to exchange with
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			SprayReversedJoin qSpray = (SprayReversedJoin) q.getProtocol(ARandomPeerSamplingProtocol.pid);
+			SprayReversedJoin qSpray = (SprayReversedJoin) q.getProtocol(APeerSamplingProtocol.pid);
 			boolean isFailedConnection = this.pFail(null);
 			if (qSpray.isUp() && !isFailedConnection) {
 				// #A if the chosen peer is alive, exchange
@@ -137,7 +137,7 @@ public class SprayReversedJoin extends ARandomPeerSamplingProtocol implements IR
 	}
 
 	@Override
-	public IRandomPeerSampling clone() {
+	public IPeerSampling clone() {
 		try {
 			SprayReversedJoin sprayClone = new SprayReversedJoin();
 			sprayClone.partialView = (SprayPartialView) this.partialView.clone();

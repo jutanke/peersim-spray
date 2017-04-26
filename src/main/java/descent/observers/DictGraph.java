@@ -13,8 +13,8 @@ import java.util.Stack;
 import java.util.function.Function;
 
 import descent.controllers.DynamicNetwork;
-import descent.rps.ARandomPeerSamplingProtocol;
-import descent.rps.IRandomPeerSampling;
+import descent.rps.APeerSamplingProtocol;
+import descent.rps.IPeerSampling;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -49,12 +49,12 @@ public class DictGraph {
 
 	private List<DictNode> neighbourhood;
 
-	private final List<IRandomPeerSampling> pssList;
+	private final List<IPeerSampling> pssList;
 	private final Map<Long, Integer> dist;
 	private final LinkedList<DictNode> Q;
 
 	private DictGraph(int size) {
-		this.pssList = new ArrayList<IRandomPeerSampling>();
+		this.pssList = new ArrayList<IPeerSampling>();
 		this.neighbourhood = new ArrayList<DictNode>();
 		this.dist = new HashMap<Long, Integer>();
 		// this.prev = new int[size];
@@ -77,7 +77,7 @@ public class DictGraph {
 		this.nodes.clear();
 	}
 
-	public void add(Node n, IRandomPeerSampling c) {
+	public void add(Node n, IPeerSampling c) {
 		DictNode node = new DictNode(n.getID());
 		for (Node neighbor : c.getPeers(Integer.MAX_VALUE)) {
 			node.neighbors.add(neighbor.getID());
@@ -88,7 +88,7 @@ public class DictGraph {
 		this.pssList.add(c);
 	}
 
-	public void addStrict(Node n, IRandomPeerSampling pss) {
+	public void addStrict(Node n, IPeerSampling pss) {
 		DictNode node = new DictNode(n.getID());
 		for (Node neighbor : pss.getAliveNeighbors()) {
 			node.neighbors.add(neighbor.getID());
@@ -527,8 +527,8 @@ public class DictGraph {
 		double sumOfResult = 0;
 		ArrayList<Long> upNode = new ArrayList<Long>();
 		for (Integer i = 0; i < DynamicNetwork.graph.size(); ++i) {
-			ARandomPeerSamplingProtocol rps = (ARandomPeerSamplingProtocol) DynamicNetwork.graph.get(i)
-					.getProtocol(ARandomPeerSamplingProtocol.pid);
+			APeerSamplingProtocol rps = (APeerSamplingProtocol) DynamicNetwork.graph.get(i)
+					.getProtocol(APeerSamplingProtocol.pid);
 			if (rps.isUp()) {
 				upNode.add(DynamicNetwork.graph.get(i).getID());
 			}
