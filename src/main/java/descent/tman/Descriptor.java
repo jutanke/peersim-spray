@@ -7,18 +7,18 @@ public class Descriptor implements IDescriptor {
 
 	public final double x;
 
-	private static double NUMBER = 0;
+	public static double NUMBER = 0;
 
 	public Descriptor(double x) {
 		this.x = x;
 	}
-	
-	public Descriptor(Descriptor d){
+
+	public Descriptor(Descriptor d) {
 		this.x = d.x;
 	}
 
 	public static IDescriptor get() {
-		++Descriptor.NUMBER;
+		Descriptor.NUMBER = Descriptor.NUMBER + 1;
 		return new Descriptor(Descriptor.NUMBER);
 	}
 

@@ -1,5 +1,7 @@
 package descent.observers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class PDistance implements ObserverProgram {
@@ -8,8 +10,12 @@ public class PDistance implements ObserverProgram {
 		HashMap<Double, Integer> distribution = observer.getDistances(10);
 
 		String output = "";
-		for (Double key : distribution.keySet()) {
-			output = distribution.get(key).toString() + " ";
+
+		ArrayList<Double> keys = new ArrayList<Double>(distribution.keySet());
+		Collections.sort(keys);
+
+		for (Double key : keys) {
+			output = output + distribution.get(key).toString() + " ";
 		}
 
 		System.out.println(output);

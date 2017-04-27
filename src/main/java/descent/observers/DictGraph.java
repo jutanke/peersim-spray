@@ -15,6 +15,7 @@ import java.util.function.Function;
 import descent.controllers.DynamicNetwork;
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IPeerSampling;
+import descent.tman.Descriptor;
 import descent.tman.TMan;
 import peersim.core.CommonState;
 import peersim.core.Network;
@@ -1259,6 +1260,7 @@ public class DictGraph {
 	 * @return distance => number of peers
 	 */
 	public HashMap<Double, Integer> getDistances(Integer resolution) {
+		Double maximal = Descriptor.NUMBER;
 		HashMap<Double, Integer> results = new HashMap<Double, Integer>();
 
 		Double min = Double.POSITIVE_INFINITY;
@@ -1278,20 +1280,26 @@ public class DictGraph {
 				if (max < distance) {
 					max = distance;
 				}
+				// System.out.println("desc1 " + ((Descriptor) nTMan.descriptor).x);
+				// System.out.println("d " + distance);
 				distances.add(distance);
 			}
 		}
 
-		Double bucketSize = (max - min) / new Double(resolution);
-
+		//Double bucketSize = (1+ max - min) / new Double(resolution);
+		Double bucketSize = maximal / new Double(resolution);
+		
+		
 		for (int i = 0; i < resolution; ++i) {
-			results.put(min + (i + 1) * (bucketSize / 2), 0);
+			//results.put(min + (i + 1) * (bucketSize / 2), 0);
+			results.put(0 + (i + 1) * (bucketSize / 2), 0);
 		}
 
 		for (int i = 0; i < distances.size(); ++i) {
-			Integer bucket = (int) Math.floor((distances.get(i) - min) / bucketSize);
-
-			results.put(min + (bucket + 1) * (bucketSize / 2), results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
+			Double bucket = Math.floor(distances.get(i) / bucketSize);
+			// System.out.println("bucket " + bucket );
+		//	results.put(min + (bucket + 1) * (bucketSize / 2), results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
+			results.put(0 + (bucket + 1) * (bucketSize / 2), results.get(0 + (bucket + 1) * (bucketSize / 2)) + 1);
 		}
 
 		return results;
