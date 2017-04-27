@@ -29,8 +29,30 @@ public class TManPartialView extends HashSet<Node> {
 		return result;
 	}
 
-	List<Node> getSample(final TMan other, List<Node> randomPeers, double size) {
-		ArrayList<Node> rank = new ArrayList<Node>(this);
+	List<Node> getSample(Node caller, Node other, List<Node> randomPeers, double size) {
+		final TMan callerTMan = ((TMan) caller.getProtocol(TMan.pid));
+		final TMan otherTMan = ((TMan) other.getProtocol(TMan.pid));
+
+		ArrayList<Node> rank = new ArrayList<Node>();
+		for (Node n : this) {
+			if (n.equals(other)) {
+				rank.add(caller);
+			} else {
+				rank.add(n);
+			}
+		}
+
+		for (Node n : randomPeers) {
+			Node toAdd = n;
+			if (toAdd.equals(other)) {
+				toAdd = caller;
+			}
+			if (!rank.contains(toAdd)) {
+				rank.add(toAdd);
+			}
+		}
+
+		// ArrayList<Node> rank = new ArrayList<Node>(this);
 		rank.addAll(randomPeers);
 
 		Comparator<Node> ranking = new Comparator<Node>() {
@@ -39,9 +61,9 @@ public class TManPartialView extends HashSet<Node> {
 				IDescriptor o1Desc = ((TMan) o1.getProtocol(TMan.pid)).descriptor;
 				IDescriptor o2Desc = ((TMan) o2.getProtocol(TMan.pid)).descriptor;
 
-				if (other.descriptor.ranking(o1Desc) < other.descriptor.ranking(o2Desc)) {
+				if (otherTMan.descriptor.ranking(o1Desc) < otherTMan.descriptor.ranking(o2Desc)) {
 					return -1;
-				} else if (other.descriptor.ranking(o1Desc) > other.descriptor.ranking(o2Desc)) {
+				} else if (otherTMan.descriptor.ranking(o1Desc) > otherTMan.descriptor.ranking(o2Desc)) {
 					return 1;
 				} else {
 					return 0;

@@ -72,7 +72,7 @@ public class TMan extends Spray implements IPeerSampling {
 		}
 
 		// #2 Prepare a sample
-		List<Node> sample = this.partialViewTMan.getSample(qTMan, this.partialView.getPeers(),
+		List<Node> sample = this.partialViewTMan.getSample(this.node, q, this.partialView.getPeers(),
 				Math.floor(this.partialView.size() / 2));
 		IMessage result = qTMan.onPeriodicCallTMan(this.node, new TManMessage(sample));
 		// #3 Integrate remote sample if it fits better
@@ -82,7 +82,7 @@ public class TMan extends Spray implements IPeerSampling {
 	public IMessage onPeriodicCallTMan(Node origin, IMessage message) {
 		// #1 prepare a sample
 		TMan originTMan = (TMan) origin.getProtocol(TMan.pid);
-		List<Node> sample = this.partialViewTMan.getSample(originTMan, this.partialView.getPeers(),
+		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, this.partialView.getPeers(),
 				Math.floor(this.partialView.size() / 2));
 		// #2 merge the received sample
 		this.partialViewTMan.merge(this, sample, this.partialView.size());
