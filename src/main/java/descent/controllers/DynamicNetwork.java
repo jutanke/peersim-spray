@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IPeerSampling;
+import descent.spray.Spray;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -119,12 +120,12 @@ public class DynamicNetwork implements Control {
 	}
 
 	private void insert() {
-		if (this.SIZE > DynamicNetwork.graph.size()) {
+		if (this.SIZE > this.localGraph.size()) {
 			final Node current = DynamicNetwork.availableNodes.poll();
-			// Spray s = (Spray) current.getProtocol(pid); // only work for
-			// spray
-			// s.register.initialize(this.NETWORK_ID);
-			if (DynamicNetwork.graph.size() > 0) {
+			Spray s = (Spray) current.getProtocol(pid); // only work for spray
+			s.register.initialize(this.NETWORK_ID);
+			s.history.setName(""+ this.NETWORK_ID);
+			if (this.localGraph.size() > 0) {
 				final Node contact = getNode(0);
 				this.addNode(current, contact);
 			} else {
@@ -136,22 +137,20 @@ public class DynamicNetwork implements Control {
 	}
 
 	public Node getNode(Integer limit) {
-		if (graph.size() > limit) {
-			return graph.get(CommonState.r.nextInt(graph.size() - limit));
+		if (this.localGraph.size() > limit) {
+			return this.localGraph.get(CommonState.r.nextInt(this.localGraph.size() - limit));
 		} else {
-			return graph.get(CommonState.r.nextInt(graph.size()));
+			return this.localGraph.get(CommonState.r.nextInt(this.localGraph.size()));
 		}
 	}
 
 	public void removeNode(Node leaver) {
-		APeerSamplingProtocol leaverProtocol = (APeerSamplingProtocol) leaver
-				.getProtocol(APeerSamplingProtocol.pid);
+		APeerSamplingProtocol leaverProtocol = (APeerSamplingProtocol) leaver.getProtocol(APeerSamplingProtocol.pid);
 		leaverProtocol.leave();
 	}
 
 	public void addNode(Node joiner, Node contact) {
-		APeerSamplingProtocol joinerProtocol = (APeerSamplingProtocol) joiner
-				.getProtocol(APeerSamplingProtocol.pid);
+		APeerSamplingProtocol joinerProtocol = (APeerSamplingProtocol) joiner.getProtocol(APeerSamplingProtocol.pid);
 		joinerProtocol.join(joiner, contact);
 	}
 

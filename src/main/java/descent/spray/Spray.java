@@ -27,6 +27,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	public SprayPartialView partialView;
 
 	public MergingRegister register;
+	public History<String> history;
 
 	/**
 	 * Constructor
@@ -38,6 +39,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
+		this.history = new History<String>("");
 
 		Spray.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, Spray.A);
 		Spray.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, Spray.B);
@@ -50,6 +52,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		super();
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
+		this.history = new History<String>("");
 	}
 
 	@Override
@@ -85,7 +88,9 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		IMessage received = qSpray.onPeriodicCall(this.node,
 				new SprayMessage(sample, this.register.networks, this.register.size, this.partialView.size()));
 		// #3 Check if must merge networks
-		this.onMerge(this.register.isMerge((SprayMessage) received, this.partialView.size()), q);
+		// this.onMerge(this.register.isMerge((SprayMessage) received,
+		// this.partialView.size()), q);
+		this.onMergeBis(q);
 		// #4 Merge the received sample with current partial view
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
@@ -95,7 +100,9 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
 		// #0 Check there is a network merging in progress
-		this.onMerge(this.register.isMerge((SprayMessage) message, this.partialView.size()), origin);
+		// this.onMerge(this.register.isMerge((SprayMessage) message,
+		// this.partialView.size()), origin);
+		this.onMergeBis(origin);
 		// #1 Process the sample to send back
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
@@ -185,6 +192,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 			Spray sprayClone = new Spray();
 			sprayClone.partialView = (SprayPartialView) this.partialView.clone();
 			sprayClone.register = (MergingRegister) this.register.clone();
+			sprayClone.history = (History<String>) this.history.clone();
 			return sprayClone;
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
@@ -235,6 +243,31 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		if (this.partialView.size() > 0) {
 			Node toDouble = this.partialView.getLowestOcc();
 			this.partialView.addNeighbor(toDouble);
+		}
+	}
+
+	private void onMergeBis(Node other) {
+		Spray sOther = (Spray) other.getProtocol(Spray.pid);
+		// A 7600 B 7609 C 7888
+		//if (!sOther.history.isEqual(this.history) && sOther.history.isDifferent(this.history)) { // A
+		if (!sOther.history.isEqual(this.history) && !this.history.isLower(sOther.history)) { // B
+		// if (!sOther.history.isEqual(this.history)) { // C
+			System.out.println("====");
+			System.out.println(this.history.name);
+			System.out.println(sOther.history.name);
+			System.out.println("====");
+
+			// Double ratio1 = 1. / Math.exp(sOther.partialView.size() -
+			// this.partialView.size() + 1);
+			Double sum = Math.exp(this.partialView.size()) + Math.exp(sOther.partialView.size());
+			Double ratio1 = Math.exp(this.partialView.size()) / sum;
+			// Double ratio2 = 1. / Math.exp(this.partialView.size() -
+			// sOther.partialView.size() + 1);
+			Double ratio2 = Math.exp(sOther.partialView.size()) / sum;
+			Double proba = -(this.A * ratio1 * Math.log(ratio1)) - (sOther.A * ratio2 * Math.log(ratio2));
+			this.inject(proba, 0., other);
+
+			this.history = this.history.merge(sOther.history.name);
 		}
 	}
 

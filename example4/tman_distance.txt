@@ -1,5 +1,5 @@
 # network size
-SIZE 1000
+SIZE 10000
 
 # parameters of periodic execution
 CYCLES 100
@@ -22,7 +22,7 @@ control.o1 descent.controllers.DynamicNetwork
 control.o1.protocol rps
 control.o1.FINAL
 control.o1.step 1
-control.o1.addingPerStep 20
+control.o1.addingPerStep 200
 #control.o1.addingPerStepPerc 1
 control.o1.startAdd 0
 control.o1.endAdd 50

@@ -19,6 +19,7 @@ protocol.rps.delta 1
 protocol.rps.step 1
 protocol.rps.start 2
 protocol.rps.linkable link
+protocol.rps.b 10
 protocol.rps.fail 0.000
 
 ## networks
