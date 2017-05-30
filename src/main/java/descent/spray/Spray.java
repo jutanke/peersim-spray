@@ -90,7 +90,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		// #3 Check if must merge networks
 		// this.onMerge(this.register.isMerge((SprayMessage) received,
 		// this.partialView.size()), q);
-		this.onMergeBis(q);
+		//this.onMergeBis(q);
 		// #4 Merge the received sample with current partial view
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
@@ -102,7 +102,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		// #0 Check there is a network merging in progress
 		// this.onMerge(this.register.isMerge((SprayMessage) message,
 		// this.partialView.size()), origin);
-		this.onMergeBis(origin);
+		//this.onMergeBis(origin);
 		// #1 Process the sample to send back
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
@@ -249,8 +249,8 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	private void onMergeBis(Node other) {
 		Spray sOther = (Spray) other.getProtocol(Spray.pid);
 		// A 7600 B 7609 C 7888
-		//if (!sOther.history.isEqual(this.history) && sOther.history.isDifferent(this.history)) { // A
-		if (!sOther.history.isEqual(this.history) && !this.history.isLower(sOther.history)) { // B
+		// if (!sOther.history.isEqual(this.history) && sOther.history.isDifferent(this.history)) { // A
+		 if (!sOther.history.isEqual(this.history) && !this.history.isLower(sOther.history)) { // B
 		// if (!sOther.history.isEqual(this.history)) { // C
 			System.out.println("====");
 			System.out.println(this.history.name);

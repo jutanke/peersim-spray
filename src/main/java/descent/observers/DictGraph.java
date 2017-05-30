@@ -1280,29 +1280,54 @@ public class DictGraph {
 				if (max < distance) {
 					max = distance;
 				}
-				// System.out.println("desc1 " + ((Descriptor) nTMan.descriptor).x);
+				// System.out.println("desc1 " + ((Descriptor)
+				// nTMan.descriptor).x);
 				// System.out.println("d " + distance);
 				distances.add(distance);
 			}
 		}
 
-		//Double bucketSize = (1+ max - min) / new Double(resolution);
+		// Double bucketSize = (1+ max - min) / new Double(resolution);
 		Double bucketSize = maximal / new Double(resolution);
-		
-		
+
 		for (int i = 0; i < resolution; ++i) {
-			//results.put(min + (i + 1) * (bucketSize / 2), 0);
+			// results.put(min + (i + 1) * (bucketSize / 2), 0);
 			results.put(0 + (i + 1) * (bucketSize / 2), 0);
 		}
 
 		for (int i = 0; i < distances.size(); ++i) {
 			Double bucket = Math.floor(distances.get(i) / bucketSize);
 			// System.out.println("bucket " + bucket );
-		//	results.put(min + (bucket + 1) * (bucketSize / 2), results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
+			// results.put(min + (bucket + 1) * (bucketSize / 2),
+			// results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
 			results.put(0 + (bucket + 1) * (bucketSize / 2), results.get(0 + (bucket + 1) * (bucketSize / 2)) + 1);
 		}
 
 		return results;
+	}
+
+	/**
+	 * Count the number of "monitor". A peer is a monitor only if no peers in
+	 * its neighborhoods is a monitor.
+	 */
+	public Integer countMonitors() {
+		HashSet<Long> monitors = new HashSet<Long>();
+		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
+			Node n = DynamicNetwork.networks.get(0).get(i);
+
+			int j = 0;
+			boolean found = false;
+			while (n.isUp() && j < this.nodes.get(n.getID()).neighbors.size() && !found) {
+				if (monitors.contains(this.nodes.get(n.getID()).neighbors.get(j))) {
+					found = true;
+				}
+				++j;
+			}
+			if (!found) {
+				monitors.add(n.getID());
+			}
+		}
+		return monitors.size();
 	}
 
 }
