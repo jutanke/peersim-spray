@@ -3,13 +3,12 @@ package descent.closify;
 import java.util.ArrayList;
 import java.util.List;
 
-import peersim.core.Node;
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
-import descent.spray.MergingRegister;
 import descent.spray.Spray;
 import descent.spray.SprayPartialView;
+import peersim.core.Node;
 
 public class Closify extends Spray {
 
@@ -34,35 +33,27 @@ public class Closify extends Spray {
 
 	public void periodicCall() {
 		Node oldest = this.partialView.getOldest();
-		Closify qClosify = (Closify) oldest
-				.getProtocol(APeerSamplingProtocol.pid);
+		Closify qClosify = (Closify) oldest.getProtocol(APeerSamplingProtocol.pid);
 		super.periodicCall();
-		IMessage send = new ClosifyMessage(
-				this.additionnalView.getPeers(30 / 100 * this.additionnalView
-						.size()));
-		ClosifyMessage answer = (ClosifyMessage) qClosify
-				.onClosifyPeriodicCall(this.node, send);
+		IMessage send = new ClosifyMessage(this.additionnalView.getPeers(30 / 100 * this.additionnalView.size()));
+		ClosifyMessage answer = (ClosifyMessage) qClosify.onClosifyPeriodicCall(this.node, send);
 		this.additionnalView.updateMax(this.partialView.size());
-		this.additionnalView.mergeSample(this.node, qClosify.node,
-				(List<Node>) answer.getPayload(),
+		this.additionnalView.mergeSample(this.node, qClosify.node, (List<Node>) answer.getPayload(),
 				(List<Node>) send.getPayload(), true);
 		if (this.additionnalView.size() < this.additionnalView.max) {
-			this.additionnalView.mergeSample(this.node, qClosify.node,
-					this.partialView.getPeers(), new ArrayList<Node>(), true);
+			this.additionnalView.mergeSample(this.node, qClosify.node, this.partialView.getPeers(),
+					new ArrayList<Node>(), true);
 		}
 		// System.out.println(this.additionnalView.max);
 	}
 
 	public IMessage onClosifyPeriodicCall(Node origin, IMessage message) {
-		IMessage answer = new ClosifyMessage(
-				this.additionnalView.getPeers(30 / 100 * this.additionnalView
-						.size()));
-		this.additionnalView.mergeSample(this.node, origin,
-				(List<Node>) message.getPayload(),
+		IMessage answer = new ClosifyMessage(this.additionnalView.getPeers(30 / 100 * this.additionnalView.size()));
+		this.additionnalView.mergeSample(this.node, origin, (List<Node>) message.getPayload(),
 				(List<Node>) answer.getPayload(), false);
 		if (this.additionnalView.size() < this.additionnalView.max) {
-			this.additionnalView.mergeSample(this.node, origin,
-					this.partialView.getPeers(), new ArrayList<Node>(), false);
+			this.additionnalView.mergeSample(this.node, origin, this.partialView.getPeers(), new ArrayList<Node>(),
+					false);
 		}
 		return answer;
 	}
@@ -71,11 +62,8 @@ public class Closify extends Spray {
 	public IPeerSampling clone() {
 		try {
 			Closify closifyClone = new Closify();
-			closifyClone.partialView = (SprayPartialView) this.partialView
-					.clone();
-			closifyClone.register = (MergingRegister) this.register.clone();
-			closifyClone.additionnalView = (ClosifyView) this.additionnalView
-					.clone();
+			closifyClone.partialView = (SprayPartialView) this.partialView.clone();
+			closifyClone.additionnalView = (ClosifyView) this.additionnalView.clone();
 			return closifyClone;
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block

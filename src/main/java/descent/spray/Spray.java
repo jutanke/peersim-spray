@@ -18,16 +18,15 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	// #A Configuration from peersim
 	// In average, the number of arcs should be ~ a*ln(N)+b
 	private static final String PAR_A = "a";
-	private static Double A = 1.;
+	private Double A = 1.;
 
 	private static final String PAR_B = "b";
-	private static Double B = 0.;
+	private Double B = 0.;
 
 	// #B Local variables
 	public SprayPartialView partialView;
 
 	public MergingRegister register;
-	public History<String> history;
 
 	/**
 	 * Constructor
@@ -39,10 +38,9 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
-		this.history = new History<String>("");
 
-		Spray.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, Spray.A);
-		Spray.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, Spray.B);
+		this.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, 1.);
+		this.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, 0.);
 	}
 
 	/**
@@ -52,7 +50,6 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		super();
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
-		this.history = new History<String>("");
 	}
 
 	@Override
@@ -85,12 +82,11 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 
 		// #2 Create a sample
 		List<Node> sample = this.partialView.getSample(this.node, q, true);
-		IMessage received = qSpray.onPeriodicCall(this.node,
-				new SprayMessage(sample, this.register.networks, this.register.size, this.partialView.size()));
+		IMessage received = qSpray.onPeriodicCall(this.node, new SprayMessage(sample));
 		// #3 Check if must merge networks
 		// this.onMerge(this.register.isMerge((SprayMessage) received,
 		// this.partialView.size()), q);
-		//this.onMergeBis(q);
+		// this.onMergeBis(q);
 		// #4 Merge the received sample with current partial view
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
@@ -102,12 +98,11 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		// #0 Check there is a network merging in progress
 		// this.onMerge(this.register.isMerge((SprayMessage) message,
 		// this.partialView.size()), origin);
-		//this.onMergeBis(origin);
+		// this.onMergeBis(origin);
 		// #1 Process the sample to send back
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
-		SprayMessage result = new SprayMessage(samplePrime, this.register.networks, this.register.size,
-				this.partialView.size());
+		SprayMessage result = new SprayMessage(samplePrime);
 		return result;
 	}
 
@@ -121,7 +116,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		// #2 Check if it is the very first peer
 		if (contact != null) {
 			// #A Inject A arcs to expect A*ln(N)+B arcs
-			this.inject(Spray.A, 0., contact);
+			this.inject(this.A, 0., contact);
 			// #B Inform the contact peer
 			Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
 			contactSpray.onSubscription(this.node);
@@ -146,7 +141,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network
 			// #3 Inject A + B arcs to expect A*ln(N)+B arcs
-			this.inject(Spray.A, Spray.B, origin);
+			this.inject(this.A, this.B, origin);
 		}
 	}
 
@@ -192,7 +187,6 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 			Spray sprayClone = new Spray();
 			sprayClone.partialView = (SprayPartialView) this.partialView.clone();
 			sprayClone.register = (MergingRegister) this.register.clone();
-			sprayClone.history = (History<String>) this.history.clone();
 			return sprayClone;
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
@@ -213,7 +207,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	 */
 	private void onPeerDown(Node q) {
 		// #1 Probability to *not* recreate the connection: A/ln(N) + B/N
-		double pRemove = Spray.A / this.partialView.size() + Spray.B / Math.exp(this.partialView.size());
+		double pRemove = this.A / this.partialView.size() + this.B / Math.exp(this.partialView.size());
 		// double pRemove = 1. / this.partialView.size();
 		// #2 Remove all occurrences of q in our partial view and count them
 		int occ = this.partialView.removeAll(q);
@@ -246,42 +240,31 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		}
 	}
 
-	private void onMergeBis(Node other) {
-		Spray sOther = (Spray) other.getProtocol(Spray.pid);
-		// A 7600 B 7609 C 7888
-		// if (!sOther.history.isEqual(this.history) && sOther.history.isDifferent(this.history)) { // A
-		 if (!sOther.history.isEqual(this.history) && !this.history.isLower(sOther.history)) { // B
-		// if (!sOther.history.isEqual(this.history)) { // C
-			System.out.println("====");
-			System.out.println(this.history.name);
-			System.out.println(sOther.history.name);
-			System.out.println("====");
-
-			// Double ratio1 = 1. / Math.exp(sOther.partialView.size() -
-			// this.partialView.size() + 1);
-			Double sum = Math.exp(this.partialView.size()) + Math.exp(sOther.partialView.size());
-			Double ratio1 = Math.exp(this.partialView.size()) / sum;
-			// Double ratio2 = 1. / Math.exp(this.partialView.size() -
-			// sOther.partialView.size() + 1);
-			Double ratio2 = Math.exp(sOther.partialView.size()) / sum;
-			Double proba = -(this.A * ratio1 * Math.log(ratio1)) - (sOther.A * ratio2 * Math.log(ratio2));
-			this.inject(proba, 0., other);
-
-			this.history = this.history.merge(sOther.history.name);
-		}
+	private void startMerge(Node contact) {
+		// #0 replace an arc of ours with contact (TODO)
+		// #1 aggregate value from direct neighbors (TODO)
+		Double aggregate = new Double(this.partialView.size());
+		// #2 create the merging message to send
+		MergingMessage m = new MergingMessage(this.register.getNetworkId(), aggregate, this.A, this.B);
+		// #3 send it
+		Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
+		contactSpray.onStartMerge(this.node, m);
 	}
 
-	private void onMerge(Double ratio, Node sender) {
-		// #1 process the mandatory added arc when its over 1
-		while (ratio >= 1) {
-			// this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView
-			// .size()))); // sp_*
-			this.addNeighbor(sender); // spr_*
-			--ratio;
-		}
-		// #2 process the random arcs
-		if (CommonState.r.nextDouble() < ratio) {
-			this.addNeighbor(getNeighbor(CommonState.r.nextInt(this.partialView.size()))); // sp_*
-		}
+	private void onStartMerge(Node origin, MergingMessage m) {
+		// #1 aggregate on the size of partial views (TODO)
+		Double aggregate = new Double(this.partialView.size());
+		// #2 create the merging message to send to the counterpart
+		MergingMessage r = new MergingMessage(this.register.getNetworkId(), aggregate, this.A, this.B);
+		// #3 send it
+		Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
+		originSpray.onMerge(m);
+
+		this.onMerge(m);
+	}
+
+	private void onMerge(MergingMessage m) {
+		// #1 integrate the data to our register
+		// #2 forward the message to our neighbors
 	}
 }
