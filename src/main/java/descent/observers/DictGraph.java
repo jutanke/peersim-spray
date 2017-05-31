@@ -15,6 +15,7 @@ import java.util.function.Function;
 import descent.controllers.DynamicNetwork;
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IPeerSampling;
+import descent.spray.Spray;
 import descent.tman.Descriptor;
 import descent.tman.TMan;
 import peersim.core.CommonState;
@@ -1330,4 +1331,47 @@ public class DictGraph {
 		return monitors.size();
 	}
 
+	/**
+	 * Count writers. Same as "monitors" but the assigning is made at joining
+	 * time and is not based on the same principle.
+	 */
+	public Integer countWriters() {
+		Integer sum = 0;
+
+		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
+			Node n = DynamicNetwork.networks.get(0).get(i);
+			Spray s = (Spray) n.getProtocol(Spray.pid);
+			if (s.writer) {
+				sum += 1;
+			}
+		}
+
+		return sum;
+	}
+
+	/**
+	 * Count the number of hop in average to get to a writer.
+	 * 
+	 * @param N
+	 *            The number of tries
+	 * @return
+	 */
+	public Double findWriter(Integer N) {
+		Integer sum = 0;
+		for (int i = 0; i < N; ++i) {
+			Integer hop = 0;
+			Node current = DynamicNetwork.networks.get(0)
+					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Spray currentSpray = (Spray) current.getProtocol(Spray.pid);
+			while (!currentSpray.writer) {
+				Node next = currentSpray.getPeers(1).get(0);
+				currentSpray = (Spray) next.getProtocol(Spray.pid);
+				++hop;
+			}
+			sum += hop;
+		}
+
+		return (sum / new Double(N));
+
+	}
 }

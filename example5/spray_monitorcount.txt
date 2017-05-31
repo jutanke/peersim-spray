@@ -14,7 +14,7 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.rps descent.spray.Spray
 protocol.rps.delta 1
-protocol.rps.a 1
+protocol.rps.a 2
 protocol.rps.step 1
 protocol.rps.start 1
 protocol.rps.linkable link

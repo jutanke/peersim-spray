@@ -28,6 +28,8 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 
 	public MergingRegister register;
 
+	public boolean writer = false;
+
 	/**
 	 * Constructor
 	 * 
@@ -138,10 +140,17 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
 				neighborSpray.addNeighbor(origin);
 			}
+
+			if (CommonState.r.nextDouble() < (2 * Math.sqrt(Math.exp(this.partialView.size()))
+					/ Math.exp(this.partialView.size()))) {
+				Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
+				originSpray.writer = true;
+			}
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network
 			// #3 Inject A + B arcs to expect A*ln(N)+B arcs
 			this.inject(this.A, this.B, origin);
+			this.writer = true;
 		}
 	}
 
@@ -185,6 +194,8 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	public IPeerSampling clone() {
 		try {
 			Spray sprayClone = new Spray();
+			sprayClone.A = this.A;
+			sprayClone.B = this.B;
 			sprayClone.partialView = (SprayPartialView) this.partialView.clone();
 			sprayClone.register = (MergingRegister) this.register.clone();
 			return sprayClone;
