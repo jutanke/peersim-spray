@@ -98,9 +98,11 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
 		// #0 Check there is a network merging in progress
-		// this.onMerge(this.register.isMerge((SprayMessage) message,
-		// this.partialView.size()), origin);
-		// this.onMergeBis(origin);
+		if (this.register.shouldMerge()) {
+			Double toInject = this.register.getArcNumber(
+					new MergingMessage(this.register.getNetworkId(), (double) this.partialView.size(), this.A, this.B));
+			this.inject(toInject, 0., this.partialView.getLowestOcc());
+		}
 		// #1 Process the sample to send back
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
@@ -251,7 +253,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		}
 	}
 
-	private void startMerge(Node contact) {
+	public void startMerge(Node contact) {
 		// #0 replace an arc of ours with contact (TODO)
 		// #1 aggregate value from direct neighbors (TODO)
 		Double aggregate = new Double(this.partialView.size());
@@ -276,6 +278,13 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 
 	private void onMerge(MergingMessage m) {
 		// #1 integrate the data to our register
-		// #2 forward the message to our neighbors
+		if (this.register.isToMerge(m)) {
+			this.register.add(m);
+			// #2 forward the message to our neighbors
+			for (Node neighbor : this.getAliveNeighbors()) {
+				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
+				neighborSpray.onMerge(m);
+			}
+		}
 	}
 }

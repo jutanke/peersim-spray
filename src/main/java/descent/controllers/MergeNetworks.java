@@ -56,6 +56,7 @@ public class MergeNetworks implements Control {
 		Spray si = (Spray) initiator.getProtocol(pid);
 		si.partialView.partialView.remove((int) 0);
 		si.partialView.partialView.add((int) 0, contact);
+		si.startMerge(contact);
 	}
 
 }
