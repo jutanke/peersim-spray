@@ -28,7 +28,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 
 	public MergingRegister register;
 
-	public boolean writer = false;
+	public Integer rank = Integer.MAX_VALUE;
 
 	/**
 	 * Constructor
@@ -143,17 +143,23 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 				neighborSpray.addNeighbor(origin);
 			}
 
-			if (CommonState.r.nextDouble() < (2 * Math.sqrt(Math.exp(this.partialView.size()))
-					/ Math.exp(this.partialView.size()))) {
-				Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
-				originSpray.writer = true;
+			Integer r = 0;
+			while (CommonState.r.nextDouble() >= (Math.pow(this.partialView.size(), r + 1))
+					/ (Math.exp(this.partialView.size())/this.A) && this.partialView.size() > 0) {
+				++r;
 			}
+			Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
+			originSpray.rank = r;
+
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network
 			// #3 Inject A + B arcs to expect A*ln(N)+B arcs
 			this.inject(this.A, this.B, origin);
-			this.writer = true;
+			this.rank = 0;
+			Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
+			originSpray.rank = 0;
 		}
+
 	}
 
 	/**

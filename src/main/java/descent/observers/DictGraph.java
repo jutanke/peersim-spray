@@ -1335,18 +1335,19 @@ public class DictGraph {
 	 * Count writers. Same as "monitors" but the assigning is made at joining
 	 * time and is not based on the same principle.
 	 */
-	public Integer countWriters() {
-		Integer sum = 0;
+	public ArrayList<Integer> countWriters() {
+		ArrayList<Integer> sums = new ArrayList<Integer>();
 
 		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
 			Node n = DynamicNetwork.networks.get(0).get(i);
 			Spray s = (Spray) n.getProtocol(Spray.pid);
-			if (s.writer) {
-				sum += 1;
+			while (sums.size() <= s.rank) {
+				sums.add(0);
 			}
+			sums.set(s.rank, sums.get(s.rank) + 1);
 		}
 
-		return sum;
+		return sums;
 	}
 
 	/**
@@ -1363,7 +1364,7 @@ public class DictGraph {
 			Node current = DynamicNetwork.networks.get(0)
 					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
 			Spray currentSpray = (Spray) current.getProtocol(Spray.pid);
-			while (!currentSpray.writer) {
+			while (!currentSpray.rank.equals(0)) {
 				Node next = currentSpray.getPeers(1).get(0);
 				currentSpray = (Spray) next.getProtocol(Spray.pid);
 				++hop;
