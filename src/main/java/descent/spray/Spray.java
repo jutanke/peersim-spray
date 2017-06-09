@@ -29,6 +29,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	public MergingRegister register;
 
 	public Integer rank = Integer.MAX_VALUE;
+	public Integer age = 0;
 
 	/**
 	 * Constructor
@@ -63,9 +64,11 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	}
 
 	public void periodicCall() {
+
 		if (!this.isUp || this.partialView.size() <= 0) {
 			return;
 		}
+
 		// #1 Choose the peer to exchange with
 		this.partialView.incrementAge();
 		Node q = this.partialView.getOldest();
@@ -92,6 +95,12 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		// #4 Merge the received sample with current partial view
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
+
+		
+		if (this.rank.equals(Integer.MAX_VALUE) && this.age > this.partialView.size() + 2) {
+			this.rank = (int) Math.floor(this.partialView.size() / this.A - 1);
+		}
+		++this.age;
 
 	}
 
@@ -144,12 +153,25 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 			}
 
 			Integer r = 0;
-			while (CommonState.r.nextDouble() >= (Math.pow(this.partialView.size(), r + 1))
-					/ (Math.exp(this.partialView.size())/this.A) && this.partialView.size() > 0) {
-				++r;
-			}
-			Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
-			originSpray.rank = r;
+			// while (CommonState.r.nextDouble() >=
+			// (Math.pow(this.partialView.size(), r + 1))
+			// / (Math.exp(this.partialView.size())/this.A) &&
+			// this.partialView.size() > 0) {
+
+			// Double temp = Math.exp(this.partialView.size()) / this.A;
+
+			// while (CommonState.r.nextDouble() >= 1 / temp &&
+			// this.partialView.size() > 0) {
+			// temp = Math.sqrt(temp);
+			// temp = temp/10.;
+			// ++r;
+			// }
+			// Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
+			// originSpray.rank = (int) Math.floor(this.partialView.size() /
+			// this.A - 1);
+			// originSpray.rank = r;
+			// originSpray.rank =
+			// Math.round(CommonState.r.nextPoisson(this.partialView.size()));
 
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network

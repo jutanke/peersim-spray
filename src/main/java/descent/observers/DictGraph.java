@@ -1341,10 +1341,12 @@ public class DictGraph {
 		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
 			Node n = DynamicNetwork.networks.get(0).get(i);
 			Spray s = (Spray) n.getProtocol(Spray.pid);
-			while (sums.size() <= s.rank) {
-				sums.add(0);
+			if (!s.rank.equals(Integer.MAX_VALUE)) {
+				while (sums.size() <= s.rank) {
+					sums.add(0);
+				}
+				sums.set(s.rank, sums.get(s.rank) + 1);
 			}
-			sums.set(s.rank, sums.get(s.rank) + 1);
 		}
 
 		return sums;
@@ -1357,22 +1359,72 @@ public class DictGraph {
 	 *            The number of tries
 	 * @return
 	 */
-	public Double findWriter(Integer N) {
+	public Double findOneAmongAllWriter(Integer N) {
+
+		//// JUST A TEST
+		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
+			Node n = DynamicNetwork.networks.get(0).get(i);
+			Spray s = (Spray) n.getProtocol(Spray.pid);
+			s.rank = 1;
+		}
+
+		Integer times = 0;
 		Integer sum = 0;
 		for (int i = 0; i < N; ++i) {
+			Node n = DynamicNetwork.networks.get(0).get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Spray s = (Spray) n.getProtocol(Spray.pid);
+			s.rank = 0;
+
 			Integer hop = 0;
 			Node current = DynamicNetwork.networks.get(0)
 					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
 			Spray currentSpray = (Spray) current.getProtocol(Spray.pid);
-			while (!currentSpray.rank.equals(0)) {
+			while (!currentSpray.rank.equals(0) && hop < N * 10) {
 				Node next = currentSpray.getPeers(1).get(0);
 				currentSpray = (Spray) next.getProtocol(Spray.pid);
 				++hop;
 			}
-			sum += hop;
+			if (hop < N * 10) {
+				sum += hop;
+				++times;
+			}
+			s.rank = 1;
 		}
 
-		return (sum / new Double(N));
+		return (sum / (double) times);
 
 	}
+
+	/**
+	 * Count the number of hop in average to get to a writer.
+	 * 
+	 * @param N
+	 *            The number of tries
+	 * @return
+	 */
+	public Double findWriter(Integer N) {
+
+		Integer times = 0;
+		Integer sum = 0;
+		for (int i = 0; i < N; ++i) {
+
+			Integer hop = 0;
+			Node current = DynamicNetwork.networks.get(0)
+					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Spray currentSpray = (Spray) current.getProtocol(Spray.pid);
+			while (!currentSpray.rank.equals(0) && hop < N * 10) {
+				Node next = currentSpray.getPeers(1).get(0);
+				currentSpray = (Spray) next.getProtocol(Spray.pid);
+				++hop;
+			}
+			if (hop < N * 10) {
+				sum += hop;
+				++times;
+			}
+		}
+
+		return (sum / (double) times);
+
+	}
+
 }

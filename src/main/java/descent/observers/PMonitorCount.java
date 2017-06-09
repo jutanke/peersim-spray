@@ -16,8 +16,7 @@ public class PMonitorCount implements ObserverProgram {
 		if (observer.size() > 0)
 			System.out.println(observer.size() + " " + observer.countArcs() + " "
 					+ (observer.countArcs() / new Double(observer.size())) + " " + observer.countMonitors() + " "
-					+ observer.countWriters()); // + " " +
-												// observer.findWriter(10000));
+					+ observer.countWriters() );//+ " " + observer.findWriter(10000));
 	}
 
 	/**
