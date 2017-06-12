@@ -96,11 +96,11 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
 
-		
-		if (this.rank.equals(Integer.MAX_VALUE) && this.age > this.partialView.size() + 2) {
+		if (this.rank.equals(Integer.MAX_VALUE) && this.age > Math.max(this.partialView.size(), 10)) {
 			this.rank = (int) Math.floor(this.partialView.size() / this.A - 1);
+		} else {
+			++this.age;
 		}
-		++this.age;
 
 	}
 
@@ -116,6 +116,11 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
 		SprayMessage result = new SprayMessage(samplePrime);
+
+		if (this.rank.equals(Integer.MAX_VALUE)) {
+			++this.age;
+		}
+
 		return result;
 	}
 
