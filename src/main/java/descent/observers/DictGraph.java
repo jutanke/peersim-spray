@@ -1059,6 +1059,92 @@ public class DictGraph {
 		return actual / possible;
 	}
 
+	public class EstimatorStats {
+		public final Double mean;
+		public final Double min;
+		public final Double max;
+		public final Double stdDev;
+
+		public EstimatorStats(Double mean, Double min, Double max, Double stdDev) {
+			this.mean = mean;
+			this.min = min;
+			this.max = max;
+			this.stdDev = stdDev;
+		}
+
+		@Override
+		public String toString() {
+			return this.mean + " " + this.min + " " + this.max + " " + this.stdDev;
+		}
+	}
+
+	public EstimatorStats getAggregatedEstimatorStats() {
+		double mean = 0.;
+		Double max = 0.;
+		Double min = Double.MAX_VALUE;
+		final Collection<DictNode> N = this.nodes.values();
+		for (DictNode n : N) {
+			Double size = (double) n.neighbors.size(); // Math.exp(n.neighbors.size());
+			for (Long neighbor : n.neighbors) {
+				size += this.nodes.get(neighbor).neighbors.size();
+			}
+			size = size / n.neighbors.size() + 1;
+			
+			size = Math.exp(size);
+
+			mean += size / (double) N.size();
+			if (max < size) {
+				max = size;
+			}
+			if (min > size) {
+				min = size;
+			}
+		}
+
+		Double var = 0.;
+		for (DictNode n : N) {
+			Double size = (double) n.neighbors.size(); // Math.exp(n.neighbors.size());
+			for (Long neighbor : n.neighbors) {
+				size += this.nodes.get(neighbor).neighbors.size();
+			}
+			size = size / n.neighbors.size() + 1;
+			
+			size = Math.exp(size);
+			
+			final double c = size - mean;
+			var += ((c * c) / (double) N.size());
+		}
+		var = Math.sqrt(var);
+
+		return new EstimatorStats(mean, min, max, var);
+	}
+
+	public EstimatorStats getEstimatorStats() {
+		double mean = 0.;
+		Double max = 0.;
+		Double min = Double.MAX_VALUE;
+		final Collection<DictNode> N = this.nodes.values();
+		for (DictNode n : N) {
+			Double size = Math.exp(n.neighbors.size());
+			mean += size / (double) N.size();
+			if (max < size) {
+				max = size;
+			}
+			if (min > size) {
+				min = size;
+			}
+		}
+
+		Double var = 0.;
+		for (DictNode n : N) {
+			final double c = Math.exp(n.neighbors.size()) - mean;
+			var += ((c * c) / (double) N.size());
+		}
+		var = Math.sqrt(var);
+
+		return new EstimatorStats(mean, min, max, var);
+	}
+
 	public class ViewSizeStats {
 		public final double mean;
 		public final Integer min;
@@ -1072,7 +1158,6 @@ public class DictGraph {
 
 		@Override
 		public String toString() {
-
 			return this.mean + " " + this.min + " " + this.max;
 		}
 	}
