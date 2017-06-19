@@ -18,10 +18,14 @@ public class RankDescriptor implements IDescriptor {
 		if (o.rank > this.rank + 1 || o.rank.equals(Integer.MAX_VALUE) || this.rank.equals(Integer.MAX_VALUE)) {
 			return Integer.MAX_VALUE;
 		} else {
-			// System.out.println("o"  +  o.rank);
+			// System.out.println("o" + o.rank);
 			// System.out.println("t" + this.rank);
-			return Math.abs(o.rank - (this.rank + 1));
+			return this.distance(o);
 		}
+	}
+
+	public double distance(RankDescriptor o) {
+		return Math.abs(o.rank + 1 - (this.rank));
 	}
 
 	public void setRank(Integer rank) {

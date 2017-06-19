@@ -13,7 +13,7 @@ public class PSlices implements ObserverProgram {
 	}
 
 	public void onLastTick(DictGraph observer) {
-		
+		System.out.println(observer.networkxTManDigraph("AHorseWithNoName"));
 	}
 
 }

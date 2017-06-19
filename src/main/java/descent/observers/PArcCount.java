@@ -1,7 +1,5 @@
 package descent.observers;
 
-import peersim.core.CommonState;
-
 /**
  *
  */

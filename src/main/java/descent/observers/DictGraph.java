@@ -15,6 +15,7 @@ import java.util.function.Function;
 import descent.controllers.DynamicNetwork;
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IPeerSampling;
+import descent.slicer.Slicer;
 import descent.spray.Spray;
 import descent.tman.Descriptor;
 import descent.tman.TMan;
@@ -1024,6 +1025,125 @@ public class DictGraph {
 		}
 		sb.append(progName);
 		sb.append("()\n");
+		return sb.toString();
+	}
+
+	public String networkxTManDigraph(String graph) {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("import networkx as nx\n");
+
+		sb.append("import matplotlib.pyplot as plt\n");
+		sb.append("from random import random\n");
+		sb.append("colors=[(random(),random(),random()) for _i in range(" + DynamicNetwork.networks.size() + ")]\n");
+
+		final String progName = "exec" + graph;
+
+		sb.append("def ");
+		sb.append(progName);
+		sb.append("():\n");
+
+		sb.append("\t");
+		sb.append(graph);
+		sb.append(" = nx.DiGraph()\n");
+
+		ArrayList<Integer> distribution = this.countWriters();
+		int[][] numberOfArcs = new int[distribution.size()][distribution.size()];
+		for (int i = 0; i < distribution.size(); ++i) {
+			for (int j = 0; j < distribution.size(); ++j) {
+				numberOfArcs[i][j] = 0;
+			}
+		}
+
+		for (int i = 0; i < Network.size(); ++i) {
+			Slicer slicerFrom = (Slicer) Network.get(i).getProtocol(Slicer.pid);
+			for (Node neighbor : slicerFrom.partialViewTMan) {
+				Slicer slicerTo = (Slicer) neighbor.getProtocol(Slicer.pid);
+				numberOfArcs[slicerFrom.rank][slicerTo.rank] = numberOfArcs[slicerFrom.rank][slicerTo.rank] + 1;
+			}
+		}
+
+		for (int i = 0; i < numberOfArcs.length; ++i) {
+			for (int j = 0; j < numberOfArcs[i].length; ++j) {
+				System.out.print(numberOfArcs[i][j] + " ");
+			}
+			System.out.println();
+		}
+
+		String nodeLabels = "{";
+		for (int i = 0; i < distribution.size(); ++i) {
+			sb.append("\t");
+			sb.append(graph);
+			sb.append(".add_node(");
+			sb.append(i);
+			sb.append(")\n");
+
+			nodeLabels += (i + ":" + distribution.get(i));
+			if (i < distribution.size() - 1) {
+				nodeLabels += ",";
+			}
+		}
+		nodeLabels += "}";
+
+		String edgeLabels = "{";
+		boolean first = false;
+		for (int i = 0; i < distribution.size(); ++i) {
+			for (int j = 0; j < distribution.size(); ++j) {
+				if (numberOfArcs[i][j] > 0) {
+					sb.append("\t");
+					sb.append(graph);
+					sb.append(".add_edge(");
+					sb.append(i);
+					sb.append(",");
+					sb.append(j);
+					sb.append(")\n");
+
+					if (first) {
+						edgeLabels += ",";
+					}
+					if (!first) {
+						first = true;
+					}
+					edgeLabels += ("(" + i + "," + j + "):" + numberOfArcs[i][j]);
+
+				}
+			}
+		}
+
+		edgeLabels += "}";
+
+		int i = 0;
+		for (LinkedList<Node> nodes : DynamicNetwork.networks) {
+			if (nodes.size() > 0) {
+				sb.append("\tlistNodes" + i + "= [");
+				for (int j = 0; j < distribution.size(); ++j) {
+					sb.append(j);
+					if (j < distribution.size() - 1) {
+						sb.append(',');
+					}
+				}
+
+				sb.append("]\n");
+			}
+			++i;
+		}
+
+		sb.append("\tpos = nx.circular_layout(" + graph + ")\n");
+		for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
+			sb.append("\tnx.draw(" + graph + ", pos, edge_color='#A9A9A9', nodelist= listNodes"
+					+ (DynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
+					+ "], with_labels=True, labels=" + nodeLabels + ")\n");
+		}
+
+		sb.append("\t.draw_networkx_edge_labels(" + graph + ", pos, edge_labels=" + edgeLabels + "\n");
+
+		sb.append("\tplt.savefig('" + graph + "',dpi=225)\n");
+		sb.append("\tplt.clf()\n");
+
+		sb.append(progName);
+		sb.append("()\n");
+
 		return sb.toString();
 	}
 
