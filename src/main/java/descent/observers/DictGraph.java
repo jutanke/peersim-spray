@@ -1088,8 +1088,8 @@ public class DictGraph {
 			for (Long neighbor : n.neighbors) {
 				size += this.nodes.get(neighbor).neighbors.size();
 			}
-			size = size / n.neighbors.size() + 1;
-			
+			size = size / ((double) (n.neighbors.size() + 1));
+
 			size = Math.exp(size);
 
 			mean += size / (double) N.size();
@@ -1107,10 +1107,10 @@ public class DictGraph {
 			for (Long neighbor : n.neighbors) {
 				size += this.nodes.get(neighbor).neighbors.size();
 			}
-			size = size / n.neighbors.size() + 1;
-			
+			size = size / ((double) (n.neighbors.size() + 1));
+
 			size = Math.exp(size);
-			
+
 			final double c = size - mean;
 			var += ((c * c) / (double) N.size());
 		}
@@ -1370,6 +1370,7 @@ public class DictGraph {
 				// nTMan.descriptor).x);
 				// System.out.println("d " + distance);
 				distances.add(distance);
+
 			}
 		}
 
@@ -1383,13 +1384,45 @@ public class DictGraph {
 
 		for (int i = 0; i < distances.size(); ++i) {
 			Double bucket = Math.floor(distances.get(i) / bucketSize);
+			// System.out.println(bucket);
+			// System.out.println(Integer.MAX_VALUE);
+
 			// System.out.println("bucket " + bucket );
 			// results.put(min + (bucket + 1) * (bucketSize / 2),
 			// results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
 			results.put(0 + (bucket + 1) * (bucketSize / 2), results.get(0 + (bucket + 1) * (bucketSize / 2)) + 1);
+
 		}
 
 		return results;
+	}
+
+	/**
+	 * Few possible distances
+	 * 
+	 * @return list whose indexes are the distances and values are the number of
+	 *         peers
+	 */
+	public ArrayList<Integer> getDistancesDiscrete() {
+		ArrayList<Integer> result = new ArrayList<Integer>();
+
+		for (int i = 0; i < Network.size(); ++i) {
+			Node n = Network.get(i);
+			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
+			for (Node neighbor : nTMan.partialViewTMan) {
+				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
+				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
+
+				if (!distance.equals(new Double(Integer.MAX_VALUE))) {
+					while (distance >= result.size()) {
+						result.add(0);
+					}
+					result.set(distance.intValue(), result.get(distance.intValue()) + 1);
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**

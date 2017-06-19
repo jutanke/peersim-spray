@@ -28,7 +28,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 
 	public MergingRegister register;
 
-	public Integer rank = Integer.MAX_VALUE;
+	public Integer rank = 0;
 	public Integer age = 0;
 
 	/**
@@ -41,6 +41,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
+		this.rank = 0;
 
 		this.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, 1.);
 		this.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, 0.);
@@ -51,6 +52,8 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	 */
 	public Spray() {
 		super();
+		
+		this.rank = 0;
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 	}
@@ -138,6 +141,8 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 			// #B Inform the contact peer
 			Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
 			contactSpray.onSubscription(this.node);
+			
+			this.rank = Integer.MAX_VALUE;
 		}
 		this.isUp = true;
 	}
@@ -156,35 +161,10 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
 				neighborSpray.addNeighbor(origin);
 			}
-
-			Integer r = 0;
-			// while (CommonState.r.nextDouble() >=
-			// (Math.pow(this.partialView.size(), r + 1))
-			// / (Math.exp(this.partialView.size())/this.A) &&
-			// this.partialView.size() > 0) {
-
-			// Double temp = Math.exp(this.partialView.size()) / this.A;
-
-			// while (CommonState.r.nextDouble() >= 1 / temp &&
-			// this.partialView.size() > 0) {
-			// temp = Math.sqrt(temp);
-			// temp = temp/10.;
-			// ++r;
-			// }
-			// Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
-			// originSpray.rank = (int) Math.floor(this.partialView.size() /
-			// this.A - 1);
-			// originSpray.rank = r;
-			// originSpray.rank =
-			// Math.round(CommonState.r.nextPoisson(this.partialView.size()));
-
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network
 			// #3 Inject A + B arcs to expect A*ln(N)+B arcs
 			this.inject(this.A, this.B, origin);
-			this.rank = 0;
-			Spray originSpray = (Spray) origin.getProtocol(Spray.pid);
-			originSpray.rank = 0;
 		}
 
 	}
