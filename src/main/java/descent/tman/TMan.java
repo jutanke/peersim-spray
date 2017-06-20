@@ -74,16 +74,15 @@ public class TMan extends Spray implements IPeerSampling {
 				Math.floor(this.partialView.size() / 2));
 		IMessage result = qTMan.onPeriodicCallTMan(this.node, new TManMessage(sample));
 		// #3 Integrate remote sample if it fits better
-		this.partialViewTMan.merge(this, (List<Node>) result.getPayload(), this.partialView.size());
+		this.partialViewTMan.merge(this, this.node, (List<Node>) result.getPayload(), this.partialView.size());
 	}
 
 	public IMessage onPeriodicCallTMan(Node origin, IMessage message) {
 		// #1 prepare a sample
-		TMan originTMan = (TMan) origin.getProtocol(TMan.pid);
 		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, this.partialView.getPeers(),
 				Math.floor(this.partialView.size() / 2));
 		// #2 merge the received sample
-		this.partialViewTMan.merge(this, sample, this.partialView.size());
+		this.partialViewTMan.merge(this, this.node, (List<Node>) message.getPayload(), this.partialView.size());
 		// #3 send the prepared sample to origin
 		return new TManMessage(sample);
 	}
@@ -139,10 +138,14 @@ public class TMan extends Spray implements IPeerSampling {
 	}
 
 	public boolean addNeighborTMan(Node peer) {
-		List<Node> sample = new ArrayList<Node>();
-		sample.add(peer);
-		this.partialViewTMan.merge(this, sample, this.partialView.size());
-		return this.partialViewTMan.contains(peer);
+		if (!this.node.equals(peer)) {
+			List<Node> sample = new ArrayList<Node>();
+			sample.add(peer);
+			this.partialViewTMan.merge(this, this.node, sample, this.partialView.size());
+			return this.partialViewTMan.contains(peer);
+		} else {
+			return false;
+		}
 	}
 
 }

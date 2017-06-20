@@ -1136,7 +1136,7 @@ public class DictGraph {
 					+ "], with_labels=True, labels=" + nodeLabels + ")\n");
 		}
 
-		sb.append("\t.draw_networkx_edge_labels(" + graph + ", pos, edge_labels=" + edgeLabels + "\n");
+		sb.append("\tnx.draw_networkx_edge_labels(" + graph + ", pos, edge_labels=" + edgeLabels + ")\n");
 
 		sb.append("\tplt.savefig('" + graph + "',dpi=225)\n");
 		sb.append("\tplt.clf()\n");

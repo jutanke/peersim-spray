@@ -1,6 +1,7 @@
 package descent.tman;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ public class TManPartialView extends HashSet<Node> {
 	}
 
 	List<Node> getSample(Node caller, Node other, List<Node> randomPeers, double size) {
-		final TMan callerTMan = ((TMan) caller.getProtocol(TMan.pid));
 		final TMan otherTMan = ((TMan) other.getProtocol(TMan.pid));
 
 		ArrayList<Node> rank = new ArrayList<Node>();
@@ -52,9 +52,6 @@ public class TManPartialView extends HashSet<Node> {
 			}
 		}
 
-		// ArrayList<Node> rank = new ArrayList<Node>(this);
-		rank.addAll(randomPeers);
-
 		Comparator<Node> ranking = new Comparator<Node>() {
 
 			public int compare(Node o1, Node o2) {
@@ -74,10 +71,12 @@ public class TManPartialView extends HashSet<Node> {
 
 		Collections.sort(rank, ranking);
 
-		return rank.subList(0, Math.min((int) size, rank.size()));
+		List<Node> result = rank.subList(0, Math.min((int) size, rank.size()));
+
+		return result;
 	}
 
-	public void merge(final TMan myself, List<Node> sample, Integer size) {
+	public void merge(final TMan myself, final Node myselfId, List<Node> sample, Integer size) {
 		ArrayList<Node> rank = new ArrayList<Node>(this);
 
 		for (int i = 0; i < sample.size(); ++i) {
@@ -102,6 +101,12 @@ public class TManPartialView extends HashSet<Node> {
 			}
 
 		};
+
+		if (sample.contains(myselfId)) {
+			System.out.println("meowmeow");
+			System.out.println(myselfId);
+			System.out.println(Arrays.toString(sample.toArray()));
+		}
 
 		Collections.sort(rank, ranking);
 
