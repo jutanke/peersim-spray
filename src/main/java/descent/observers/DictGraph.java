@@ -1072,6 +1072,7 @@ public class DictGraph {
 		}
 
 		String nodeLabels = "{";
+		String nodeSizes = "[";
 		for (int i = 0; i < distribution.size(); ++i) {
 			sb.append("\t");
 			sb.append(graph);
@@ -1080,11 +1081,14 @@ public class DictGraph {
 			sb.append(")\n");
 
 			nodeLabels += (i + ":" + distribution.get(i));
+			nodeSizes += distribution.get(i);
 			if (i < distribution.size() - 1) {
 				nodeLabels += ",";
+				nodeSizes += ",";
 			}
 		}
 		nodeLabels += "}";
+		nodeSizes += "]";
 
 		String edgeLabels = "{";
 		boolean first = false;
@@ -1133,7 +1137,7 @@ public class DictGraph {
 		for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
 			sb.append("\tnx.draw(" + graph + ", pos, edge_color='#A9A9A9', nodelist= listNodes"
 					+ (DynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
-					+ "], with_labels=True, labels=" + nodeLabels + ")\n");
+					+ "], with_labels=True, labels=" + nodeLabels + ", node_sizes=" + nodeSizes + ")\n");
 		}
 
 		sb.append("\tnx.draw_networkx_edge_labels(" + graph + ", pos, edge_labels=" + edgeLabels + ")\n");
