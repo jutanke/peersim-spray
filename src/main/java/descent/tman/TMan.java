@@ -54,7 +54,7 @@ public class TMan extends Spray implements IPeerSampling {
 		// #1 Choose a neighbor to exchange with
 		Node q = null;
 		TMan qTMan = null;
-		if (this.partialViewTMan.size() > 0) {
+		if (this.partialViewTMan.size() > 0 && this.age % 2 == 0) {
 			q = this.partialViewTMan.getRandom();
 			qTMan = (TMan) q.getProtocol(TMan.pid);
 			if (!qTMan.isUp) {

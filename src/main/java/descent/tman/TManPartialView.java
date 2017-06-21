@@ -122,4 +122,9 @@ public class TManPartialView extends HashSet<Node> {
 		}
 	}
 
+	public void replace(Node replaced, Node replacer) {
+		this.remove(replaced);
+		this.add(replacer);
+	}
+
 }

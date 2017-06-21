@@ -2,14 +2,14 @@ package descent.slicer;
 
 import descent.tman.IDescriptor;
 
-public class RankDescriptor implements IDescriptor {
+public class RankDescriptor implements IDescriptor, Comparable<RankDescriptor> {
 
 	public Integer rank;
-
-	// (TODO) writing frequency (SWAP parameter)
+	public Double frequency;
 
 	public RankDescriptor() {
 		this.rank = Integer.MAX_VALUE;
+		this.frequency = 0.;
 	}
 
 	public double ranking(IDescriptor other) {
@@ -18,8 +18,6 @@ public class RankDescriptor implements IDescriptor {
 		if (o.rank > this.rank + 1 || o.rank.equals(Integer.MAX_VALUE) || this.rank.equals(Integer.MAX_VALUE)) {
 			return Integer.MAX_VALUE;
 		} else {
-			// System.out.println("o" + o.rank);
-			// System.out.println("t" + this.rank);
 			return this.distance(o);
 		}
 	}
@@ -32,4 +30,17 @@ public class RankDescriptor implements IDescriptor {
 		this.rank = rank;
 	}
 
+	public void setFrequency(Double frequency) {
+		this.frequency = frequency;
+	}
+
+	public int compareTo(RankDescriptor o) {
+		if (this.frequency > o.frequency) {
+			return 1;
+		} else if (this.frequency < o.frequency) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
 }
