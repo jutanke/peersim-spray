@@ -1,6 +1,10 @@
 package descent.slicer;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashSet;
+
+import javax.print.attribute.standard.MediaSize.Other;
 
 import descent.rps.IPeerSampling;
 import descent.spray.MergingRegister;
@@ -39,38 +43,34 @@ public class Slicer extends TMan {
 		}
 
 		// #2 see if a swap of rank is needed
-		// (TODO) move this to be more generic, i.e. should not be in slicer	
+		// (TODO) move this to be more generic, i.e. should not be in slicer
 		if (Slicer.SWAP) {
-			Node toSwapNode = null;
+			ArrayList<Node> toExamine = new ArrayList<Node>();
+			toExamine.addAll(this.partialViewTMan);
+			toExamine.addAll(this.partialView.getPeers());
 
-			RankDescriptor boundaryDescriptor = (RankDescriptor) this.descriptor;
-			// bottom -> top
-			for (Node neighbor : this.partialViewTMan) {
-				Slicer slicerNeighbor = (Slicer) neighbor.getProtocol(Slicer.pid);
-				RankDescriptor slicerDescriptor = (RankDescriptor) slicerNeighbor.descriptor;
-				if (boundaryDescriptor.compareTo(slicerDescriptor) > 0
-						&& slicerDescriptor.rank < ((RankDescriptor) this.descriptor).rank) {
-					boundaryDescriptor = slicerDescriptor;
-					toSwapNode = neighbor;
-				}
-			}
+			// #A farthest frequency
+			RankDescriptor thisDescriptor = (RankDescriptor) this.descriptor;
+			Double maxDistance = 0.;
+			Node toSwap = null;
 
-			if (toSwapNode == null) {
-				// top -> bottom
-				for (Node neighbor : this.partialViewTMan) {
-					Slicer slicerNeighbor = (Slicer) neighbor.getProtocol(Slicer.pid);
-					RankDescriptor slicerDescriptor = (RankDescriptor) slicerNeighbor.descriptor;
-					if (boundaryDescriptor.compareTo(slicerDescriptor) < 0
-							&& slicerDescriptor.rank > ((RankDescriptor) this.descriptor).rank) {
-						boundaryDescriptor = slicerDescriptor;
-						toSwapNode = neighbor;
-					}
+			for (Node node : toExamine) {
+				Slicer slicerNode = (Slicer) node.getProtocol(Slicer.pid);
+				RankDescriptor otherDescriptor = (RankDescriptor) slicerNode.descriptor;
+				Double currentDistance = thisDescriptor.distanceFrequency(otherDescriptor);
+				if (maxDistance < currentDistance
+						&& (thisDescriptor.frequency > otherDescriptor.frequency
+								&& thisDescriptor.rank > otherDescriptor.rank)
+						|| (thisDescriptor.frequency < otherDescriptor.frequency
+								&& thisDescriptor.rank < otherDescriptor.rank)) {
+					maxDistance = currentDistance;
+					toSwap = node;
 				}
 			}
 
 			// #B swap
-			if (toSwapNode != null) {
-				Slicer toSwapSlicer = (Slicer) toSwapNode.getProtocol(Slicer.pid);
+			if (toSwap != null) {
+				Slicer toSwapSlicer = (Slicer) toSwap.getProtocol(Slicer.pid);
 
 				Integer r = ((RankDescriptor) toSwapSlicer.descriptor).rank;
 				((RankDescriptor) toSwapSlicer.descriptor).setRank(((RankDescriptor) this.descriptor).rank);

@@ -1061,9 +1061,13 @@ public class DictGraph {
 
 		for (int i = 0; i < Network.size(); ++i) {
 			Slicer slicerFrom = (Slicer) Network.get(i).getProtocol(Slicer.pid);
+			RankDescriptor descriptorFrom = (RankDescriptor) slicerFrom.descriptor;
+			
 			for (Node neighbor : slicerFrom.partialViewTMan) {
 				Slicer slicerTo = (Slicer) neighbor.getProtocol(Slicer.pid);
-				numberOfArcs[slicerFrom.rank][slicerTo.rank] = numberOfArcs[slicerFrom.rank][slicerTo.rank] + 1;
+				RankDescriptor descriptorTo = (RankDescriptor) slicerTo.descriptor;
+				
+				numberOfArcs[descriptorFrom.rank][descriptorTo.rank] = numberOfArcs[descriptorFrom.rank][descriptorTo.rank] + 1;
 			}
 		}
 
@@ -1536,6 +1540,7 @@ public class DictGraph {
 		for (int i = 0; i < Network.size(); ++i) {
 			Node n = Network.get(i);
 			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
+			
 			for (Node neighbor : nTMan.partialViewTMan) {
 				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
 				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
@@ -1605,7 +1610,6 @@ public class DictGraph {
 	 * @return
 	 */
 	public Double findOneAmongAllWriter(Integer N) {
-
 		//// JUST A TEST
 		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
 			Node n = DynamicNetwork.networks.get(0).get(i);
@@ -1648,7 +1652,6 @@ public class DictGraph {
 	 * @return
 	 */
 	public Double findWriter(Integer N) {
-
 		Integer times = 0;
 		Integer sum = 0;
 		for (int i = 0; i < N; ++i) {
@@ -1669,7 +1672,6 @@ public class DictGraph {
 		}
 
 		return (sum / (double) times);
-
 	}
 
 	/**
@@ -1677,7 +1679,7 @@ public class DictGraph {
 	 * 
 	 * @return A distance, 0 being the perfect match
 	 */
-	public Double distanceFromPerfectSlices() { // (TODO)
+	public Double distanceFromPerfectSlices() {
 		// #1 process the perfect slice
 		ArrayList<Slicer> ordered = new ArrayList<Slicer>();
 
@@ -1685,7 +1687,7 @@ public class DictGraph {
 			public int compare(Slicer o1, Slicer o2) {
 				RankDescriptor r1 = (RankDescriptor) o1.descriptor;
 				RankDescriptor r2 = (RankDescriptor) o2.descriptor;
-				return r1.compareTo(r2);
+				return r2.compareTo(r1);
 			}
 		};
 
@@ -1699,10 +1701,24 @@ public class DictGraph {
 		ArrayList<Integer> distribution = this.countWriters();
 
 		// #2 stats on distance
-		
-		
-		
-		return 0.;
+		Integer sum = 0;
+		Integer number = 0;
+		Integer sumNumberRank = 0;
+		if (!distribution.isEmpty()) {
+			sumNumberRank = distribution.get(0);
+		}
+		Integer theoreticalRank = 0;
+
+		for (Slicer slicerNode : ordered) {
+			sum += Math.abs(theoreticalRank - ((RankDescriptor) slicerNode.descriptor).rank);
+			++number;
+			if (number >= sumNumberRank && theoreticalRank < distribution.size() -1) {
+				++theoreticalRank;
+				sumNumberRank += distribution.get(theoreticalRank);
+			}
+		}
+
+		return sum / (double) ordered.size();
 	}
 
 }

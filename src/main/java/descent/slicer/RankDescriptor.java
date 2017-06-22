@@ -18,12 +18,16 @@ public class RankDescriptor implements IDescriptor, Comparable<RankDescriptor> {
 		if (o.rank > this.rank + 1 || o.rank.equals(Integer.MAX_VALUE) || this.rank.equals(Integer.MAX_VALUE)) {
 			return Integer.MAX_VALUE;
 		} else {
-			return this.distance(o);
+			return this.distanceRank(o);
 		}
 	}
 
-	public double distance(RankDescriptor o) {
+	public double distanceRank(RankDescriptor o) {
 		return Math.abs(o.rank + 1 - (this.rank));
+	}
+
+	public double distanceFrequency(RankDescriptor o) {
+		return Math.abs(o.frequency - this.frequency);
 	}
 
 	public void setRank(Integer rank) {

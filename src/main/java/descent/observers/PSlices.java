@@ -7,8 +7,9 @@ public class PSlices implements ObserverProgram {
 	public void tick(long currentTick, DictGraph observer) {
 		ArrayList<Integer> distances = observer.getDistancesDiscrete();
 		ArrayList<Integer> distribution = observer.countWriters();
+		Double distanceSlice = observer.distanceFromPerfectSlices();
 
-		System.out.println(observer.size() + " " + distribution + " " + distances + " ");
+		System.out.println(observer.size() + " " + distribution + " " + distances + " " + " " + distanceSlice);
 
 	}
 
