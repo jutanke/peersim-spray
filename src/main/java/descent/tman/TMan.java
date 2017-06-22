@@ -17,27 +17,18 @@ import peersim.core.Node;
 public class TMan extends Spray implements IPeerSampling {
 
 	// #A Configuration from peersim
+	// (TODO) configurable view size depending on rps
 
 	// #B Local variables
 	public TManPartialView partialViewTMan;
 	public IDescriptor descriptor;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param prefix
-	 *            the peersim configuration
-	 */
 	public TMan(String prefix) {
 		super(prefix);
-		// (TODO) make rps configurable
 		this.partialViewTMan = new TManPartialView();
 		this.descriptor = Descriptor.get();
 	}
 
-	/**
-	 * Empty constructor
-	 */
 	public TMan() {
 		super();
 		this.partialViewTMan = new TManPartialView();
@@ -77,6 +68,15 @@ public class TMan extends Spray implements IPeerSampling {
 		this.partialViewTMan.merge(this, this.node, (List<Node>) result.getPayload(), this.partialView.size());
 	}
 
+	/**
+	 * React to an exchange initiated by a TMan protocol
+	 * 
+	 * @param origin
+	 *            The peer that initiated the exchange
+	 * @param message
+	 *            The message containing descriptors of neighbors
+	 * @return The response of the receiving peer to the origin
+	 */
 	public IMessage onPeriodicCallTMan(Node origin, IMessage message) {
 		// #1 prepare a sample
 		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, this.partialView.getPeers(),
@@ -104,6 +104,12 @@ public class TMan extends Spray implements IPeerSampling {
 		this.isUp = true;
 	}
 
+	/**
+	 * When a newcomer arrives, it advertises it to the rest of the network
+	 * 
+	 * @param origin
+	 *            The newcomer
+	 */
 	public void onSubscriptionTMan(Node origin) {
 		List<Node> aliveNeighbors = this.getAliveNeighbors();
 		if (aliveNeighbors.size() > 0) {
@@ -119,6 +125,7 @@ public class TMan extends Spray implements IPeerSampling {
 	}
 
 	public void leave() {
+		super.leave();
 		this.isUp = false;
 		this.partialViewTMan.clear();
 	}
@@ -137,6 +144,13 @@ public class TMan extends Spray implements IPeerSampling {
 		return tmanClone;
 	}
 
+	/**
+	 * May add a neighbor to the partial view of TMan
+	 * 
+	 * @param peer
+	 *            Potential neighbor
+	 * @return True if the peer is added, false otherwise
+	 */
 	public boolean addNeighborTMan(Node peer) {
 		if (!this.node.equals(peer)) {
 			List<Node> sample = new ArrayList<Node>();

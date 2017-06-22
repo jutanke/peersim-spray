@@ -27,10 +27,6 @@ control.o1.addingPerStep 200
 control.o1.startAdd 0
 control.o1.endAdd 50
 
-control.o2 descent.controllers.ScrambleDescriptors
-control.o2.step 1
-control.o2.date 60
-
 ################### initialization ======================
 
 init.sch CDScheduler

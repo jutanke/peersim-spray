@@ -2,6 +2,8 @@ package descent.observers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,6 +17,7 @@ import java.util.function.Function;
 import descent.controllers.DynamicNetwork;
 import descent.rps.APeerSamplingProtocol;
 import descent.rps.IPeerSampling;
+import descent.slicer.RankDescriptor;
 import descent.slicer.Slicer;
 import descent.spray.Spray;
 import descent.tman.Descriptor;
@@ -1667,6 +1670,39 @@ public class DictGraph {
 
 		return (sum / (double) times);
 
+	}
+
+	/**
+	 * Process how far from the perfect slices the current overlay network is
+	 * 
+	 * @return A distance, 0 being the perfect match
+	 */
+	public Double distanceFromPerfectSlices() { // (TODO)
+		// #1 process the perfect slice
+		ArrayList<Slicer> ordered = new ArrayList<Slicer>();
+
+		Comparator<Slicer> comparator = new Comparator<Slicer>() {
+			public int compare(Slicer o1, Slicer o2) {
+				RankDescriptor r1 = (RankDescriptor) o1.descriptor;
+				RankDescriptor r2 = (RankDescriptor) o2.descriptor;
+				return r1.compareTo(r2);
+			}
+		};
+
+		for (Node node : DynamicNetwork.networks.get(0)) {
+			Slicer slicerNode = (Slicer) node.getProtocol(Slicer.pid);
+			ordered.add(slicerNode);
+		}
+
+		Collections.sort(ordered, comparator);
+		
+		ArrayList<Integer> distribution = this.countWriters();
+
+		// #2 stats on distance
+		
+		
+		
+		return 0.;
 	}
 
 }
