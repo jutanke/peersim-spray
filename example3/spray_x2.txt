@@ -14,7 +14,7 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.rps descent.spray.Spray
+protocol.rps descent.merging.MergingSpray
 protocol.rps.delta 1
 protocol.rps.step 1
 protocol.rps.start 2
@@ -24,7 +24,7 @@ protocol.rps.fail 0.000
 ## networks
 control.n0 descent.controllers.DynamicNetwork
 control.n0.protocol rps
-control.n0.size SIZE/2
+control.n0.size SIZE/10
 control.n0.FINAL
 control.n0.step 1
 control.n0.addingPerStep 100000
@@ -34,7 +34,7 @@ control.n0.startAdd 0
 
 control.n1 descent.controllers.DynamicNetwork
 control.n1.protocol rps
-control.n1.size SIZE/2
+control.n1.size SIZE
 control.n1.FINAL
 control.n1.step 1
 control.n1.addingPerStep 100000
