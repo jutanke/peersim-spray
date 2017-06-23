@@ -32,7 +32,7 @@ public class Slicer extends TMan {
 		}
 
 		// #1 initialize descriptor based on Spray
-		if (this.age >= Math.max(this.partialView.size() / this.A, 5) && !((RankDescriptor) this.descriptor).isSet()) {
+		if (this.age >= Math.max(this.partialView.size() / this.A, 6) && !((RankDescriptor) this.descriptor).isSet()) {
 			((RankDescriptor) this.descriptor).setRank((int) Math.floor(this.partialView.size() / this.A) - 1);
 		}
 

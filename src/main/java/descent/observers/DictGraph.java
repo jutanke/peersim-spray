@@ -1,5 +1,6 @@
 package descent.observers;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1190,124 +1191,46 @@ public class DictGraph {
 		return actual / possible;
 	}
 
-	public class EstimatorStats {
-		public final Double mean;
-		public final Double min;
-		public final Double max;
-		public final Double stdDev;
+	public Stats getAggregatedEstimatorStats() {
+		ArrayList<Double> values = new ArrayList<Double>();
 
-		public EstimatorStats(Double mean, Double min, Double max, Double stdDev) {
-			this.mean = mean;
-			this.min = min;
-			this.max = max;
-			this.stdDev = stdDev;
-		}
-
-		@Override
-		public String toString() {
-			return this.mean + " " + this.min + " " + this.max + " " + this.stdDev;
-		}
-	}
-
-	public EstimatorStats getAggregatedEstimatorStats() {
-		double mean = 0.;
-		Double max = 0.;
-		Double min = Double.MAX_VALUE;
 		final Collection<DictNode> N = this.nodes.values();
 		for (DictNode n : N) {
-			Double size = (double) n.neighbors.size(); // Math.exp(n.neighbors.size());
+			Double value = (double) n.neighbors.size(); // Math.exp(n.neighbors.size());
 			for (Long neighbor : n.neighbors) {
-				size += this.nodes.get(neighbor).neighbors.size();
+				value += this.nodes.get(neighbor).neighbors.size();
 			}
-			size = size / ((double) (n.neighbors.size() + 1));
+			value = value / ((double) (n.neighbors.size() + 1));
 
-			size = Math.exp(size);
+			value = Math.exp(value);
 
-			mean += size / (double) N.size();
-			if (max < size) {
-				max = size;
-			}
-			if (min > size) {
-				min = size;
-			}
+			values.add(value);
 		}
 
-		Double var = 0.;
-		for (DictNode n : N) {
-			Double size = (double) n.neighbors.size(); // Math.exp(n.neighbors.size());
-			for (Long neighbor : n.neighbors) {
-				size += this.nodes.get(neighbor).neighbors.size();
-			}
-			size = size / ((double) (n.neighbors.size() + 1));
-
-			size = Math.exp(size);
-
-			final double c = size - mean;
-			var += ((c * c) / (double) N.size());
-		}
-		var = Math.sqrt(var);
-
-		return new EstimatorStats(mean, min, max, var);
+		return Stats.getFromLarge(values);
 	}
 
-	public EstimatorStats getEstimatorStats() {
-		double mean = 0.;
-		Double max = 0.;
-		Double min = Double.MAX_VALUE;
+	public Stats getEstimatorStats() {
+		ArrayList<Double> values = new ArrayList<Double>();
+
 		final Collection<DictNode> N = this.nodes.values();
 		for (DictNode n : N) {
-			Double size = Math.exp(n.neighbors.size());
-			mean += size / (double) N.size();
-			if (max < size) {
-				max = size;
-			}
-			if (min > size) {
-				min = size;
-			}
+			Double value = Math.exp(n.neighbors.size());
+			values.add(value);
 		}
 
-		Double var = 0.;
-		for (DictNode n : N) {
-			final double c = Math.exp(n.neighbors.size()) - mean;
-			var += ((c * c) / (double) N.size());
-		}
-		var = Math.sqrt(var);
-
-		return new EstimatorStats(mean, min, max, var);
+		return Stats.getFromLarge(values);
 	}
 
-	public class ViewSizeStats {
-		public final double mean;
-		public final Integer min;
-		public final Integer max;
+	public Stats getViewSizeStats() {
+		ArrayList<Double> values = new ArrayList<Double>();
 
-		public ViewSizeStats(double mean, Integer min, Integer max) {
-			this.mean = mean;
-			this.min = min;
-			this.max = max;
-		}
-
-		@Override
-		public String toString() {
-			return this.mean + " " + this.min + " " + this.max;
-		}
-	}
-
-	public ViewSizeStats getViewSizeStats() {
-		double mean = 0.;
-		Integer max = 0;
-		Integer min = Integer.MAX_VALUE;
 		final Collection<DictNode> N = this.nodes.values();
 		for (DictNode n : N) {
-			mean += n.neighbors.size();
-			if (max < n.neighbors.size()) {
-				max = n.neighbors.size();
-			}
-			if (min > n.neighbors.size()) {
-				min = n.neighbors.size();
-			}
+			values.add((double) n.neighbors.size());
 		}
-		return new ViewSizeStats(mean / N.size(), min, max);
+
+		return Stats.getFromSmall(values);
 	}
 
 	private boolean areUndirectlyConnected(long a, long b) {
@@ -1691,9 +1614,10 @@ public class DictGraph {
 	/**
 	 * Process how far from the perfect slices the current overlay network is
 	 * 
-	 * @return A distance, 0 being the perfect match
+	 * @return Stats containing, among others, the avg distance, 0 being the
+	 *         perfect match
 	 */
-	public Double distanceFromPerfectSlices() {
+	public Stats distanceFromPerfectSlices() {
 		// #1 process the perfect slice
 		ArrayList<Slicer> ordered = new ArrayList<Slicer>();
 
@@ -1723,8 +1647,11 @@ public class DictGraph {
 		}
 		Integer theoreticalRank = 0;
 
+		ArrayList<Double> values = new ArrayList<Double>();
+
 		for (Slicer slicerNode : ordered) {
-			sum += Math.abs(theoreticalRank - ((RankDescriptor) slicerNode.descriptor).rank);
+			Double value = (double) Math.abs(theoreticalRank - ((RankDescriptor) slicerNode.descriptor).rank);
+			values.add(value);
 			++number;
 			if (number >= sumNumberRank && theoreticalRank < distribution.size() - 1) {
 				++theoreticalRank;
@@ -1732,7 +1659,7 @@ public class DictGraph {
 			}
 		}
 
-		return sum / (double) ordered.size();
+		return Stats.getFromSmall(values);
 	}
 
 }
