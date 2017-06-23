@@ -2,14 +2,20 @@ package descent.slicer;
 
 import descent.tman.IDescriptor;
 
+/**
+ * Descriptor describing the state of a peer and its position in the slicing
+ * overlay network.
+ */
 public class RankDescriptor implements IDescriptor, Comparable<RankDescriptor> {
 
 	public Integer rank;
 	public Double frequency;
+	public boolean set;
 
 	public RankDescriptor() {
 		this.rank = Integer.MAX_VALUE;
 		this.frequency = 0.;
+		this.set = false;
 	}
 
 	public double ranking(IDescriptor other) {
@@ -32,6 +38,7 @@ public class RankDescriptor implements IDescriptor, Comparable<RankDescriptor> {
 
 	public void setRank(Integer rank) {
 		this.rank = rank;
+		this.set = true;
 	}
 
 	public void setFrequency(Double frequency) {
@@ -46,5 +53,9 @@ public class RankDescriptor implements IDescriptor, Comparable<RankDescriptor> {
 		} else {
 			return 0;
 		}
+	}
+
+	public boolean isSet() {
+		return this.set;
 	}
 }

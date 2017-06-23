@@ -15,7 +15,7 @@ public class PMonitorCount implements ObserverProgram {
 	public void tick(long currentTick, DictGraph observer) {
 		if (observer.size() > 0)
 			System.out.println(observer.size() + " " + observer.countArcs() + " "
-					+ (observer.countArcs() / new Double(observer.size())) + " " + observer.countMonitors() + " "
+					+ (observer.countArcs() / new Double(observer.size())) + " " + observer.countWriters() + " "
 					+ observer.countWriters() );//+ " " + observer.findWriter(10000));
 	}
 

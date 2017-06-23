@@ -23,16 +23,20 @@ public class TMan extends Spray {
 	public TManPartialView partialViewTMan;
 	public IDescriptor descriptor;
 
+	public Integer age;
+
 	public TMan(String prefix) {
 		super(prefix);
 		this.partialViewTMan = new TManPartialView();
 		this.descriptor = Descriptor.get();
+		this.age = 0;
 	}
 
 	public TMan() {
 		super();
 		this.partialViewTMan = new TManPartialView();
 		this.descriptor = Descriptor.get();
+		this.age = 0;
 	}
 
 	public void periodicCall() {
@@ -41,6 +45,8 @@ public class TMan extends Spray {
 		if (!this.isUp) {
 			return;
 		}
+
+		++this.age;
 
 		// #1 Choose a neighbor to exchange with
 		Node q = null;
@@ -78,6 +84,7 @@ public class TMan extends Spray {
 	 * @return The response of the receiving peer to the origin
 	 */
 	public IMessage onPeriodicCallTMan(Node origin, IMessage message) {
+		++this.age;
 		// #1 prepare a sample
 		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, this.partialView.getPeers(),
 				Math.floor(this.partialView.size() / 2));

@@ -18,18 +18,15 @@ public class Spray extends APeerSampling {
 	// #A Configuration from peersim
 	// In average, the number of arcs should be ~ a*ln(N)+b
 	private static final String PAR_A = "a";
-	private Double A = 1.;
+	protected Double A = 1.;
 
 	private static final String PAR_B = "b";
-	private Double B = 0.;
+	protected Double B = 0.;
 
 	// #B Local variables
 	public SprayPartialView partialView;
 
 	public MergingRegister register;
-
-	public Integer rank = 0;
-	public Integer age = 0;
 
 	/**
 	 * Constructor
@@ -41,7 +38,6 @@ public class Spray extends APeerSampling {
 		super(prefix);
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
-		this.rank = 0;
 
 		this.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, 1.);
 		this.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, 0.);
@@ -52,8 +48,6 @@ public class Spray extends APeerSampling {
 	 */
 	public Spray() {
 		super();
-
-		this.rank = 0;
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 	}
@@ -99,12 +93,6 @@ public class Spray extends APeerSampling {
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
 
-		if (this.rank.equals(Integer.MAX_VALUE) && this.age > Math.max(this.partialView.size(), 10)) {
-			this.rank = (int) Math.floor(this.partialView.size() / this.A - 1);
-		} else {
-			++this.age;
-		}
-
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
@@ -119,10 +107,6 @@ public class Spray extends APeerSampling {
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
 		SprayMessage result = new SprayMessage(samplePrime);
-
-		if (this.rank.equals(Integer.MAX_VALUE)) {
-			++this.age;
-		}
 
 		return result;
 	}
@@ -141,8 +125,6 @@ public class Spray extends APeerSampling {
 			// #B Inform the contact peer
 			Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
 			contactSpray.onSubscription(this.node);
-
-			this.rank = Integer.MAX_VALUE;
 		}
 		this.isUp = true;
 	}
@@ -166,7 +148,6 @@ public class Spray extends APeerSampling {
 			// #3 Inject A + B arcs to expect A*ln(N)+B arcs
 			this.inject(this.A, this.B, origin);
 		}
-
 	}
 
 	/**

@@ -1050,7 +1050,7 @@ public class DictGraph {
 		sb.append(graph);
 		sb.append(" = nx.DiGraph()\n");
 
-		ArrayList<Integer> distribution = this.countWriters();
+		ArrayList<Integer> distribution = this.distributionInSlices();
 		int[][] numberOfArcs = new int[distribution.size()][distribution.size()];
 		for (int i = 0; i < distribution.size(); ++i) {
 			for (int j = 0; j < distribution.size(); ++j) {
@@ -1558,10 +1558,10 @@ public class DictGraph {
 	}
 
 	/**
-	 * Count the number of "monitor". A peer is a monitor only if no peers in
-	 * its neighborhoods is a monitor.
+	 * Count the number of "writers". A peer is a writer only if no peers in its
+	 * neighborhoods is a monitor.
 	 */
-	public Integer countMonitors() {
+	public Integer countWriters() {
 		HashSet<Long> monitors = new HashSet<Long>();
 		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
 			Node n = DynamicNetwork.networks.get(0).get(i);
@@ -1582,20 +1582,20 @@ public class DictGraph {
 	}
 
 	/**
-	 * Count writers. Same as "monitors" but the assigning is made at joining
-	 * time and is not based on the same principle.
+	 * Count the number of peers in each slice created by the overlay network.
 	 */
-	public ArrayList<Integer> countWriters() {
+	public ArrayList<Integer> distributionInSlices() {
 		ArrayList<Integer> sums = new ArrayList<Integer>();
 
 		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
-			Node n = DynamicNetwork.networks.get(0).get(i);
-			Spray s = (Spray) n.getProtocol(Spray.pid);
-			if (!s.rank.equals(Integer.MAX_VALUE)) {
-				while (sums.size() <= s.rank) {
+			Node node = DynamicNetwork.networks.get(0).get(i);
+			Slicer slicer = (Slicer) node.getProtocol(Slicer.pid);
+			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
+			if (descriptor.isSet()) {
+				while (sums.size() <= descriptor.rank) {
 					sums.add(0);
 				}
-				sums.set(s.rank, sums.get(s.rank) + 1);
+				sums.set(descriptor.rank, sums.get(descriptor.rank) + 1);
 			}
 		}
 
@@ -1610,34 +1610,45 @@ public class DictGraph {
 	 * @return
 	 */
 	public Double findOneAmongAllWriter(Integer N) {
-		//// JUST A TEST
+
+		// JUST A TEST WHERE ONLY ONE PEER IS A WRITER
 		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
-			Node n = DynamicNetwork.networks.get(0).get(i);
-			Spray s = (Spray) n.getProtocol(Spray.pid);
-			s.rank = 1;
+			Node node = DynamicNetwork.networks.get(0).get(i);
+			Slicer slicer = (Slicer) node.getProtocol(Slicer.pid);
+			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
+			descriptor.rank = 1;
 		}
 
 		Integer times = 0;
 		Integer sum = 0;
 		for (int i = 0; i < N; ++i) {
-			Node n = DynamicNetwork.networks.get(0).get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
-			Spray s = (Spray) n.getProtocol(Spray.pid);
-			s.rank = 0;
+			// set only one writer (rank = 0)
+			Node node = DynamicNetwork.networks.get(0)
+					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Slicer slicer = (Slicer) node.getProtocol(Spray.pid);
+			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
+			descriptor.rank = 0;
 
 			Integer hop = 0;
 			Node current = DynamicNetwork.networks.get(0)
 					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
-			Spray currentSpray = (Spray) current.getProtocol(Spray.pid);
-			while (!currentSpray.rank.equals(0) && hop < N * 10) {
-				Node next = currentSpray.getPeers(1).get(0);
-				currentSpray = (Spray) next.getProtocol(Spray.pid);
+			Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
+			RankDescriptor currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
+
+			while (!currentDescriptor.rank.equals(0) && hop < N * 10) {
+				// get a peer from the random peer sampling protocol
+				Node next = currentSlicer.partialView.getPeers(1).get(0);
+				currentSlicer = (Slicer) next.getProtocol(Slicer.pid);
+				currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
 				++hop;
 			}
+
 			if (hop < N * 10) {
 				sum += hop;
 				++times;
 			}
-			s.rank = 1;
+
+			descriptor.rank = 1;
 		}
 
 		return (sum / (double) times);
@@ -1659,12 +1670,15 @@ public class DictGraph {
 			Integer hop = 0;
 			Node current = DynamicNetwork.networks.get(0)
 					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
-			Spray currentSpray = (Spray) current.getProtocol(Spray.pid);
-			while (!currentSpray.rank.equals(0) && hop < N * 10) {
-				Node next = currentSpray.getPeers(1).get(0);
-				currentSpray = (Spray) next.getProtocol(Spray.pid);
+			Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
+			RankDescriptor currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
+			while (!currentDescriptor.rank.equals(0) && hop < N * 10) {
+				Node next = currentSlicer.getPeers(1).get(0);
+				currentSlicer = (Slicer) next.getProtocol(Slicer.pid);
+				currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
 				++hop;
 			}
+
 			if (hop < N * 10) {
 				sum += hop;
 				++times;
@@ -1698,7 +1712,7 @@ public class DictGraph {
 
 		Collections.sort(ordered, comparator);
 
-		ArrayList<Integer> distribution = this.countWriters();
+		ArrayList<Integer> distribution = this.distributionInSlices();
 
 		// #2 stats on distance
 		Integer sum = 0;

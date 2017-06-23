@@ -17,7 +17,6 @@ public class Slicer extends TMan {
 
 	public Slicer(String prefix) {
 		super(prefix);
-
 		this.descriptor = new RankDescriptor();
 	}
 
@@ -28,13 +27,14 @@ public class Slicer extends TMan {
 
 	public void periodicCall() {
 		if (CommonState.getTime() == 100) {
+			// (TODO) create a controller doing that
 			Double rn = Math.abs(CommonState.r.nextGaussian()) * 5.;
 			((RankDescriptor) this.descriptor).setFrequency(rn);
 		}
 
 		// #1 initialize descriptor based on Spray
-		if (!this.rank.equals(Integer.MAX_VALUE) && !this.once) {
-			((RankDescriptor) this.descriptor).setRank(this.rank);
+		if (this.age >= Math.max(this.partialView.size() / this.A, 5) && !this.once) {
+			((RankDescriptor) this.descriptor).setRank((int) Math.floor(this.partialView.size() / this.A) - 1);
 			this.once = true;
 		}
 
