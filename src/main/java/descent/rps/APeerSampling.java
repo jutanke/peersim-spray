@@ -10,7 +10,7 @@ import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 
-public abstract class APeerSamplingProtocol implements IDynamic, Linkable, CDProtocol, IPeerSampling {
+public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, IPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
 	public static final String PAR_PROT = "rps"; // name of the protocol
@@ -39,16 +39,15 @@ public abstract class APeerSamplingProtocol implements IDynamic, Linkable, CDPro
 	 * @param prefix
 	 *            configuration of peersim
 	 */
-	public APeerSamplingProtocol(String prefix) {
-		APeerSamplingProtocol.pid = Configuration.lookupPid(APeerSamplingProtocol.PAR_PROT);
-		APeerSamplingProtocol.delta = Configuration.getInt(prefix + "." + APeerSamplingProtocol.PAR_DELTA);
-		APeerSamplingProtocol.start = Configuration.getInt(prefix + "." + APeerSamplingProtocol.PAR_START);
-		APeerSamplingProtocol.fail = Configuration.getDouble(prefix + "." + APeerSamplingProtocol.PAR_FAIL,
-				0.0);
+	public APeerSampling(String prefix) {
+		APeerSampling.pid = Configuration.lookupPid(APeerSampling.PAR_PROT);
+		APeerSampling.delta = Configuration.getInt(prefix + "." + APeerSampling.PAR_DELTA);
+		APeerSampling.start = Configuration.getInt(prefix + "." + APeerSampling.PAR_START);
+		APeerSampling.fail = Configuration.getDouble(prefix + "." + APeerSampling.PAR_FAIL, 0.0);
 		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
-	public APeerSamplingProtocol() {
+	public APeerSampling() {
 		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
@@ -80,8 +79,8 @@ public abstract class APeerSamplingProtocol implements IDynamic, Linkable, CDPro
 			this.node = node;
 		}
 		// #2 call the periodic function of the node every Delta time
-		if (isUp() && CommonState.getTime() >= APeerSamplingProtocol.start
-				&& CommonState.getTime() % APeerSamplingProtocol.delta == 0) {
+		if (isUp() && CommonState.getTime() >= APeerSampling.start
+				&& CommonState.getTime() % APeerSampling.delta == 0) {
 			this.periodicCall();
 		}
 	}

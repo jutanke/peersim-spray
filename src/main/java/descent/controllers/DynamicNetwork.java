@@ -2,7 +2,7 @@ package descent.controllers;
 
 import java.util.LinkedList;
 
-import descent.rps.APeerSamplingProtocol;
+import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
 import descent.spray.Spray;
 import peersim.config.Configuration;
@@ -90,7 +90,7 @@ public class DynamicNetwork implements Control {
 				final int pos = CommonState.r.nextInt(DynamicNetwork.graph.size());
 				final Node rem = DynamicNetwork.graph.get(pos);
 				this.removeNode(rem);
-				APeerSamplingProtocol d = (APeerSamplingProtocol) rem.getProtocol(pid);
+				APeerSampling d = (APeerSampling) rem.getProtocol(pid);
 				if (d.isUp()) {
 					d.leave();
 				}
@@ -144,12 +144,12 @@ public class DynamicNetwork implements Control {
 	}
 
 	public void removeNode(Node leaver) {
-		APeerSamplingProtocol leaverProtocol = (APeerSamplingProtocol) leaver.getProtocol(APeerSamplingProtocol.pid);
+		APeerSampling leaverProtocol = (APeerSampling) leaver.getProtocol(APeerSampling.pid);
 		leaverProtocol.leave();
 	}
 
 	public void addNode(Node joiner, Node contact) {
-		APeerSamplingProtocol joinerProtocol = (APeerSamplingProtocol) joiner.getProtocol(APeerSamplingProtocol.pid);
+		APeerSampling joinerProtocol = (APeerSampling) joiner.getProtocol(APeerSampling.pid);
 		joinerProtocol.join(joiner, contact);
 	}
 

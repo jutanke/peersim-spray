@@ -3,7 +3,6 @@ package descent.closify;
 import java.util.ArrayList;
 import java.util.List;
 
-import descent.rps.APeerSamplingProtocol;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
 import descent.spray.Spray;
@@ -33,7 +32,7 @@ public class Closify extends Spray {
 
 	public void periodicCall() {
 		Node oldest = this.partialView.getOldest();
-		Closify qClosify = (Closify) oldest.getProtocol(APeerSamplingProtocol.pid);
+		Closify qClosify = (Closify) oldest.getProtocol(Closify.pid);
 		super.periodicCall();
 		IMessage send = new ClosifyMessage(this.additionnalView.getPeers(30 / 100 * this.additionnalView.size()));
 		ClosifyMessage answer = (ClosifyMessage) qClosify.onClosifyPeriodicCall(this.node, send);

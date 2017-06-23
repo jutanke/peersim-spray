@@ -4,22 +4,24 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import descent.rps.APeerSampling;
+import descent.rps.IMessage;
+import descent.rps.IPeerSampling;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
-import descent.rps.APeerSamplingProtocol;
-import descent.rps.IMessage;
-import descent.rps.IPeerSampling;
 
 /**
  * The Cyclon protocol
  */
-public class Cyclon extends APeerSamplingProtocol implements IPeerSampling {
+public class Cyclon extends APeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
 	private static final String PAR_C = "c"; // max partial view size
 	private static final String PAR_L = "l"; // shuffle size
-	private static final String PAR_RANDOM_WALK = "random_walk"; // random walk of first connexions 
+	private static final String PAR_RANDOM_WALK = "random_walk"; // random walk
+																	// of first
+																	// connexions
 
 	// #B the values from the configuration file of peersim
 	private static int c;
@@ -52,7 +54,7 @@ public class Cyclon extends APeerSamplingProtocol implements IPeerSampling {
 	protected boolean pFail(List<Node> path) {
 		// the probability is constant since the number of hops to establish
 		// a connection is constant
-		double pf = 1 - Math.pow(1 - APeerSamplingProtocol.fail, 6);
+		double pf = 1 - Math.pow(1 - APeerSampling.fail, 6);
 		return CommonState.r.nextDouble() < pf;
 	}
 
@@ -60,7 +62,7 @@ public class Cyclon extends APeerSamplingProtocol implements IPeerSampling {
 		if (this.isUp() && this.partialView.size() > 0) {
 			this.partialView.incrementAge();
 			Node q = this.partialView.getOldest();
-			Cyclon qCyclon = (Cyclon) q.getProtocol(APeerSamplingProtocol.pid);
+			Cyclon qCyclon = (Cyclon) q.getProtocol(Cyclon.pid);
 			if (qCyclon.isUp() && !this.pFail(null)) {
 				// #A if the chosen peer is alive, initiate the exchange
 				List<Node> sample = this.partialView.getSample(this.node, q, true);

@@ -2,7 +2,7 @@ package descent.spray;
 
 import java.util.List;
 
-import descent.rps.APeerSamplingProtocol;
+import descent.rps.APeerSampling;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
 import peersim.config.Configuration;
@@ -13,7 +13,7 @@ import peersim.core.Node;
  * Random peer-sampling protocol that self-adapts its functioning to the size of
  * the network using local knowledge only.
  */
-public class Spray extends APeerSamplingProtocol implements IPeerSampling {
+public class Spray extends APeerSampling {
 
 	// #A Configuration from peersim
 	// In average, the number of arcs should be ~ a*ln(N)+b
@@ -52,7 +52,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	 */
 	public Spray() {
 		super();
-		
+
 		this.rank = 0;
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
@@ -62,7 +62,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 	protected boolean pFail(List<Node> path) {
 		// The probability is constant since the number of hops to establish
 		// a connection is constant: p1 -> bridge -> p2 -> bridge -> p1
-		double pf = 1 - Math.pow(1 - APeerSamplingProtocol.fail, 6);
+		double pf = 1 - Math.pow(1 - APeerSampling.fail, 6);
 		return CommonState.r.nextDouble() < pf;
 	}
 
@@ -75,7 +75,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 		// #1 Choose the peer to exchange with
 		this.partialView.incrementAge();
 		Node q = this.partialView.getOldest();
-		Spray qSpray = (Spray) q.getProtocol(APeerSamplingProtocol.pid);
+		Spray qSpray = (Spray) q.getProtocol(Spray.pid);
 		// #A Peer is down: departed or left
 		if (!qSpray.isUp) {
 			this.onPeerDown(q);
@@ -141,7 +141,7 @@ public class Spray extends APeerSamplingProtocol implements IPeerSampling {
 			// #B Inform the contact peer
 			Spray contactSpray = (Spray) contact.getProtocol(Spray.pid);
 			contactSpray.onSubscription(this.node);
-			
+
 			this.rank = Integer.MAX_VALUE;
 		}
 		this.isUp = true;

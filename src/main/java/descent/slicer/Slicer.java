@@ -1,10 +1,6 @@
 package descent.slicer;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashSet;
-
-import javax.print.attribute.standard.MediaSize.Other;
 
 import descent.rps.IPeerSampling;
 import descent.spray.MergingRegister;

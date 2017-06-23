@@ -15,7 +15,7 @@ import java.util.Stack;
 import java.util.function.Function;
 
 import descent.controllers.DynamicNetwork;
-import descent.rps.APeerSamplingProtocol;
+import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
 import descent.slicer.RankDescriptor;
 import descent.slicer.Slicer;
@@ -535,8 +535,7 @@ public class DictGraph {
 		double sumOfResult = 0;
 		ArrayList<Long> upNode = new ArrayList<Long>();
 		for (Integer i = 0; i < DynamicNetwork.graph.size(); ++i) {
-			APeerSamplingProtocol rps = (APeerSamplingProtocol) DynamicNetwork.graph.get(i)
-					.getProtocol(APeerSamplingProtocol.pid);
+			APeerSampling rps = (APeerSampling) DynamicNetwork.graph.get(i).getProtocol(APeerSampling.pid);
 			if (rps.isUp()) {
 				upNode.add(DynamicNetwork.graph.get(i).getID());
 			}
@@ -1062,12 +1061,13 @@ public class DictGraph {
 		for (int i = 0; i < Network.size(); ++i) {
 			Slicer slicerFrom = (Slicer) Network.get(i).getProtocol(Slicer.pid);
 			RankDescriptor descriptorFrom = (RankDescriptor) slicerFrom.descriptor;
-			
+
 			for (Node neighbor : slicerFrom.partialViewTMan) {
 				Slicer slicerTo = (Slicer) neighbor.getProtocol(Slicer.pid);
 				RankDescriptor descriptorTo = (RankDescriptor) slicerTo.descriptor;
-				
-				numberOfArcs[descriptorFrom.rank][descriptorTo.rank] = numberOfArcs[descriptorFrom.rank][descriptorTo.rank] + 1;
+
+				numberOfArcs[descriptorFrom.rank][descriptorTo.rank] = numberOfArcs[descriptorFrom.rank][descriptorTo.rank]
+						+ 1;
 			}
 		}
 
@@ -1540,7 +1540,7 @@ public class DictGraph {
 		for (int i = 0; i < Network.size(); ++i) {
 			Node n = Network.get(i);
 			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
-			
+
 			for (Node neighbor : nTMan.partialViewTMan) {
 				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
 				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
@@ -1697,7 +1697,7 @@ public class DictGraph {
 		}
 
 		Collections.sort(ordered, comparator);
-		
+
 		ArrayList<Integer> distribution = this.countWriters();
 
 		// #2 stats on distance
@@ -1712,7 +1712,7 @@ public class DictGraph {
 		for (Slicer slicerNode : ordered) {
 			sum += Math.abs(theoreticalRank - ((RankDescriptor) slicerNode.descriptor).rank);
 			++number;
-			if (number >= sumNumberRank && theoreticalRank < distribution.size() -1) {
+			if (number >= sumNumberRank && theoreticalRank < distribution.size() - 1) {
 				++theoreticalRank;
 				sumNumberRank += distribution.get(theoreticalRank);
 			}

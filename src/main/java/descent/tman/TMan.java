@@ -14,7 +14,7 @@ import peersim.core.Node;
  * Structured overlay builder using a ranking function to converge to the
  * desired topology.
  */
-public class TMan extends Spray implements IPeerSampling {
+public class TMan extends Spray {
 
 	// #A Configuration from peersim
 	// (TODO) configurable view size depending on rps
