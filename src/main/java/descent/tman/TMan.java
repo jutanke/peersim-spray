@@ -3,9 +3,9 @@ package descent.tman;
 import java.util.ArrayList;
 import java.util.List;
 
+import descent.merging.MergingRegister;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
-import descent.spray.MergingRegister;
 import descent.spray.Spray;
 import descent.spray.SprayPartialView;
 import peersim.core.Node;

@@ -2,8 +2,8 @@ package descent.slicer;
 
 import java.util.ArrayList;
 
+import descent.merging.MergingRegister;
 import descent.rps.IPeerSampling;
-import descent.spray.MergingRegister;
 import descent.spray.SprayPartialView;
 import descent.tman.TMan;
 import descent.tman.TManPartialView;
@@ -13,7 +13,6 @@ import peersim.core.Node;
 public class Slicer extends TMan {
 
 	private static boolean SWAP = true;
-	private boolean once = false;
 
 	public Slicer(String prefix) {
 		super(prefix);
@@ -33,9 +32,8 @@ public class Slicer extends TMan {
 		}
 
 		// #1 initialize descriptor based on Spray
-		if (this.age >= Math.max(this.partialView.size() / this.A, 5) && !this.once) {
+		if (this.age >= Math.max(this.partialView.size() / this.A, 5) && !((RankDescriptor) this.descriptor).isSet()) {
 			((RankDescriptor) this.descriptor).setRank((int) Math.floor(this.partialView.size() / this.A) - 1);
-			this.once = true;
 		}
 
 		// #2 see if a swap of rank is needed

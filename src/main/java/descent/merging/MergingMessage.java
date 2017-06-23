@@ -1,4 +1,4 @@
-package descent.spray;
+package descent.merging;
 
 import java.util.HashSet;
 
